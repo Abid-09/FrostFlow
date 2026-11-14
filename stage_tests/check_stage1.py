@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
     base = "http://localhost:5001"
     model = ROOT / "compliance/p1/rules.xml"
-    assert http(base + "/health")[1].get("stage") == 2, "Start the updated stack first"
+    assert http(base + "/health")[1].get("stage") == 3, "Start the updated stack first"
     stock = http(base + "/stock")[1]
     assert (
         stock.get("datasetVersion") == 3

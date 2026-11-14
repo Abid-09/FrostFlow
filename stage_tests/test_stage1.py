@@ -1097,6 +1097,8 @@ class Preparation(unittest.TestCase):
         ):
             demo.perform("http://example.test", "9")
             demo.perform("http://example.test", "10")
+            demo.perform("http://example.test", "14")
+            demo.perform("http://example.test", "15")
 
         posted_paths = [path for path, data in calls if data is not None]
         self.assertEqual(
@@ -1104,8 +1106,274 @@ class Preparation(unittest.TestCase):
             [
                 "/shipments/demo-A/arrive",
                 "/shipments/demo-A/acknowledge-receipt",
+                "/shipments/demo-A/receiving/receipt",
+                "/shipments/demo-A/receiving/inspection",
             ],
         )
+
+
+class P3Receiving(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        service.registry = Registry(Path(self.temp.name) / "registry.sqlite")
+        self.db = service.registry
+        self.http = service.app.test_client()
+        self.db.create(sample())
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record.update(
+                state="DISPATCHED",
+                stockReserved=True,
+                processInstanceKey="111",
+                handoffStatus="ACKNOWLEDGED",
+                p2ProcessInstanceKey="999",
+                transportState="ARRIVED",
+                vehicleReleased=False,
+            )
+            self.db.save(db, record)
+            self.db.event(
+                db,
+                record,
+                "ShipmentArrived",
+                process="P2",
+                event_id=self.db.transport_event_journal_id(
+                    "S-test", "ShipmentArrived", "arrival-1"
+                ),
+                payload={"recipientId": "C-01"},
+                occurred_at="2026-12-01T10:22:00Z",
+                recorded_at="2026-12-01T10:22:01Z",
+                source="p2-simulator",
+                input_mode="simulated",
+                producer_event_id="arrival-1",
+            )
+        self.p3_key = 777
+        self.notification = {
+            "deliveryId": "P2:S-test:ShipmentArrivalNotification:arrival-1",
+            "eventType": "ShipmentArrivalNotification",
+            "shipmentId": "S-test",
+            "journeyId": "J-test",
+            "productId": "PRD-001",
+            "batchId": "DEMO-MILK-001",
+            "arrival": {"recipientId": "C-01"},
+            "sourceEventId": "arrival-1",
+            "occurredAt": "2026-12-01T10:22:00Z",
+            "recordedAt": "2026-12-01T10:22:01Z",
+        }
+
+    def test_quality_disposition_worker_is_registered(self):
+        self.assertIn("p3-record-quality-status", service.JOB_TYPES)
+
+    def test_delayed_p3_notification_is_accepted_after_p2_completes(self):
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record.update(transportState="COMPLETED", vehicleReleased=True)
+            self.db.save(db, record)
+
+        response = self.start_p3()
+
+        self.assertEqual(response.status_code, 202, response.json)
+        starts = [
+            message
+            for message in self.db.pending_messages()
+            if message["name"] == "P3ShipmentArrived"
+        ]
+        self.assertEqual(len(starts), 1)
+        self.assertEqual(starts[0]["correlationKey"], "S-test")
+
+    def start_p3(self):
+        return self.http.post(
+            "/integrations/p3/arrival",
+            json={"event": self.notification},
+            headers={"Idempotency-Key": self.notification["deliveryId"]},
+        )
+
+    def receive_and_inspect(self, passed=True):
+        arrival = self.start_p3()
+        self.assertEqual(arrival.status_code, 202, arrival.json)
+        self.db.record_p3_arrival("S-test", self.p3_key, self.notification)
+        received = self.http.post(
+            "/shipments/S-test/receiving/receipt",
+            json={
+                "eventId": "receipt-1",
+                "occurredAt": "2026-12-01T10:24:00Z",
+                "recipientId": "C-01",
+                "quantityReceived": 3,
+                "receiver": "cafeteria",
+            },
+        )
+        self.assertEqual(received.status_code, 202, received.json)
+        receipt_event = next(
+            message["variables"]["receiptEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "GoodsReceived"
+        )
+        self.db.record_p3_receipt("S-test", self.p3_key, receipt_event)
+        p2_receipt = next(
+            message["variables"]["receiptEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "ReceiptAcknowledged"
+        )
+        self.db.release_vehicle("S-test", 999, p2_receipt)
+        inspected = self.http.post(
+            "/shipments/S-test/receiving/inspection",
+            json={
+                "eventId": "inspection-1",
+                "occurredAt": "2026-12-01T10:30:00Z",
+                "inspector": "quality-checker",
+                "passed": passed,
+            },
+        )
+        self.assertEqual(inspected.status_code, 202, inspected.json)
+        inspection_event = next(
+            message["variables"]["inspectionEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "GoodsInspected"
+        )
+        self.db.record_p3_inspection("S-test", self.p3_key, inspection_event)
+
+    def test_receipt_releases_vehicle_and_inspection_admits_separate_stock(self):
+        first = self.start_p3()
+        self.assertEqual(first.status_code, 202, first.json)
+        retry = self.start_p3()
+        self.assertEqual(retry.status_code, 202, retry.json)
+        self.assertEqual(first.json["messageId"], retry.json["messageId"])
+        changed = dict(self.notification, productId="PRD-002")
+        self.assertEqual(
+            self.http.post(
+                "/integrations/p3/arrival",
+                json={"event": changed},
+                headers={"Idempotency-Key": changed["deliveryId"]},
+            ).status_code,
+            409,
+        )
+        self.db.record_p3_arrival("S-test", self.p3_key, self.notification)
+
+        payload = {
+            "eventId": "receipt-1",
+            "occurredAt": "2026-12-01T10:24:00Z",
+            "recipientId": "C-01",
+            "quantityReceived": 3,
+            "receiver": "cafeteria",
+        }
+        response = self.http.post(
+            "/shipments/S-test/receiving/receipt", json=payload
+        )
+        self.assertEqual(response.status_code, 202, response.json)
+        self.assertEqual(
+            self.http.post(
+                "/shipments/S-test/receiving/receipt", json=payload
+            ).status_code,
+            202,
+        )
+        receipt_event = next(
+            message["variables"]["receiptEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "GoodsReceived"
+        )
+        self.db.record_p3_receipt("S-test", self.p3_key, receipt_event)
+        p2_receipt = next(
+            message["variables"]["receiptEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "ReceiptAcknowledged"
+        )
+        released = self.db.release_vehicle("S-test", 999, p2_receipt)
+        self.assertTrue(released["vehicleReleased"])
+        self.assertEqual(released["transportState"], "COMPLETED")
+
+        inspected = self.http.post(
+            "/shipments/S-test/receiving/inspection",
+            json={
+                "eventId": "inspection-1",
+                "occurredAt": "2026-12-01T10:30:00Z",
+                "inspector": "quality-checker",
+                "passed": True,
+            },
+        )
+        self.assertEqual(inspected.status_code, 202, inspected.json)
+        inspection_event = next(
+            message["variables"]["inspectionEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "GoodsInspected"
+        )
+        self.db.record_p3_inspection("S-test", self.p3_key, inspection_event)
+        self.assertTrue(
+            self.db.record_p3_inspection(
+                "S-test", self.p3_key, inspection_event
+            )["inspectionPassed"]
+        )
+        self.assertEqual(
+            self.db.admit_p3_stock("S-test", self.p3_key)["admissionOutcome"],
+            "ADMITTED",
+        )
+        self.assertEqual(
+            self.db.admit_p3_stock("S-test", self.p3_key)["admissionOutcome"],
+            "ADMITTED",
+        )
+        stock = self.http.get("/receiving-stock?recipientId=C-01").json
+        self.assertEqual(stock["available"], 3)
+        self.assertEqual(stock["items"][0]["batchId"], "DEMO-MILK-001")
+        self.assertNotIn("initialCrates", stock["items"][0])
+        self.assertEqual(self.db.inventory()["products"][0]["available"], 20)
+
+    def test_quality_hold_requires_p4_release_before_admission(self):
+        self.receive_and_inspect()
+        pending = self.http.post(
+            "/integrations/p4/quality-status",
+            json={
+                "shipmentId": "S-test",
+                "eventId": "quality-pending",
+                "occurredAt": "2026-12-01T10:31:00Z",
+                "qualityStatus": "PENDING",
+                "incidentId": "INC-1",
+            },
+        )
+        self.assertEqual(pending.status_code, 202, pending.json)
+        self.assertEqual(
+            self.db.admit_p3_stock("S-test", self.p3_key)["admissionOutcome"],
+            "HELD",
+        )
+        stale_release = self.http.post(
+            "/integrations/p4/quality-status",
+            json={
+                "shipmentId": "S-test",
+                "eventId": "stale-release",
+                "occurredAt": "2026-12-01T10:34:00Z",
+                "qualityStatus": "RELEASED",
+                "incidentId": "INC-OLD",
+            },
+        )
+        self.assertEqual(stale_release.status_code, 409, stale_release.json)
+        released = self.http.post(
+            "/integrations/p4/quality-status",
+            json={
+                "shipmentId": "S-test",
+                "eventId": "quality-released",
+                "occurredAt": "2026-12-01T10:35:00Z",
+                "qualityStatus": "RELEASED",
+                "incidentId": "INC-1",
+            },
+        )
+        self.assertEqual(released.status_code, 202, released.json)
+        quality_event = next(
+            message["variables"]["qualityStatusEvent"]
+            for message in self.db.pending_messages()
+            if message["name"] == "QualityStatusChanged"
+        )
+        self.db.record_p3_quality_status(
+            "S-test", self.p3_key, quality_event
+        )
+        self.assertEqual(
+            self.db.admit_p3_stock("S-test", self.p3_key)["admissionOutcome"],
+            "ADMITTED",
+        )
+        self.assertEqual(self.http.get("/receiving-stock").json["available"], 3)
+
+    def test_failed_inspection_cannot_admit_stock(self):
+        self.receive_and_inspect(passed=False)
+        with self.assertRaises(Conflict):
+            self.db.admit_p3_stock("S-test", self.p3_key)
+        self.assertEqual(self.http.get("/receiving-stock").json["available"], 0)
 
 
 class P2Compliance(unittest.TestCase):

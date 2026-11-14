@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="ReceivingDefinitions" targetNamespace="http://cold-chain.example/bpmn" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:process id="ShipmentReceiving" name="P3 Receiving and stock admission" isExecutable="true">
+    <bpmn:startEvent id="ArrivalNotificationReceived" name="P2 arrival notification received">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="ArrivalNotificationDefinition" messageRef="Message_P3ShipmentArrived" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="RecordArrival" name="Record receiving handoff">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="p3-record-arrival" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="WaitForGoodsReceived" name="Wait for physical receipt">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="GoodsReceivedDefinition" messageRef="Message_GoodsReceived" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="RecordReceipt" name="Record physical receipt and acknowledge P2">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="p3-record-receipt" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="WaitForGoodsInspected" name="Wait for goods inspection">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="GoodsInspectedDefinition" messageRef="Message_GoodsInspected" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="RecordInspection" name="Record inspection outcome">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="p3-record-inspection" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="InspectionDecision" name="Inspection passed?" default="Flow_8">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="AdmitStock" name="Admit stock or hold for quality decision">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="p3-admit-stock" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="AdmissionDecision" name="Admission outcome" default="Flow_11">
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="StockAdmitted" name="Stock admitted">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="GoodsRejected" name="Goods rejected">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:intermediateCatchEvent id="WaitForQualityDecision" name="Wait for P4 quality disposition">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="QualityStatusChangedDefinition" messageRef="Message_QualityStatusChanged" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="RecordQualityDecision" name="Record P4 quality disposition">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="p3-record-quality-status" retries="3" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="ArrivalNotificationReceived" targetRef="RecordArrival" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="RecordArrival" targetRef="WaitForGoodsReceived" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="WaitForGoodsReceived" targetRef="RecordReceipt" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="RecordReceipt" targetRef="WaitForGoodsInspected" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="WaitForGoodsInspected" targetRef="RecordInspection" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="RecordInspection" targetRef="InspectionDecision" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="InspectionDecision" targetRef="AdmitStock">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=inspectionPassed = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="InspectionDecision" targetRef="GoodsRejected" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="AdmitStock" targetRef="AdmissionDecision" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="AdmissionDecision" targetRef="StockAdmitted">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "ADMITTED"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="AdmissionDecision" targetRef="GoodsRejected">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "REJECTED"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="AdmissionDecision" targetRef="WaitForQualityDecision">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "HELD"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="WaitForQualityDecision" targetRef="RecordQualityDecision" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="RecordQualityDecision" targetRef="AdmitStock" />
+  </bpmn:process>
+  <bpmn:message id="Message_P3ShipmentArrived" name="P3ShipmentArrived" />
+  <bpmn:message id="Message_GoodsReceived" name="GoodsReceived">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=shipmentId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Message_GoodsInspected" name="GoodsInspected">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=shipmentId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Message_QualityStatusChanged" name="QualityStatusChanged">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=shipmentId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="ReceivingDiagram">
+    <bpmndi:BPMNPlane id="ReceivingPlane" bpmnElement="ShipmentReceiving">
+      <bpmndi:BPMNShape id="ArrivalNotificationReceived_di" bpmnElement="ArrivalNotificationReceived">
+        <dc:Bounds x="100" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="72" y="184" width="100" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RecordArrival_di" bpmnElement="RecordArrival">
+        <dc:Bounds x="200" y="120" width="110" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="WaitForGoodsReceived_di" bpmnElement="WaitForGoodsReceived">
+        <dc:Bounds x="370" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="337" y="184" width="105" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RecordReceipt_di" bpmnElement="RecordReceipt">
+        <dc:Bounds x="460" y="120" width="120" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="WaitForGoodsInspected_di" bpmnElement="WaitForGoodsInspected">
+        <dc:Bounds x="640" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="605" y="184" width="110" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RecordInspection_di" bpmnElement="RecordInspection">
+        <dc:Bounds x="730" y="120" width="120" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="InspectionDecision_di" bpmnElement="InspectionDecision">
+        <dc:Bounds x="900" y="140" width="40" height="40" />
+        <bpmndi:BPMNLabel><dc:Bounds x="872" y="100" width="95" height="36" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AdmitStock_di" bpmnElement="AdmitStock">
+        <dc:Bounds x="1000" y="120" width="130" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="AdmissionDecision_di" bpmnElement="AdmissionDecision">
+        <dc:Bounds x="1180" y="140" width="40" height="40" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1155" y="100" width="95" height="36" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StockAdmitted_di" bpmnElement="StockAdmitted">
+        <dc:Bounds x="1310" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1283" y="184" width="95" height="35" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GoodsRejected_di" bpmnElement="GoodsRejected">
+        <dc:Bounds x="1010" y="300" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="986" y="341" width="90" height="35" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="WaitForQualityDecision_di" bpmnElement="WaitForQualityDecision">
+        <dc:Bounds x="1182" y="382" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1140" y="423" width="120" height="40" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RecordQualityDecision_di" bpmnElement="RecordQualityDecision">
+        <dc:Bounds x="1300" y="360" width="130" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="136" y="160" />
+        <di:waypoint x="200" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="310" y="160" />
+        <di:waypoint x="370" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="406" y="160" />
+        <di:waypoint x="460" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="580" y="160" />
+        <di:waypoint x="640" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="676" y="160" />
+        <di:waypoint x="730" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="850" y="160" />
+        <di:waypoint x="900" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="940" y="160" />
+        <di:waypoint x="1000" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="920" y="180" />
+        <di:waypoint x="920" y="318" />
+        <di:waypoint x="1010" y="318" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1130" y="160" />
+        <di:waypoint x="1180" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1220" y="160" />
+        <di:waypoint x="1310" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1200" y="180" />
+        <di:waypoint x="1200" y="260" />
+        <di:waypoint x="1028" y="260" />
+        <di:waypoint x="1028" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1200" y="180" />
+        <di:waypoint x="1200" y="382" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1218" y="400" />
+        <di:waypoint x="1300" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1365" y="440" />
+        <di:waypoint x="1365" y="500" />
+        <di:waypoint x="1065" y="500" />
+        <di:waypoint x="1065" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

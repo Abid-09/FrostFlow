@@ -8,13 +8,14 @@ services:
       ZEEBE_ADDRESS: zeebe:26500
       BPMN_FILE: /bpmn/shipment_preparation.bpmn
       P2_BPMN_FILE: /bpmn/transport.bpmn
+      P3_BPMN_FILE: /bpmn/receiving.bpmn
       REGISTRY_PATH: /data/registry.sqlite
       GPS_TICK_SECONDS: ${GPS_TICK_SECONDS:-5}
       P2_SIMULATOR_ENABLED: ${P2_SIMULATOR_ENABLED:-true}
       TOMTOM_API_KEY: ${TOMTOM_API_KEY:-}
       SIDDIHI_TELEMETRY_URL: ${SIDDIHI_TELEMETRY_URL:-http://siddhi:8006/telemetry}
       SIDDIHI_COMMAND_URL: ${SIDDIHI_COMMAND_URL:-http://siddhi:8007/route-command}
-      P3_ARRIVAL_URL: ${P3_ARRIVAL_URL:-}
+      P3_ARRIVAL_URL: ${P3_ARRIVAL_URL:-http://communication:5001/integrations/p3/arrival}
     volumes:
       - ./bpmn:/bpmn:ro
       - ${REGISTRY_DIR:-./runtime}:/data

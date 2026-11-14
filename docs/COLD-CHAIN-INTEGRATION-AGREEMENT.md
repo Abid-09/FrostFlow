@@ -70,8 +70,8 @@ The Python integration service delivers these messages to the relevant engine or
 | Message | Producer → consumer | Required payload or references | Consumer behaviour |
 | --- | --- | --- | --- |
 | `ShipmentDispatched` | P1 → P2 | Product, batch, quantity/unit, vehicle, recipient, route, delivery deadline | Start transport and simulator journey. |
-| `ShipmentArrived` | Simulator through P2 → P3 | Arrival time and destination | Record arrival and start receiving once. |
-| `ReceiptAcknowledged` | P3 → P2 | Receiver and receipt time | Allow transport completion; no quality release is implied. |
+| `ShipmentArrivalNotification` | P2 → P3 | Delivery ID, shipment/journey/product/batch, arrival time and destination | Deduplicate the HTTP handoff and start one receiving process. |
+| `ReceiptAcknowledged` | P3 → P2 | Recipient, quantity received, receipt time | Allow transport completion; no quality release is implied. |
 | `TemperatureExcursionDetected` | Siddhi → P4 integration | Pattern start/end, temperature evidence | Establish hold, then open/update investigation. |
 | `DeliveryRiskDetected` | Siddhi → P2 and P4 integration | Latest ETA, deadline, supporting updates | Request dispatcher decision and establish quality assessment/hold. |
 | `RecoveryVerified` | Siddhi → P4 | Incident, cooling command, stable-reading interval | Add evidence; do not automatically release goods. |
@@ -87,55 +87,23 @@ The Python integration service delivers these messages to the relevant engine or
 
 **Receipt ownership:** P3 records one acknowledgement and informs P2. P2 cannot complete just because GPS shows arrival.
 
-### P2–P3 event contract proposal (pending P3 review)
+### Implemented P2–P3 receiving contract
 
-Use the common event envelope above for both messages. `eventId`, `eventType`, `shipmentId`, `journeyId`, `occurredAt`, `recordedAt`, `source`, `inputMode`, and `payload` are required. Timestamps are ISO 8601 UTC. `occurredAt` is the physical event time; `recordedAt` is when the producer accepted the event. `source` identifies the producer and `inputMode` is `manual` for the initial test endpoints.
+P2 records its `ShipmentArrived` event and queues a distinct `ShipmentArrivalNotification` HTTP outbox item in the same SQLite transaction. By default, `P3_ARRIVAL_URL` targets the local `POST /integrations/p3/arrival` receiver. That receiver requires an `Idempotency-Key` equal to `event.deliveryId`, validates the notification against the recorded arrival activity and shipment, journey, product, batch and destination, and queues one `P3ShipmentArrived` Zeebe message. This validation is against the durable arrival event, not the current P2 state: a delayed HTTP retry may arrive after P2 has completed via its receipt path. Repeated identical deliveries return `202`; reuse of a delivery ID with different content returns `409`. The HTTP outbox retries until a 2xx acknowledgement.
 
-Correlate each Zeebe message subscription using `shipmentId`, matching the P2 instance started for that shipment. `journeyId` is required for validation and traceability, but is not the correlation key. Keep message buffering enabled so a valid message that arrives just before its catch event is subscribed is not lost. Each producer assigns a stable `eventId`; an exact retry must not repeat the business effect, and reusing an ID with different content must be rejected. P3 emits one `ReceiptAcknowledged` only after it has recorded the physical receipt.
+The `ShipmentReceiving` process starts on `P3ShipmentArrived`. Its `GoodsReceived` and `GoodsInspected` message subscriptions are correlated on `shipmentId`. The receiving API validates physical receipt quantity and destination against the shipment; receipt is durably recorded before one `ReceiptAcknowledged` is queued to P2. P2 accepts this P3-produced event as well as its existing manual/test receipt input and completes transport only after receipt. The P3 process then records inspection and either rejects failed goods, admits passing goods to the separate `(recipientId, productId, batchId)` receiving inventory, or waits on a quality hold.
 
-The manual/test HTTP endpoints accept either the full envelope or a compact request containing `eventId`, `occurredAt` and `payload` (the event-specific fields may also be sent at the top level). The route supplies `eventType` and `shipmentId`; P2 checks/derives `journeyId` from its registry and stamps `recordedAt`, `source` and `inputMode: manual`. The routes are `POST /shipments/<shipmentId>/arrive` and `POST /shipments/<shipmentId>/acknowledge-receipt`.
+The P2 manual/test routes remain `POST /shipments/<shipmentId>/arrive` and `POST /shipments/<shipmentId>/acknowledge-receipt`; the latter is a P2-only stand-in and is not the P3 physical receiving process. P3 exposes:
 
-`ShipmentArrived` — P2 to P3. Required payload: `recipientId`, identifying the expected destination. Optional payload: `latitude` and `longitude`, supplied together when a measured arrival position is available. The common `occurredAt` is the arrival time. Do not require coordinates for the manual/test input.
+| Endpoint | Required request fields | Effect |
+| --- | --- | --- |
+| `POST /integrations/p3/arrival` | `event` containing `deliveryId`, `eventType`, `shipmentId`, `journeyId`, `productId`, `batchId`, `arrival.recipientId`, `sourceEventId`, UTC `occurredAt` and `recordedAt`; matching `Idempotency-Key` header | Deduplicate P2 handoff and start P3 once |
+| `POST /shipments/<id>/receiving/receipt` | `eventId`, UTC `occurredAt`, `recipientId`, integer `quantityReceived`, `receiver` | Record physical receipt and queue P2 acknowledgement |
+| `POST /shipments/<id>/receiving/inspection` | `eventId`, UTC `occurredAt`, `inspector`, boolean `passed` | Record inspection and continue to admission/hold/rejection |
+| `GET /receiving-stock` | Optional `recipientId` query parameter | View the separate admitted receiving inventory |
+| `POST /integrations/p4/quality-status` | `shipmentId`, `eventId`, UTC `occurredAt`, `qualityStatus`, `incidentId` | Apply P4 `PENDING`, `RELEASED` or `REJECTED` disposition; resumes P3 when held |
 
-```json
-{
-  "eventId": "arr-S-001-001",
-  "eventType": "ShipmentArrived",
-  "shipmentId": "S-001",
-  "journeyId": "J-001",
-  "occurredAt": "2026-11-15T10:22:00Z",
-  "recordedAt": "2026-11-15T10:22:03Z",
-  "source": "p2-manual-test",
-  "inputMode": "manual",
-  "payload": {
-    "recipientId": "C-01",
-    "latitude": 48.8566,
-    "longitude": 2.3522
-  }
-}
-```
-
-`ReceiptAcknowledged` — P3 to P2. Required payload: `recipientId` and `quantityReceived` (integer crates physically received). Optional payload: `receiptReference` (the receiver's receipt/slip ID). The common `occurredAt` is the physical receipt time. `recipientId` and `quantityReceived` must match the dispatched shipment for this milestone; discrepancies need an agreed exception path before changing that rule. This event means physical receipt was acknowledged; it does not mean goods passed quality inspection or were admitted to stock.
-
-```json
-{
-  "eventId": "receipt-S-001-001",
-  "eventType": "ReceiptAcknowledged",
-  "shipmentId": "S-001",
-  "journeyId": "J-001",
-  "occurredAt": "2026-11-15T10:24:00Z",
-  "recordedAt": "2026-11-15T10:24:02Z",
-  "source": "p3-manual-test",
-  "inputMode": "manual",
-  "payload": {
-    "recipientId": "C-01",
-    "quantityReceived": 15,
-    "receiptReference": "RCPT-001"
-  }
-}
-```
-
-These field requirements are a proposal, not a team-approved contract. P2 can implement them as the first manual-input baseline while P3 reviews them. If P3 needs to report partial quantities, damaged goods, or a mismatched destination, agree on the receiving exception behavior before expanding the schema.
+Receipt acknowledgement and stock admission are separate milestones. P2 may release the vehicle after recorded physical receipt, while P3 continues to wait for inspection. P1's warehouse stock is not credited when goods arrive or are admitted at the recipient. The P4 integration endpoint is an unauthenticated internal demo interface and must not be exposed outside the trusted local stack.
 
 **Replacement ownership:** P5 requests a linked shipment through P1. It waits for that shipment's successful receiving outcome and for the recorded handling of the original goods. A replacement's dispatch alone is insufficient.
 
@@ -149,7 +117,7 @@ P1 accepts an order before checking stock. A shortage keeps a real P1 instance a
 
 Dispatch records the agreed `ShipmentDispatched` envelope and durable outbox entry together. Its payload is passed as `dispatchEvent` to P2's message start. P2's registration worker checks the event against the journal, persists its engine key and acknowledges the outbox. Repeated worker delivery reuses that registration; a different P2 instance is prevented from repeating the business effect. Message IDs and active-start correlation also suppress repeated engine starts within the supported retention period.
 
-The P2 manual receipt gate remains the terminal business control: arrival does not release the vehicle, and the receipt worker completes transport. On `p2-updates`, `start_journey` also initializes a scripted route, a background tick writes GPS/ETA activities and durable Siddhi telemetry, and the final route point queues `ShipmentArrived` for the existing shipment-correlated catch. TomTom remains optional. The local Siddhi app receives telemetry, detects late ETA, and emits correlated risk alerts; the local scripted simulator acknowledges route commands forwarded by Siddhi. P3 notifications remain pending until a receiver is configured. Each risk alert requires an explicit delay or alternative-route decision, and P2 applies route changes only after a matching simulator acknowledgement. The Siddhi risk and command payloads are implemented in the local app; the P3 payload remains a proposal until the P3 owner confirms it. This is still not full P2 completion: live TomTom/external simulator/P3 verification and P2 DCR verification remain outstanding. APIs return accepted status after durable queueing while workers may still be processing. Preserve the registry and engine data together. Dataset version 3 uses five product/batch inventory rows; legacy pooled-stock datasets are preserved and rejected by the updated service until a fresh project/directory is selected. The [dataset reference](RUNNING.md#demonstration-dataset) defines the seed values. Product/batch identity is recorded in activity payloads.
+The P2 manual receipt endpoint remains available as a test-only shortcut; the normal local flow uses P3's physical-receipt endpoint to acknowledge P2. `start_journey` initializes a scripted route, a background tick writes GPS/ETA activities and durable Siddhi telemetry, and the final route point queues `ShipmentArrived` for the P2 catch and a separate P3 HTTP notification. TomTom remains optional. The local Siddhi app receives telemetry, detects late ETA, and emits correlated risk alerts; the local scripted simulator acknowledges route commands forwarded by Siddhi. Each risk alert requires an explicit delay or alternative-route decision, and P2 applies route changes only after a matching simulator acknowledgement. External TomTom/simulator verification and P2 DCR verification remain outstanding. APIs return accepted status after durable queueing while workers may still be processing. Preserve the registry and engine data together. Dataset version 3 uses five product/batch warehouse inventory rows and a separate receiving inventory; legacy pooled-stock datasets are preserved and rejected by the updated service until a fresh project/directory is selected. The [dataset reference](RUNNING.md#demonstration-dataset) defines the seed values. Product/batch identity is recorded in activity payloads.
 
 ### P2 and P3 development handover
 
@@ -184,7 +152,7 @@ The receipt endpoint and the optional manual arrival endpoint accept manual/test
 | Endpoint | Required JSON fields | Optional fields | Expected responses |
 | --- | --- | --- | --- |
 | `POST /shipments/<id>/arrive` (manual/test) | `eventId`, UTC `occurredAt`, `recipientId` | `latitude` and `longitude` together | `202` accepted; `400` invalid payload; `404` unknown shipment; `409` wrong state, mismatched recipient/identity, or conflicting event ID; `503` workers not ready |
-| `POST /shipments/<id>/acknowledge-receipt` (manual/test, P3 stand-in) | `eventId`, UTC `occurredAt`, `recipientId`, `quantityReceived` equal to dispatched crates | `receiptReference` | Same response rules; receipt before arrival is `409` |
+| `POST /shipments/<id>/acknowledge-receipt` (manual/test P2 shortcut; bypasses P3) | `eventId`, UTC `occurredAt`, `recipientId`, `quantityReceived` equal to dispatched crates | `receiptReference` | Same response rules; receipt before arrival is `409` |
 | `POST /integrations/siddhi/delivery-risk` | `shipmentId`, `eventId`, UTC `occurredAt`, UTC `eta`, UTC `deliveryDeadline`, `reason` | `estimatedDelaySeconds` | `202` accepted; exact retry reuses message; second unresolved risk is `409` |
 | `POST /shipments/<id>/dispatcher-decision` | `eventId`, `decision` (`ACCEPT_DELAY` or `APPROVE_ALTERNATIVE_ROUTE`) | `routeId` required only for route approval | `202` accepted; wrong state/duplicate conflicting decision is `409`; invalid decision/route is `400` |
 
@@ -208,7 +176,7 @@ Example payloads:
 
 Every event is correlated by `shipmentId`. A `202` means it was durably accepted for publication, not that its worker has completed. Retrying the identical event ID and payload returns `202` with the same message identity and records one activity. Reusing an ID with different content, or submitting it in the wrong state, returns `409`. External event IDs are stored in a journal namespace separate from internal P2 activity IDs; `producerEventId` retains the source ID for traceability. The CLI uses stable IDs and polls for state changes.
 
-The P3 arrival notification is created atomically with `ARRIVED` in `Registry.record_arrival`. Its outbox identity is `P3:ShipmentArrivalNotification:<shipmentId>:<arrivalEventId>` and it is distinct from the `ShipmentArrived` message consumed by P2. With `P3_ARRIVAL_URL`, the communication service POSTs `{"event": {"deliveryId", "eventType", "shipmentId", "journeyId", "productId", "batchId", "arrival", "sourceEventId", "occurredAt", "recordedAt", optional "originalShipmentId" and "incidentId"}}` and an `Idempotency-Key` header. A 2xx marks that delivery acknowledged; failed requests retry from the durable outbox until acknowledged. This is at-least-once HTTP delivery, so the P3 receiver must deduplicate `deliveryId`. The P3 owner has not yet confirmed this contract, so the URL must remain unset until agreement. Producer entry point: `deployer/registry.py:record_arrival` and `deployer/app.py:deliver_messages`; consumer entry point: the P3 HTTP receiver.
+The P3 arrival notification is created atomically with `ARRIVED` in `Registry.record_arrival`. Its outbox identity is `P3:ShipmentArrivalNotification:<shipmentId>:<arrivalEventId>` and it is distinct from the `ShipmentArrived` message consumed by P2. The default local `P3_ARRIVAL_URL` POSTs `{"event": {"deliveryId", "eventType", "shipmentId", "journeyId", "productId", "batchId", "arrival", "sourceEventId", "occurredAt", "recordedAt", optional "originalShipmentId" and "incidentId"}}` with an `Idempotency-Key` header. A 2xx marks delivery acknowledged; failed requests retry from the durable outbox until acknowledged. This is at-least-once HTTP delivery, and the receiver deduplicates `deliveryId`. Producer entry point: `deployer/registry.py:record_arrival` and `deployer/app.py:deliver_messages`; consumer entry point: `deployer/app.py:p3_arrival`.
 
 The scripted route points are demo coordinates defined in `deployer/transport_integrations.py`; this is route simulation, not a vehicle navigation source. `TOMTOM_API_KEY` enables a traffic-aware TomTom route request from the current position to the route's final point. Without it, ETA uses a local distance/speed estimate and `/health` labels that mode. GPS and ETA activities are durably queued for `SIDDIHI_TELEMETRY_URL`, which defaults to the local Siddhi app. `siddhi-apps/ColdChainTelemetry.siddhi` logs telemetry and emits at most one late-ETA risk per shipment, journey and route revision to `/integrations/siddhi/delivery-risk`. P2 decision commands default to the local Siddhi `/route-command` HTTP service on port 8007; telemetry uses port 8006. Siddhi's JSON sink sends a null `routeId` as the string `"undefined"`, so the simulator receiver treats `"undefined"` and `""` as no route for `AcceptDelay`. Siddhi forwards each command to `/integrations/simulator/route-command`; that receiver checks the active shipment/risk and returns a stable command acknowledgement. P2 changes the route only after the matching `commandId` receives `simulatorAcknowledged: true`. This is a scripted local simulator acknowledgement, not an external vehicle integration. `GPS_TICK_SECONDS` controls scripted movement cadence. CLI option 11 remains a manual risk-injection test that bypasses Siddhi detection; use the short-deadline walkthrough in `docs/RUNNING.md` to exercise Siddhi-generated risk.
 
@@ -228,11 +196,11 @@ The scripted route, position/ETA journal, optional TomTom adapter, durable Siddh
 | Rehearse dispatcher CLI controls | `tools/demo.py` actions 11–13 | `tools/demo.py`, API/registry files if a defect is found, `stage_tests/test_stage1.py`, this agreement, task board, README, `docs/RUNNING.md` | Running stack and an in-transit shipment | CLI can generate a risk, accept delay or approve an alternate route, then display its acknowledgement and updated position/ETA |
 | Full P2 DCR verification | P2 activity journal and a P2-only compliance model | New `compliance/p2/rules.xml`, P2 execution log/report, `stage_tests/check_stage1.py`, `stage_tests/test_stage1.py`, `compliance/check.py` if required, this agreement, `project_notes/TASKS.md`, `README.md`, `docs/RUNNING.md` | Agree required/forbidden P2 activities and terminal obligations; P2 compliance owner | Replay actual P2 traces and publish conformance evidence separately from P1 |
 
-No follow-up PR/issue links or owners have been agreed yet. Add links and named owners here when the team assigns them. Until then, treat the proposed P3 and Siddhi payloads as provisional and keep endpoints configurable.
+No follow-up PR/issue links or owners have been agreed yet. Add links and named owners here when the team assigns them. The local P2/P3 payload is implemented; external Siddhi, TomTom and simulator adapters remain configurable pending team acceptance.
 
-P2 receives `shipmentId` and the complete `dispatchEvent` envelope at its start. Registration returns top-level `shipmentId`, `journeyId`, `vehicleId`, `recipientId`, `routeId`, `deliveryDeadline`, `quantity`, `productId`, `productName`, `batchId`, `quantityUnit`, `packDescription`, `packsPerCrate` and `temperatureProfileId` as engine variables. Replacement/incident references remain available in `dispatchEvent`; preserve them when the P3 notification and later events are implemented.
+P2 receives `shipmentId` and the complete `dispatchEvent` envelope at its start. Registration returns top-level `shipmentId`, `journeyId`, `vehicleId`, `recipientId`, `routeId`, `deliveryDeadline`, `quantity`, `productId`, `productName`, `batchId`, `quantityUnit`, `packDescription`, `packsPerCrate` and `temperatureProfileId` as engine variables. Replacement/incident references remain available in `dispatchEvent` and are preserved in P2's P3 arrival notification.
 
-`Registry.advance` is specific to P1. P2 uses process-specific transactional methods for journey start, arrival recording and vehicle release. P3 still needs its own executable model/service and a durable producer/consumer contract. Physical arrival does not complete transport; receipt does not permit stock admission by itself.
+`Registry.advance` is specific to P1. P2 uses process-specific transactional methods for journey start, arrival recording and vehicle release. P3 has its own executable receiving model, durable P2 arrival receiver, receipt acknowledgement, inspection decision and separate inventory. Physical arrival does not complete transport; receipt does not permit stock admission by itself.
 
 Read the current shipment through the state endpoint or shared registry; do not introduce a separate quality-status copy in another service or process variable. Every admission attempt must check permission in the same transaction/order as hold changes. P4's incident handlers and that admission operation are still work to implement.
 
@@ -249,9 +217,9 @@ Delivery progress and quality permission are separate. Goods may be physically r
 | `RELEASED` | DCR confirms a release decision for the current incident | Allowed after inspection passes |
 | `REJECTED` | DCR confirms replacement or return for the original goods | Blocked |
 
-A small persistent shared registry holds shipment mappings and quality status. Camunda and DCR retain their own workflow state. P3 must check current permission at the admission action, rather than trust an old screen or process variable.
+A small persistent shared registry holds shipment mappings and quality status. Camunda and DCR retain their own workflow state. P3 checks current permission transactionally at the admission action rather than trusting an old screen or process variable.
 
-The incident handler records the hold before creating the DCR case. If DCR is unavailable, the hold stays active and the integration failure is visible. The shared service processes hold changes and admission decisions in order for each shipment so two competing requests cannot bypass the rule.
+P3's internal quality-status receiver persists a hold/disposition in the shared registry and resumes a held P3 process after a current-incident release or rejection. The P4 incident handler that creates the DCR case and owns those decisions remains to be implemented. The registry serializes hold changes and admission decisions per shipment so two competing requests cannot bypass the rule.
 
 There is at most one active investigation per shipment. Further alerts add evidence to that investigation. After closure and a newly qualifying pattern, create a new incident. Only a confirmed decision for the current incident can change its hold; a delayed release from an older incident cannot clear a newer one.
 

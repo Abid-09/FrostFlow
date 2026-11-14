@@ -1,6 +1,6 @@
-# Running, testing and understanding P1
+# Running and testing P1, P2 and P3
 
-Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, automatic arrival, manual receipt acknowledgement, and the P1 stock shortage/cancellation paths. External Siddhi and P3 contracts still need team verification.
+Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. External TomTom/simulator integrations still need team verification.
 
 ## Demonstration dataset
 
@@ -22,7 +22,7 @@ All products carry the placeholder `temperatureProfileId: CHILLED-DEMO`. It iden
 
 `GET /stock` lists each product/batch, pack definition, initial crates and current availability. Its top-level `available` is only the sum across products; shipment eligibility uses the selected product/batch. The response also contains `datasetVersion: 3` and `shipmentCount`.
 
-The local dataset stores product definitions, batch inventory, shipment/vehicle reservations, states and P1/P2 engine keys, activity history, pending messages/acknowledgements and retry identities in SQLite under the selected `REGISTRY_DIR`. Zeebe/Elasticsearch store engine execution and inspection records in the matching Docker volumes. Generated databases and live-run evidence are ignored under `runtime/`. The committed `compliance/p1/` files are P1 conformance evidence, not P2 execution evidence.
+The local dataset stores product definitions, warehouse batch inventory, separate recipient/product/batch receiving inventory, shipment/vehicle reservations, states and P1/P2/P3 engine keys, activity history, pending messages/acknowledgements and retry identities in SQLite under the selected `REGISTRY_DIR`. Zeebe/Elasticsearch store engine execution and inspection records in the matching Docker volumes. Generated databases and live-run evidence are ignored under `runtime/`. The committed `compliance/p1/` files are P1 conformance evidence, not P2 execution evidence.
 
 ## Start the application
 
@@ -33,7 +33,7 @@ docker compose up --build -d --wait --wait-timeout 180
 curl -s http://localhost:5001/health
 ```
 
-Wait for `status: ready` and `stage: 2`. Both BPMN resources must deploy before readiness. Operate is at <http://localhost:8081> (`demo` / `demo`). Open [P1](../bpmn/shipment_preparation.bpmn) in Camunda Modeler alongside its [PDF](../bpmn/shipment_preparation.pdf). Open the updated [P2 model](../bpmn/transport.bpmn) in Modeler; regenerate `bpmn/transport.pdf` after editing it using the export command under Automated verification.
+Wait for `status: ready` and `stage: 3`. All three BPMN resources must deploy before readiness. Operate is at <http://localhost:8081> (`demo` / `demo`). Open [P1](../bpmn/shipment_preparation.bpmn), [P2](../bpmn/transport.bpmn) and [P3](../bpmn/receiving.bpmn) in Camunda Modeler.
 
 ### P2 integration settings
 
@@ -43,14 +43,15 @@ The default stack runs the scripted route with a local ETA estimate and a local 
 $env:TOMTOM_API_KEY = "<TomTom key>"
 $env:SIDDIHI_TELEMETRY_URL = "http://<siddhi-host>:<port>/<telemetry-path>"
 $env:SIDDIHI_COMMAND_URL = "http://<siddhi-host>:<port>/<command-path>"
-$env:P3_ARRIVAL_URL = "http://<p3-host>:<port>/<arrival-path>"
+# Optional: the local P3 receiver is the default.
+# $env:P3_ARRIVAL_URL = "http://<p3-host>:<port>/integrations/p3/arrival"
 $env:GPS_TICK_SECONDS = "5"
 $env:P2_SIMULATOR_ENABLED = "true"
 docker compose up --build -d --wait --wait-timeout 180
 Invoke-RestMethod http://localhost:5001/health
 ```
 
-The communication container must be able to reach the configured hostnames. Siddhi telemetry is sent as `{"event": <activity>}` with an `Idempotency-Key` header. The command endpoint receives `commandId`, `shipmentId`, `journeyId`, `riskEventId`, `command`, and `routeId`; it must return the same `commandId` and `simulatorAcknowledged: true` only after the simulator applies the command. The P3 endpoint receives `{"event": <arrival notification>}` with a stable `deliveryId` and the same idempotency header. It must deduplicate that ID and return 2xx after accepting it. Confirm these payloads and endpoint behavior with the Siddhi/P3 owners before relying on live delivery; unconfigured P3 notifications remain pending in SQLite.
+The communication container must be able to reach configured hostnames. Siddhi telemetry is sent as `{"event": <activity>}` with an `Idempotency-Key` header. The command endpoint receives `commandId`, `shipmentId`, `journeyId`, `riskEventId`, `command`, and `routeId`; it must return the same `commandId` and `simulatorAcknowledged: true` only after the simulator applies the command. By default P2 sends its durable arrival notification to the local `POST /integrations/p3/arrival` receiver, including `{"event": <notification>}` and an `Idempotency-Key` equal to `event.deliveryId`. Override `P3_ARRIVAL_URL` only for an external receiver that honors this contract.
 
 Published localhost ports: Python 5001, Operate 8081, Elasticsearch 9200, Zeebe gRPC 26501 and broker management 9601. Stop another stack using these ports before starting this one. For startup problems:
 
@@ -69,7 +70,11 @@ After starting a fresh stack, run:
 python tools/demo.py
 ```
 
-This terminal menu sends the same application requests as the commands below. It waits for state changes and prints P1/P2 instance keys to find in Operate. Choose an action number, then shipment **A**, **B** or **C**. Creation also offers a choice of all five products; press Enter to use milk for the shortage scenario. After dispatch, the scripted route updates position/ETA and sends arrival automatically after about 20 seconds at the default five-second cadence; wait a few ticks before selecting receipt. Action **9** is an optional manual/test arrival. Action **11** creates a test risk alert; **12** accepts the delay and **13** approves a different route. Action **10** submits the manual receipt event and polls until `COMPLETED` with `vehicleReleased: true`. `python tools/demo.py --check` checks readiness and stock without changing data.
+This terminal menu sends the same application requests as the API. It waits for state changes and prints P1/P2/P3 instance keys to find in Operate. Choose an action number, then shipment **A**, **B** or **C**. Creation also offers a choice of all five products; press Enter to use milk for the shortage scenario. After dispatch, the scripted route updates position/ETA and sends arrival automatically; the local P3 process starts from that durable notification and waits for physical receipt. Action **9** is an optional manual/test P2 arrival. Action **10** is a P2-only manual/test receipt shortcut that bypasses P3; don't use it for the normal P1–P3 path. Action **11** creates a test risk alert; **12** accepts the delay and **13** approves a different route. Action **14** confirms physical receipt in P3 and acknowledges P2, releasing the vehicle; action **15** submits a passing P3 inspection and attempts admission; action **16** only displays the separate receiving inventory—it does not trigger receipt or inspection. Use `python tools/demo.py --check` to check readiness and warehouse stock without changing data.
+
+P3 endpoints are `POST /shipments/<id>/receiving/receipt` (`eventId`, UTC `occurredAt`, `recipientId`, `quantityReceived`, `receiver`, optional `receiptReference`) and `POST /shipments/<id>/receiving/inspection` (`eventId`, UTC `occurredAt`, `inspector`, boolean `passed`, optional `notes`). Physical receipt must match the shipment's recipient and crate count. Only passed inspections with `qualityStatus` `CLEAR` or `RELEASED` add stock. `GET /receiving-stock` lists admitted goods, optionally filtered with `?recipientId=C-01`. `POST /integrations/p4/quality-status` accepts `PENDING`, `RELEASED` or `REJECTED` dispositions; `PENDING` holds stock admission and a subsequent release/rejection resumes the P3 process. This integration endpoint is internal-demo only and has no authentication.
+
+Suggested P1–P3 path for a fresh demo: create A, verify loading (3), dispatch (4), wait for P2 arrival, confirm physical receipt (14), inspect (15), then view receiving inventory (16). P2's vehicle may be released after step 14 while P3 still waits for inspection; receiving-stock remains unchanged until step 15 completes admission.
 
 For the normal P1 demonstration:
 

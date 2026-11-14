@@ -23,23 +23,23 @@ The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all product
 | Process | Execution platform | Status |
 | --- | --- | --- |
 | P1 — Shipment preparation | Camunda / Zeebe | Stock wait/cancellation, dispatch handoff and local compliance verification implemented |
-| P2 — Transport and delivery | Camunda / Zeebe | Manual flow implemented; full P2 in progress — see the [detailed handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) |
-| P3 — Receiving and stock admission | Camunda / Zeebe | Planned |
+| P2 — Transport and delivery | Camunda / Zeebe | Receipt-gated transport, scripted GPS/ETA, arrival and dispatcher decisions implemented |
+| P3 — Receiving and stock admission | Camunda / Zeebe | P2 arrival integration, physical receipt, inspection, separate receiving inventory and quality hold implemented |
 | P4 — Quality incident investigation | DCR | Planned |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Planned |
 | P6 — Supplier claim resolution | Camunda / Zeebe | Planned |
 
-P1 supports shipment creation, stock checking, replenishment or cancellation during shortages, loading verification and dispatch. P2 now starts a scripted route, records GPS/ETA updates, raises automatic arrival, detects late ETA through the local Siddhi app, and waits for receipt before releasing the vehicle. Siddhi forwards approved route commands to the local scripted-simulator endpoint and waits for its acknowledgement before P2 updates the route. TomTom remains optional, and the P3 receiver still needs an agreed contract. Use the [short-deadline walkthrough](docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough) for Siddhi-generated risk; CLI option 11 is a manual test input. The Siddhi risk and route-command loop is live-verified with two independent journeys, and P2 has local DCR compliance evidence under `compliance/p2/`. The team's TomTom key, external simulator/P3 services and the ProcessDoctor check remain outstanding. See the [P2 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for exact integration status and configuration.
+P1 supports shipment creation, stock checking, replenishment or cancellation during shortages, loading verification and dispatch. P2 starts a scripted route, records GPS/ETA updates, raises automatic arrival, detects late ETA through the local Siddhi app, and waits for P3's physical receipt before releasing the vehicle. P3 receives P2's durable arrival notification, records physical receipt and inspection, then admits passing goods into a separate cafeteria receiving inventory; goods under a quality investigation remain on hold until P4 sends a disposition. Siddhi forwards approved route commands to the local scripted-simulator endpoint and waits for its acknowledgement before P2 updates the route. TomTom remains optional. Use the [short-deadline walkthrough](docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough) for Siddhi-generated risk; CLI option 11 is a manual test input. The Siddhi risk and route-command loop is live-verified with two independent journeys, and P2 has local DCR compliance evidence under `compliance/p2/`. External TomTom/simulator connections and the ProcessDoctor check remain outstanding. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
 
 ## Architecture
 
-The transport adapter sends recorded telemetry to a configured Siddhi HTTP endpoint and accepts Siddhi risk alerts. A route-change worker waits for Siddhi's matching simulator acknowledgement before changing the route. Set `TOMTOM_API_KEY`, `SIDDIHI_TELEMETRY_URL`, `SIDDIHI_COMMAND_URL` and `P3_ARRIVAL_URL` to enable those services; local defaults are clearly reported by `/health`.
+The transport adapter sends recorded telemetry to a configured Siddhi HTTP endpoint and accepts Siddhi risk alerts. A route-change worker waits for Siddhi's matching simulator acknowledgement before changing the route. `P3_ARRIVAL_URL` defaults to the local P3 receiver; override it only when directing notifications to an external compatible receiver. Local integration modes are reported by `/health`.
 
 The current implementation contains:
 
-- **Camunda Zeebe 8.8** — execution of shipment preparation and the initial transport handoff.
+- **Camunda Zeebe 8.8** — execution of P1 shipment preparation, P2 transport and P3 receiving.
 - **Python 3.12** — HTTP endpoints and Zeebe job workers, using Flask and pyzeebe.
-- **SQLite** — persistent shipment registry, reservations and activity journal.
+- **SQLite** — persistent shipment registry, warehouse reservations, separate recipient/product/batch receiving inventory, activity journal and durable outbox.
 - **Elasticsearch and Camunda Operate** — exported engine records and process inspection.
 
 ## Getting started
@@ -91,7 +91,7 @@ With the stack running and both vehicles available, run the engine integration c
 
 The live integration check exercises P1 stock wait/cancellation/replenishment and completes two independent P2 journeys through manual arrival and receipt. It confirms early receipt is rejected, exact retries do not duplicate activities, both Zeebe instances reach the `TransportCompleted` end event, and a released vehicle can be reused. It leaves no dispatched shipment waiting for arrival; see the [run guide](docs/RUNNING.md) before repeating it.
 
-The offline suite currently defines **41 tests**; run it and the live P1/P2 checks after installing the project dependencies. The committed live completion check covers the manual P2 path; the new simulator and dispatcher paths require their focused offline checks plus a configured-integration run before they are considered live-verified. P1 compliance evidence is stored under `compliance/p1/`; that XES contains P1 activities only. A live run writes P2 execution evidence to `runtime/verification-results/p2-completion.json`, not a P2 DCR conformance result. The committed P1 report and ProcessDoctor screenshots document P1 conformance only.
+The offline suite covers P1/P2 behavior and P3 arrival deduplication, receipt acknowledgement, inspection, stock admission and quality holds. Run it and the live P1/P2 checks after installing the project dependencies. P3's business effects are tested offline; a live P3 Zeebe rehearsal is still recommended. P1 compliance evidence is stored under `compliance/p1/`; that XES contains P1 activities only. A live run writes P2 execution evidence to `runtime/verification-results/p2-completion.json`, not a P2 DCR conformance result. The committed P1 report and ProcessDoctor screenshots document P1 conformance only.
 
 ## Repository structure
 
@@ -117,9 +117,9 @@ P4 will use DCR to **execute** the quality investigation. Its model will belong 
 
 ## Continuing with P2 and P3
 
-P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. The `p2-updates` branch adds scripted GPS/ETA, automatic arrival, a risk/dispatcher decision branch and an optional durable P3 notification. Siddhi behaviour is live-verified by `stage_tests/check_p2_siddhi.py`, and the local P2 DCR check passes; TomTom, P3 and ProcessDoctor checks remain. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for configuration, proposed payloads and remaining checks.
+P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits or holds goods. The receiving inventory is separate from P1 warehouse inventory. Siddhi behaviour is live-verified by `stage_tests/check_p2_siddhi.py`, and P2 has local DCR compliance evidence; the new P3 business effects have offline regression coverage and need a live Zeebe rehearsal. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
 
-**P1 owner: Ashvanth. P2 owner: Rahul.** P3–P6 and external simulator/CEP owners remain to be assigned. P3 has no executable receiving model or confirmed notification consumer; receipt acknowledgement is a manual/test input. Coordinate shared Python and message-contract changes with the receiving owner and keep the handover/task board current. P2 TomTom/P3 integration and the ProcessDoctor check remain in progress.
+**P1 owner: Ashvanth. P2 owner: Rahul.** P3–P6 and external simulator/CEP owners remain to be assigned. P3 now has an executable receiving model and a local P2 notification consumer; assign an owner to rehearse it in Operate and coordinate any later contract changes. External TomTom/simulator integration and the ProcessDoctor check remain in progress.
 
 ## Project documentation
 

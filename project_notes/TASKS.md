@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | MANUAL FLOW + SCRIPTED SIMULATOR/DECISION PATH IMPLEMENTED; external verification IN PROGRESS | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
-| P3 Receiving and admission | Unassigned | TODO | P2 arrival + P4 shared hold |
+| P3 Receiving and admission | Unassigned | IMPLEMENTED / VERIFY locally on `feat/p3-receiving-admission` | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Unassigned | TODO | DCR access + incident integration |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
@@ -71,7 +71,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] Add the correlated `DeliveryRiskDetected` BPMN branch and deduplicate unresolved alerts.
 - [x] Add delay acceptance and alternative-route decisions; require matching simulator acknowledgement before recording route change.
 - [x] Add CLI controls for test risk, delay acceptance and route approval.
-- [ ] Agree the P3 receiver envelope/idempotency response with its owner; verify retries start P3 once against the real receiver.
+- [x] Implement the local P3 receiver envelope/idempotency response and verify offline retries start P3 once; external receiver acceptance remains a follow-up only if the P3 endpoint is replaced.
 - [x] Verify automatic arrival and route updates for two independent shipments (`stage_tests/check_p2_siddhi.py`, 2026-11-14; registry/engine evidence, Inspected).
 - [ ] Verify a TomTom ETA request with the team's API key and record its source/response.
 - [x] Live-verify local Siddhi receives telemetry and emits one shipment-correlated risk alert from an ETA past the deadline; follow [the short-deadline walkthrough](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough).
@@ -86,12 +86,13 @@ The local Siddhi app now consumes durable GPS/ETA telemetry, emits deduplicated 
 
 ## P3 — Receiving and stock admission
 
-- [ ] Start on arrival; record one physical receipt and notify P2.
-- [ ] Inspect goods; serialize admission attempts with current shared quality-status updates.
-- [ ] Block admission during PENDING and after REJECTED; allow authorised current-incident release.
-- [ ] Emit admission/rejection outcome, retaining replacement links.
-- [ ] Coordinate a simple human-action menu for all processes.
-- [ ] Prove receipt is distinct from admission; stale releases cannot clear a newer hold.
+- [x] Start once from P2 arrival; record physical receipt and acknowledge P2 through the durable outbox.
+- [x] Inspect goods; transactionally gate admission on inspection and current quality status.
+- [x] Block admission during PENDING and after REJECTED; require current-incident RELEASED disposition.
+- [x] Record admission/rejection outcome and preserve replacement links in activity history.
+- [x] Add CLI actions for physical receipt, inspection and receiving-stock view.
+- [x] Prove receipt is distinct from admission and stale releases cannot clear a newer hold in offline tests.
+- [ ] Rehearse P3 in a live Zeebe/Operate stack and verify message-start/catch completion.
 
 ## P4 — Quality investigation (knowledge-intensive DCR process)
 
