@@ -16,6 +16,8 @@ def now():
 
 
 def epoch_milliseconds(value):
+    if value is None:  # unavailable ETA: Siddhi ignores events without etaMillis
+        return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     return int(parsed.timestamp() * 1000)
 

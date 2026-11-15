@@ -88,7 +88,6 @@
   },
   "processDoctor": "Checked 2026-11-14 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces | 3 variants), coverage threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png",
   "notVerified": [
-    "TomTom live ETA (needs the team API key)",
     "Real P3 receiver for ShipmentArrived/ReceiptAcknowledged",
     "External/physical simulator (only the local scripted simulator endpoint is exercised)"
   ],
@@ -105,5 +104,26 @@
     "compliance/p2/execution-log.xes": "fe3f152db3d61177632690354546f832c5d002be7d5a3e5a299380039d6c5044",
     "compliance/p2/invalid-traces.json": "3a62b71a7bdbe7bd1a7d98f7de595a18fb1a2f68d5d719b2b7fd4f88f937f7bb"
   },
-  "bpmnLint": "Not run in this session (npx download not permitted); run npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn. Zeebe accepted the model at deployment."
+  "bpmnLint": "Not run in this session (npx download not permitted); run npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn. Zeebe accepted the model at deployment.",
+  "tomtomVerification": {
+    "checkedAt": "2026-11-15T08:58:19.744175Z",
+    "keyOwner": "Rahul Shanbhag's personal TomTom developer key (team key not yet provided); supplied only via TOMTOM_API_KEY at runtime, never stored",
+    "command": "TOMTOM_API_KEY=<key> docker compose ... up; python stage_tests/check_p2_siddhi.py",
+    "result": "PASS - live acceptance check with traffic-aware TomTom ETAs",
+    "requests": 15,
+    "httpStatus": [
+      200
+    ],
+    "etaSources": "11 ETAUpdated from tomtom-traffic, 3 at-destination (final route point, nothing left to route)",
+    "responses": "compliance/p2/tomtom-responses.jsonl (summaries only, key removed)",
+    "failureHandling": "TomTom errors or unusable data give etaSource tomtom-unavailable with no ETA; Siddhi ignores them (offline tests)",
+    "note": "Scripted demo routes use Paris coordinates, so these are Paris traffic ETAs",
+    "offlineTests": "44 tests OK (Python 3.12)",
+    "sha256": {
+      "deployer/transport_integrations.py": "5641072490a27d9b2e166e3d87d228c735da2f3ba7275656422f24994fd97353",
+      "deployer/app.py": "ddfd61416a5dbe6fff8b9910caa06c54924ff7b47ff4c2550168746a8fe94b02",
+      "deployer/registry.py": "40c6eea58439c79d035aa5c3cf7ccb72f66eb50fde682a09e37a805fa7fb6f8f",
+      "compliance/p2/tomtom-responses.jsonl": "c9729996842b8920f03eb2a07e7679fb7d27df7e015f089d7bc22da716d95a31"
+    }
+  }
 }

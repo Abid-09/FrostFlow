@@ -506,7 +506,7 @@ class Preparation(unittest.TestCase):
             eta, source = service.transport_integrations.eta("route-01", points[index], index)
             record = self.db.advance_telemetry("S-test", points[index], index, eta, source)
         self.assertEqual(record["currentPosition"], points[-1])
-        self.assertEqual(record["etaSource"], "local-demo-estimate")
+        self.assertEqual(record["etaSource"], "at-destination")
         self.assertEqual(
             len(self.db.pending_messages(destination="siddhi-http")), 2 * (len(points) - 1)
         )
@@ -519,6 +519,16 @@ class Preparation(unittest.TestCase):
         self.assertEqual(accepted["event"]["inputMode"], "simulated")
         self.assertEqual(accepted["event"]["journeyId"], "J-test")
         self.assertEqual(accepted["event"]["shipmentId"], "S-test")
+
+    def test_unavailable_eta_is_recorded_without_deadline_comparison(self):
+        self.start_p2_transport()
+        points = service.transport_integrations.route("route-01")
+        record = self.db.advance_telemetry("S-test", points[1], 1, None, "tomtom-unavailable")
+        self.assertIsNone(record["eta"])
+        self.assertEqual(record["etaSource"], "tomtom-unavailable")
+        eta_event = next(e for e in self.db.events("S-test") if e["eventType"] == "ETAUpdated")
+        self.assertIsNone(eta_event["payload"]["etaMillis"])
+        self.assertEqual(eta_event["payload"]["etaSource"], "tomtom-unavailable")
 
     def test_risk_decision_is_deduplicated_and_route_waits_for_ack(self):
         self.start_p2_transport()
@@ -1374,6 +1384,64 @@ class P3Receiving(unittest.TestCase):
         with self.assertRaises(Conflict):
             self.db.admit_p3_stock("S-test", self.p3_key)
         self.assertEqual(self.http.get("/receiving-stock").json["available"], 0)
+
+
+class TomTomAdapter(unittest.TestCase):
+    KEY = "test-key-should-never-be-logged"
+
+    def adapter(self, directory):
+        from transport_integrations import TransportIntegrations
+
+        return TransportIntegrations({
+            "TOMTOM_API_KEY": self.KEY,
+            "REGISTRY_PATH": str(Path(directory) / "registry.sqlite"),
+        })
+
+    def log_text(self, directory):
+        return (Path(directory) / "tomtom-responses.jsonl").read_text(encoding="utf-8")
+
+    def test_live_response_sets_traffic_eta_and_logs_without_key(self):
+        import io
+
+        class Response(io.BytesIO):
+            status = 200
+
+        body = json.dumps({"routes": [{"summary": {
+            "lengthInMeters": 6186, "travelTimeInSeconds": 1246,
+            "noTrafficTravelTimeInSeconds": 1093, "trafficDelayInSeconds": 123}}]}).encode()
+        with tempfile.TemporaryDirectory() as directory, patch(
+            "transport_integrations.urllib.request.urlopen", return_value=Response(body)
+        ) as urlopen:
+            integrations = self.adapter(directory)
+            eta, source = integrations.eta("route-01", [48.8566, 2.3522], 0)
+            self.assertEqual(source, "tomtom-traffic")
+            self.assertTrue(eta.endswith("Z"))
+            self.assertIn("traffic=true", urlopen.call_args.args[0])
+            entry = json.loads(self.log_text(directory).splitlines()[-1])
+            self.assertEqual(entry["result"], "ok")
+            self.assertEqual(entry["summary"]["travelTimeInSeconds"], 1246)
+            self.assertNotIn(self.KEY, self.log_text(directory))
+
+    def test_failure_or_bad_data_is_unavailable_not_estimated(self):
+        from urllib.error import HTTPError
+
+        url = f"https://api.tomtom.com/routing?key={self.KEY}"
+        failures = [
+            HTTPError(url, 403, f"Forbidden for {url}", {}, None),
+            TimeoutError("timed out"),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            integrations = self.adapter(directory)
+            for failure in failures:
+                with patch("transport_integrations.urllib.request.urlopen", side_effect=failure):
+                    self.assertEqual(
+                        integrations.eta("route-01", [48.8566, 2.3522], 0),
+                        (None, "tomtom-unavailable"),
+                    )
+            text = self.log_text(directory)
+            self.assertEqual(text.count('"result": "unavailable"'), 2)
+            self.assertIn('"httpStatus": 403', text)
+            self.assertNotIn(self.KEY, text)
 
 
 class P2Compliance(unittest.TestCase):

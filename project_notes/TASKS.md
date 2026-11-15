@@ -73,7 +73,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] Add CLI controls for test risk, delay acceptance and route approval.
 - [x] Implement the local P3 receiver envelope/idempotency response and verify offline retries start P3 once; external receiver acceptance remains a follow-up only if the P3 endpoint is replaced.
 - [x] Verify automatic arrival and route updates for two independent shipments (`stage_tests/check_p2_siddhi.py`, 2026-11-14; registry/engine evidence, Inspected).
-- [ ] Verify a TomTom ETA request with the team's API key and record its source/response.
+- [x] Verify TomTom ETA requests and record their source/response (2026-11-15, Rahul's personal developer key; 15/15 HTTP 200 in a passing live check; `compliance/p2/tomtom-responses.jsonl`). Re-check with the team key once one exists.
 - [x] Live-verify local Siddhi receives telemetry and emits one shipment-correlated risk alert from an ETA past the deadline; follow [the short-deadline walkthrough](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough).
 - [x] Live-verify an approved route command passes through Siddhi to the local scripted simulator, receives acknowledgement, then changes GPS/ETA; a physical/external simulator remains a separate integration.
 - [x] Rehearse the risk/decision/route controls from the CLI against the live stack.

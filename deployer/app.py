@@ -604,7 +604,9 @@ async def start_transport(shipmentId, dispatchEvent, job: Job):
 async def start_journey(shipmentId, job: Job):
     record = registry.get(shipmentId)
     points = transport_integrations.route(record["routeId"])
-    eta, source = transport_integrations.eta(record["routeId"], points[0], 0)
+    eta, source = await asyncio.to_thread(
+        transport_integrations.eta, record["routeId"], points[0], 0
+    )
     registry.start_journey(
         shipmentId, job.process_instance_key, points[0], eta, source, points
     )
@@ -660,7 +662,9 @@ async def apply_dispatcher_decision(shipmentId, dispatcherDecision, job: Job):
     if route_id:
         record = registry.get(shipmentId)
         points = transport_integrations.route(route_id)
-        eta, eta_source = transport_integrations.eta(route_id, record["currentPosition"], 0)
+        eta, eta_source = await asyncio.to_thread(
+            transport_integrations.eta, route_id, record["currentPosition"], 0
+        )
     else:
         points, eta, eta_source = None, None, None
     acknowledgement = await asyncio.to_thread(
@@ -684,7 +688,10 @@ async def advance_simulated_journeys():
                 points = record.get("routeCoordinates") or transport_integrations.route(record["routeId"])
                 index = min(record.get("routeIndex", 0) + 1, len(points) - 1)
                 position = points[index]
-                eta, source = transport_integrations.eta(record["routeId"], position, index)
+                # Off the event loop: a slow TomTom call must not stall Zeebe workers.
+                eta, source = await asyncio.to_thread(
+                    transport_integrations.eta, record["routeId"], position, index
+                )
                 updated = registry.advance_telemetry(record["shipmentId"], position, index, eta, source)
                 if index == len(points) - 1 and updated.get("transportState") == "IN_TRANSIT":
                     arrived = updated.get("lastGpsEventOccurredAt") or updated["telemetryUpdatedAt"]

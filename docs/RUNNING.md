@@ -51,6 +51,8 @@ docker compose up --build -d --wait --wait-timeout 180
 Invoke-RestMethod http://localhost:5001/health
 ```
 
+With `TOMTOM_API_KEY` set, each ETA is a traffic-aware TomTom route from the current position (`etaSource: tomtom-traffic`). If TomTom fails or returns unusable data, the ETA is recorded as unavailable (`tomtom-unavailable`, no ETA value): it is never replaced by an estimate, and Siddhi does not compare it with the deadline. At the last route point the source is `at-destination`. Each request is appended, without the key, to `tomtom-responses.jsonl` beside the registry under `runtime/`. Never commit the key; set it only in your shell.
+
 The communication container must be able to reach configured hostnames. Siddhi telemetry is sent as `{"event": <activity>}` with an `Idempotency-Key` header. The command endpoint receives `commandId`, `shipmentId`, `journeyId`, `riskEventId`, `command`, and `routeId`; it must return the same `commandId` and `simulatorAcknowledged: true` only after the simulator applies the command. By default P2 sends its durable arrival notification to the local `POST /integrations/p3/arrival` receiver, including `{"event": <notification>}` and an `Idempotency-Key` equal to `event.deliveryId`. Override `P3_ARRIVAL_URL` only for an external receiver that honors this contract.
 
 Published localhost ports: Python 5001, Operate 8081, Elasticsearch 9200, Zeebe gRPC 26501 and broker management 9601. Stop another stack using these ports before starting this one. For startup problems:
