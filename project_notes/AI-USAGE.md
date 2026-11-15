@@ -81,3 +81,11 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **AI-produced output:** the fixes above; `stage_tests/check_p2_siddhi.py` (live two-shipment acceptance check); the P2 DCR graph, builder, real execution log, synthetic invalid traces and verification report under `compliance/p2/`; 5 new offline tests; documentation and task-board updates. Actual results: the live check passed on a fresh stack, both real traces were valid and accepting, all 4 invalid traces were rejected, and 40 offline tests passed under Python 3.12.16. ProcessDoctor, TomTom, the P3 receiver and an external simulator were **not** verified. Nothing was committed or pushed.
 
 **Human review pending:** Rahul to review the DCR rules against the intended P2 behaviour, rerun the live check, inspect the instances in Operate, and run the ProcessDoctor import.
+
+## 2026-11-15 — TomTom live verification
+
+**Tool:** Claude Code (Claude Opus 5.5).
+
+**Prompt summary (paraphrase):** Do the outstanding items that do not depend on teammates; Rahul supplied his personal TomTom developer key.
+
+**AI-produced output:** the TomTom adapter now reports failures or unusable responses as unavailable ETAs (`tomtom-unavailable`) instead of raising, runs TomTom calls off the async worker loop, labels the final route point `at-destination`, and logs each request, with the key removed, to `tomtom-responses.jsonl` beside the registry. There are 3 new offline tests (44 total, Python 3.12). Actual result: the live acceptance check passed with traffic-aware TomTom ETAs, with 15/15 HTTP 200 responses saved to `compliance/p2/tomtom-responses.jsonl`. The key was used only as a runtime environment variable and appears in no file. The demo routes still use Paris coordinates. A draft P3 integration proposal for Arunima Garg was written; nothing was sent.
