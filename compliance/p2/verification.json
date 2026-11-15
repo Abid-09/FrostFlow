@@ -96,7 +96,7 @@
     "invalidTraces": "6 synthetic violations in invalid-traces.json all rejected",
     "telemetryExcluded": "GPSPositionUpdated/ETAUpdated are sensor telemetry evaluated by Siddhi and are not business activities in the graph"
   },
-  "processDoctor": "PENDING - re-run for the regenerated execution-log.xes (Conformance > Open DCR Solution XML rules.xml, Upload Log execution-log.xes, threshold 100) and record the result here",
+  "processDoctor": "Checked 2026-11-15 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces from the P3-integrated run), threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png",
   "notVerified": [
     "External/physical simulator (only the local scripted simulator endpoint is exercised)",
     "Demo routes use Paris coordinates; moving them to the DTU scenario needs team agreement"
