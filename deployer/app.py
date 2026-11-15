@@ -499,7 +499,16 @@ def dispatcher_decision(shipment_id):
 
 @app.post("/shipments/<shipment_id>/acknowledge-receipt")
 def manual_receipt_acknowledgement(shipment_id):
-    """Manual/test P2 input for the receipt acknowledgement normally sent by P3."""
+    """Manual/test P2 input for the receipt acknowledgement normally sent by P3.
+
+    Only for P2-only runs (P3_ARRIVAL_URL unset). With P3 receiving enabled,
+    P2 completes solely from P3's ReceiptAcknowledged after P3 records receipt.
+    """
+    if os.getenv("P3_ARRIVAL_URL"):
+        raise Conflict(
+            "P3 receiving is enabled: record receipt with "
+            "POST /shipments/<id>/receiving/receipt; P2 completes from P3's acknowledgement"
+        )
     data = body()
     event_id = text_field(data, "eventId")
     occurred_at = utc_timestamp(data, "occurredAt")

@@ -10,8 +10,9 @@ Two shipments travel at the same time:
   change must be acknowledged through Siddhi before GPS/ETA use the new route.
 * B has a generous deadline and must complete without any risk alert.
 
-Both must stay ARRIVED (vehicle reserved) until receipt is acknowledged, then
-complete and release their vehicles. Evidence is written to
+Arrival starts P3. Both must stay ARRIVED (vehicle reserved) while P2's manual
+receipt input is refused, until P3 records the receipt; P3's acknowledgement then
+completes P2 and releases the vehicle. Evidence is written to
 runtime/verification-results/p2-siddhi.json.
 """
 
@@ -95,17 +96,29 @@ def prepare(shipment_id, vehicle, recipient, route, product, deadline):
 
 
 def acknowledge_receipt(record):
+    """Receipt goes through P3; P2's manual receipt input must be refused."""
     shipment_id = record["shipmentId"]
-    post(f"/shipments/{shipment_id}/acknowledge-receipt", dict(
+    wait(f"{shipment_id} P3 started by arrival",
+         lambda: get(shipment_id).get("p3Status") == "AWAITING_RECEIPT")
+    status, refused = http(f"/shipments/{shipment_id}/acknowledge-receipt", dict(
+        eventId=f"check-manual-receipt-{shipment_id}", occurredAt=utc(),
+        recipientId=record["recipientId"], quantityReceived=record["quantity"],
+    ))
+    assert status == 409, f"manual P2 receipt must be refused while P3 is on: {status} {refused}"
+    assert get(shipment_id)["vehicleReleased"] is False
+    post(f"/shipments/{shipment_id}/receiving/receipt", dict(
         eventId=f"check-receipt-{shipment_id}", occurredAt=utc(),
         recipientId=record["recipientId"], quantityReceived=record["quantity"],
-        receiptReference=f"CHECK-{shipment_id}",
+        receiver="check-receiver", receiptReference=f"CHECK-{shipment_id}",
     ))
-    return wait(
+    completed = wait(
         f"{shipment_id} completion",
         lambda: (lambda r: r if r.get("transportState") == "COMPLETED"
                  and r.get("vehicleReleased") is True else None)(get(shipment_id)),
     )
+    order = [e["eventType"] for e in events(shipment_id)]
+    assert order.index("GoodsReceived") < order.index("ReceiptAcknowledged") < order.index("VehicleReleased"), order
+    return completed
 
 
 def main():
@@ -115,6 +128,7 @@ def main():
     assert integrations.get("siddhiTelemetry") == "enabled", integrations
     assert integrations.get("siddhiCommands") == "enabled", integrations
     assert integrations.get("gps") == "scripted-demo", integrations
+    assert integrations.get("p3ArrivalNotification") == "enabled", integrations
     status, stock = http("/stock")
     assert stock.get("datasetVersion") == 3 and stock.get("shipmentCount") == 0, (
         "use a fresh dataset; see docs/RUNNING.md"

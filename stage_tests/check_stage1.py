@@ -253,6 +253,12 @@ def main():
             "quantityReceived": record["quantity"],
             "receiptReference": f"RCPT-{run}-{sid}",
         }
+        p3_receipt = {
+            **{k: v for k, v in receipt.items()},
+            "receiver": "regression-receiver",
+        }
+        # Before arrival, neither P3 nor the (P3-gated) manual P2 input accepts receipt.
+        assert http(url + "/receiving/receipt", p3_receipt)[0] == 409
         assert http(url + "/acknowledge-receipt", receipt)[0] == 409
         for _ in range(2):
             assert http(url + "/arrive", arrival)[0] == 202
@@ -290,8 +296,14 @@ def main():
                     other_key, "WaitForShipmentArrived", "ELEMENT_COMPLETED"
                 ),
             )
+        wait(
+            f"{sid} P3 started by arrival",
+            lambda: http(url)[1].get("p3Status") == "AWAITING_RECEIPT",
+        )
+        # P2's manual receipt is refused while P3 receives; P3's exact retry is safe.
+        assert http(url + "/acknowledge-receipt", receipt)[0] == 409
         for _ in range(2):
-            assert http(url + "/acknowledge-receipt", receipt)[0] == 202
+            assert http(url + "/receiving/receipt", p3_receipt)[0] == 202
         completed = wait(
             f"{sid} transport completion and vehicle release",
             lambda: (
@@ -495,7 +507,7 @@ def main():
     (args.output / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
     p2_report = dict(
         observedAt=datetime.now(timezone.utc).isoformat(),
-        evidenceType="live Zeebe P2 execution using manual/test event endpoints",
+        evidenceType="live Zeebe P2 execution: manual/test arrival, receipt recorded through P3",
         datasetVersion=3,
         cases=p2_evidence,
         compliance="P2 DCR model/log verification is outstanding; this is execution evidence only.",

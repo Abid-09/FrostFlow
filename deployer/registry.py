@@ -707,6 +707,10 @@ class Registry:
 
             if not record.get("p2ProcessInstanceKey"):
                 raise Conflict("transport process has not registered this shipment")
+            if event_type == "ReceiptAcknowledged" and record.get("p3ArrivalDeliveryId"):
+                raise Conflict(
+                    "P3 is receiving this shipment; receipt must be recorded through P3"
+                )
             if record.get("transportState") != expected[event_type]:
                 raise Conflict(
                     f"{event_type} requires {expected[event_type]}, "

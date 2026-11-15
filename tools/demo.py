@@ -382,6 +382,10 @@ def perform(base, choice, deadline_minutes=60):
     status, response = http(base, path, data)
     if status != 202:
         print(f"\nAction rejected (HTTP {status}): {response.get('error', response)}")
+        if choice == "10" and status == 409:
+            print(
+                "With P3 receiving enabled, P2 only completes after P3 records receipt: use 14."
+            )
         if choice == "4" and status == 409:
             print(
                 "This demonstrates the dispatch restriction: stock and loading steps must be complete."

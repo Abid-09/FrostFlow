@@ -1191,6 +1191,29 @@ class P3Receiving(unittest.TestCase):
         self.assertEqual(len(starts), 1)
         self.assertEqual(starts[0]["correlationKey"], "S-test")
 
+    def manual_receipt(self):
+        return self.http.post("/shipments/S-test/acknowledge-receipt", json={
+            "eventId": "manual-receipt-1", "occurredAt": "2026-12-01T10:30:00Z",
+            "recipientId": "C-01", "quantityReceived": 3,
+        })
+
+    def test_manual_p2_receipt_refused_while_p3_receiving_is_enabled(self):
+        with patch.dict(os.environ, {"P3_ARRIVAL_URL": "http://communication:5001/integrations/p3/arrival"}):
+            response = self.manual_receipt()
+        self.assertEqual(response.status_code, 409, response.json)
+        self.assertIn("receiving/receipt", response.json["error"])
+        self.assertFalse(any(m["name"] == "ReceiptAcknowledged" for m in self.db.pending_messages()))
+
+    def test_manual_p2_receipt_refused_once_p3_owns_the_shipment(self):
+        self.assertEqual(self.start_p3().status_code, 202)
+        service.ready.set()
+        self.addCleanup(service.ready.clear)
+        with patch.dict(os.environ, {"P3_ARRIVAL_URL": ""}):
+            response = self.manual_receipt()
+        self.assertEqual(response.status_code, 409, response.json)
+        self.assertIn("through P3", response.json["error"])
+        self.assertFalse(self.db.get("S-test")["vehicleReleased"])
+
     def start_p3(self):
         return self.http.post(
             "/integrations/p3/arrival",

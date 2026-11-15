@@ -119,7 +119,7 @@ P4 will use DCR to **execute** the quality investigation. Its model will belong 
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits or holds goods. The receiving inventory is separate from P1 warehouse inventory. Siddhi behaviour is live-verified by `stage_tests/check_p2_siddhi.py`, and P2 has local DCR compliance evidence; the new P3 business effects have offline regression coverage and need a live Zeebe rehearsal. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
 
-**P1 owner: Ashvanth. P2 owner: Rahul.** P3–P6 and external simulator/CEP owners remain to be assigned. P3 now has an executable receiving model and a local P2 notification consumer; assign an owner to rehearse it in Operate and coordinate any later contract changes. External TomTom/simulator integration and the ProcessDoctor check remain in progress.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** P4–P6 and external simulator/CEP owners remain to be assigned. P2 and P3 are integrated: arrival starts P3, and P2 releases the vehicle only after P3 records the physical receipt. P2's manual receipt shortcut is refused while P3 receiving is enabled. TomTom ETAs and P2's ProcessDoctor check are verified; the external simulator remains a team decision.
 
 ## Project documentation
 

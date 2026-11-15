@@ -1,12 +1,12 @@
 # Team task board
 
-**Ashvanth owns P1; Rahul owns P2.** P3–P6 and external simulator/CEP owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
+**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** P4–P6 and external simulator/CEP owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | MANUAL FLOW + SCRIPTED SIMULATOR/DECISION PATH IMPLEMENTED; external verification IN PROGRESS | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
-| P3 Receiving and admission | Unassigned | IMPLEMENTED / VERIFY locally on `feat/p3-receiving-admission` | P2 arrival + P4 shared hold |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; Siddhi loop, TomTom ETAs, P3 receipt gate and P2 DCR verified | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
+| P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2 (arrival starts P3, P3 receipt completes P2), live-verified 2026-11-15 | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Unassigned | TODO | DCR access + incident integration |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
@@ -72,6 +72,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] Add delay acceptance and alternative-route decisions; require matching simulator acknowledgement before recording route change.
 - [x] Add CLI controls for test risk, delay acceptance and route approval.
 - [x] Implement the local P3 receiver envelope/idempotency response and verify offline retries start P3 once; external receiver acceptance remains a follow-up only if the P3 endpoint is replaced.
+- [x] P2 completes only from P3's receipt: the manual P2 receipt is refused while P3 receiving is enabled or once P3 has started (2026-11-15; 51 offline tests; `check_p2_siddhi.py` and `check_stage1.py` both pass, recording receipt through P3).
 - [x] Verify automatic arrival and route updates for two independent shipments (`stage_tests/check_p2_siddhi.py`, 2026-11-14; registry/engine evidence, Inspected).
 - [x] Verify TomTom ETA requests and record their source/response (2026-11-15, Rahul's personal developer key; 15/15 HTTP 200 in a passing live check; `compliance/p2/tomtom-responses.jsonl`). Re-check with the team key once one exists.
 - [x] Live-verify local Siddhi receives telemetry and emits one shipment-correlated risk alert from an ETA past the deadline; follow [the short-deadline walkthrough](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough).
