@@ -75,15 +75,27 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] P2 completes only from P3's receipt: the manual P2 receipt is refused while P3 receiving is enabled or once P3 has started (2026-11-15; 51 offline tests; `check_p2_siddhi.py` and `check_stage1.py` both pass, recording receipt through P3).
 - [x] Verify automatic arrival and route updates for two independent shipments (`stage_tests/check_p2_siddhi.py`, 2026-11-14; registry/engine evidence, Inspected).
 - [x] Verify TomTom ETA requests and record their source/response (2026-11-15, Rahul's personal developer key; 15/15 HTTP 200 in a passing live check; `compliance/p2/tomtom-responses.jsonl`). Re-check with the team key once one exists.
-- [x] Live-verify local Siddhi receives telemetry and emits one shipment-correlated risk alert from an ETA past the deadline; follow [the short-deadline walkthrough](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough).
+- [x] Live-verify local Siddhi receives telemetry and emits one shipment-correlated risk alert per route revision (since `d613960`: after three consecutive fresh late ETAs); follow [the short-deadline walkthrough](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough).
 - [x] Live-verify an approved route command passes through Siddhi to the local scripted simulator, receives acknowledgement, then changes GPS/ETA; a physical/external simulator remains a separate integration.
 - [x] Rehearse the risk/decision/route controls from the CLI against the live stack.
 - [x] Rerun the offline suite under Python 3.12 (40 tests OK on 2026-11-14, run inside the service image because the local Python lacks `grpc`).
 - [x] Deliver P2 DCR rules and a real execution log; verify conformance separately from P1 (`compliance/p2/`; local replay passes, 4 invalid traces rejected).
-- [x] Import `compliance/p2/rules.xml` and `execution-log.xes` into processdoctor.compute.dtu.dk; record the result in `compliance/p2/verification.json`. The earlier log passed (3 conforming). The log was regenerated on 2026-11-15 from the P3-integrated run (receipt via P3), so re-run the check and replace `processdoctor-conforming.png`.
-- [ ] Run the final live P2 acceptance with both independent journeys, automatic arrival, dispatcher outcomes, external notifications and receipt-gated release.
+- [x] Import `compliance/p2/rules.xml` and the P3-integrated `execution-log.xes` (run `100628`) into processdoctor.compute.dtu.dk: 3 conforming.
+- [ ] Re-run ProcessDoctor for the log regenerated from run `130506` (tested commit `d613960`); record the result in `compliance/p2/verification.json` and replace `processdoctor-conforming.png`.
+- [x] Run the live P2 acceptance (`check_p2_siddhi.py`, run `130506`, commit `d613960`): independent journeys, automatic arrival, dispatcher outcomes, P3 notification and receipt-gated release, quality hold and release.
+- [x] PR review (a): routes are corridors to the recipient's location; a change keeps the destination and incompatible routes are rejected; regression and live check assert arrival at the original destination.
+- [x] PR review (b): the decision worker returns `routeId`/`routeRevision`; the live check confirms Operate's exported variables match the shipment API.
+- [x] PR review (d): Siddhi alerts only after three consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
+- [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
+- [ ] **P4 dependency (owner: P4, unassigned):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
+- [ ] Re-verify TomTom with a valid key (the 2026-11-15 key now returns HTTP 401).
 
-The local Siddhi app now consumes durable GPS/ETA telemetry, emits deduplicated late-ETA alerts, and forwards route commands to the local scripted simulator for acknowledgement. The walkthrough and acceptance checks are in [the run guide](../docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough). Live acceptance, the P3 receiver contract/delivery, external simulator/TomTom verification, and P2 DCR remain outstanding. External service owners and follow-up PR/issue links have not been agreed yet; record names and links after team review. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
+Current state (commit `d613960`):
+- **Implemented and verified:** the Siddhi persistence rule (three consecutive fresh late ETAs), destination-preserving route changes, Camunda route variables, the P3 receipt gate, and the delivery-risk quality hold.
+- **P2 DCR:** rules and log are delivered; local replay passes. ProcessDoctor needs a re-run for the latest log.
+- **Outstanding:** the P4 consumer of the hold handoff, a TomTom re-check with a valid key, and the external simulator (team decision).
+
+See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where). External service owners and follow-up PR/issue links have not been agreed yet; record names and links after team review. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
 
 ## P3 — Receiving and stock admission
 

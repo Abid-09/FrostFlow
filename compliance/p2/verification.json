@@ -1,26 +1,30 @@
 {
   "process": "P2 Transport and delivery",
   "owner": "Rahul Shanbhag",
-  "verifiedAt": "2026-11-15T10:09:31.404745Z",
+  "verifiedAt": "2026-11-16T13:10:16.616383Z",
   "environment": "Local Docker Compose stack: Zeebe/Operate 8.8.0, siddhiio/siddhi-runner-alpine (siddhi-io-http 2.2.0), communication service on Python 3.12; GPS_TICK_SECONDS=10; fresh dataset version 3",
   "inputModes": {
     "gps": "scripted-demo route points",
-    "eta": "tomtom-traffic (live TomTom routing with traffic); at-destination at the final route point",
+    "eta": "local-demo-estimate for run 130506 (the TomTom key returned HTTP 401); TomTom verified separately on 2026-11-15",
     "routeCommands": "Siddhi http-service bridge to the local scripted-simulator endpoint",
     "arrival": "automatic from the scripted route; P2 posts ShipmentArrivalNotification to the local P3 receiver, which starts P3",
-    "receipt": "P3 physical receipt (POST /shipments/<id>/receiving/receipt); P3's ReceiptAcknowledged completes P2. P2's manual /acknowledge-receipt is refused (409) while P3 receiving is enabled"
+    "receipt": "P3 physical receipt (POST /shipments/<id>/receiving/receipt); P3's ReceiptAcknowledged completes P2. P2's manual /acknowledge-receipt is refused (409) while P3 receiving is enabled",
+    "riskRule": "Siddhi: three consecutive fresh (<=30 s old) late ETAs within 180 s per shipment and route revision",
+    "qualityRelease": "P4 stand-in POST /integrations/p4/quality-status (P4 not implemented)"
   },
   "liveAcceptance": {
     "command": "python stage_tests/check_p2_siddhi.py",
     "result": "PASS",
     "shipments": {
-      "S-SID-A-100628": {
+      "S-SID-A-130506": {
         "transportState": "COMPLETED",
         "vehicleReleased": true,
-        "p3Status": "AWAITING_INSPECTION",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "RELEASED",
         "activities": [
           "P2:TransportStarted",
           "P2:JourneyStarted",
+          "P4:QualityHoldEstablished",
           "P2:DeliveryRiskDetected",
           "P2:DispatcherDecisionRecorded",
           "P2:RouteChangeAcknowledged",
@@ -30,13 +34,18 @@
           "P3:ShipmentArrivalRecorded",
           "P3:GoodsReceived",
           "P2:ReceiptAcknowledged",
-          "P2:VehicleReleased"
+          "P2:VehicleReleased",
+          "P3:GoodsInspected",
+          "P3:StockAdmissionHeld",
+          "P3:QualityStatusChanged",
+          "P3:StockAdmitted"
         ]
       },
-      "S-SID-B-100628": {
+      "S-SID-B-130506": {
         "transportState": "COMPLETED",
         "vehicleReleased": true,
-        "p3Status": "AWAITING_INSPECTION",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "CLEAR",
         "activities": [
           "P2:TransportStarted",
           "P2:JourneyStarted",
@@ -44,76 +53,108 @@
           "P3:ShipmentArrivalRecorded",
           "P3:GoodsReceived",
           "P2:ReceiptAcknowledged",
-          "P2:VehicleReleased"
+          "P2:VehicleReleased",
+          "P3:GoodsInspected",
+          "P3:StockAdmitted"
         ]
       },
-      "S-SID-C-100628": {
+      "S-SID-C-130506": {
         "transportState": "COMPLETED",
         "vehicleReleased": true,
-        "p3Status": "AWAITING_INSPECTION",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "RELEASED",
         "activities": [
           "P2:TransportStarted",
           "P2:JourneyStarted",
+          "P4:QualityHoldEstablished",
           "P2:DeliveryRiskDetected",
           "P2:DeliveryRiskClosedAtArrival",
           "P2:ShipmentArrived",
           "P3:ShipmentArrivalRecorded",
           "P3:GoodsReceived",
           "P2:ReceiptAcknowledged",
-          "P2:VehicleReleased"
+          "P2:VehicleReleased",
+          "P3:GoodsInspected",
+          "P3:StockAdmissionHeld",
+          "P3:QualityStatusChanged",
+          "P3:StockAdmitted"
         ]
       }
     },
-    "riskAlertFromSiddhi": "SIDDHI:RISK:P2:S-SID-A-100628:ETAUpdated:0:1",
+    "riskAlertFromSiddhi": "SIDDHI:RISK:P2:S-SID-A-130506:ETAUpdated:0:3",
     "routeChange": {
       "from": "route-01",
       "to": "route-02",
       "acknowledgement": {
-        "commandId": "check-decision-SIDDHI:RISK:P2:S-SID-A-100628:ETAUpdated:0:1",
-        "messageId": "7a30968a-fa48-4666-af85-82b5d9b15619",
+        "commandId": "check-decision-SIDDHI:RISK:P2:S-SID-A-130506:ETAUpdated:0:3",
+        "messageId": "955bbc8a-7efe-4bf4-87ae-c58382751ac9",
         "simulatorAcknowledged": true
       }
     },
     "additionalAcceptedDelays": [
-      "SIDDHI:RISK:P2:S-SID-A-100628:ETAUpdated:1:1"
+      "SIDDHI:RISK:P2:S-SID-A-130506:ETAUpdated:1:3"
     ],
     "observations": [
-      "Run with P3 receiving and TomTom enabled (health stage 3); 0 Siddhi errors and 0 failed Zeebe jobs",
-      "Siddhi raised one COLD-CHAIN-RISK alert per late route revision for shipment A, none for B; the route-change acknowledgement carries Siddhi's http-service messageId",
-      "Shipment C: arrival before any decision closed the alert (DeliveryRiskClosedAtArrival); a later decision was refused with HTTP 409",
-      "For every shipment, arrival started P3 (ShipmentArrivalRecorded); P2's manual receipt was refused with HTTP 409 while the vehicle stayed reserved; P3's GoodsReceived then produced P2's ReceiptAcknowledged and VehicleReleased, in that order",
-      "ETAUpdated sources: tomtom-traffic 11, at-destination 3"
-    ]
+      "Fresh stack, P3 receiving on, local demo ETAs; 0 failed Zeebe jobs and 0 Siddhi errors",
+      "Siddhi alerted on ETA index 3 after 3 late ETAs (persistence rule)",
+      "Route change route-01 -> route-02 kept the destination; A arrived at the original destination; Camunda's exported routeId/routeRevision matched the shipment API",
+      "Accepting each risk set qualityStatus PENDING; after inspection B was ADMITTED, A and C ON_HOLD; a release naming another incident was refused (409); releasing the current incident admitted the stock",
+      "C: arrival closed the undecided alert; a later decision was refused (409); P2 completed only from P3's receipt for every shipment"
+    ],
+    "run": "130506",
+    "riskRule": {
+      "triggerEtaIndex": 3,
+      "lateEtasBeforeAlert": 3
+    },
+    "destinationPreserved": [
+      48.8698,
+      2.2947
+    ],
+    "operateRouteVariables": {
+      "routeId": "route-02",
+      "routeRevision": 1
+    },
+    "qualityReleases": {
+      "S-SID-A-130506": "DELAY:SIDDHI:RISK:P2:S-SID-A-130506:ETAUpdated:0:3",
+      "S-SID-C-130506": "DELAY:SIDDHI:RISK:P2:S-SID-C-130506:ETAUpdated:0:3"
+    },
+    "admission": {
+      "S-SID-A-130506": "ON_HOLD",
+      "S-SID-B-130506": "ADMITTED",
+      "S-SID-C-130506": "ON_HOLD"
+    }
   },
   "offlineTests": {
     "command": "python -m unittest discover -s stage_tests -p 'test_*.py'",
     "python": "3.12.16",
-    "result": "51 tests OK (Python 3.12)"
+    "result": "54 tests OK (Python 3.12)"
   },
   "localCompliance": {
     "command": "python compliance/check.py compliance/p2/execution-log.xes --model compliance/p2/rules.xml",
-    "result": "all 3 real traces of the regenerated log (P3-integrated run, 2026-11-15) are valid and accepting",
+    "result": "all 3 real traces of the log built from run 130506 are valid and accepting",
     "invalidTraces": "6 synthetic violations in invalid-traces.json all rejected",
     "telemetryExcluded": "GPSPositionUpdated/ETAUpdated are sensor telemetry evaluated by Siddhi and are not business activities in the graph"
   },
-  "processDoctor": "Checked 2026-11-15 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces from the P3-integrated run), threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png",
+  "processDoctor": "PENDING - re-run for the log regenerated from run 130506 (tested commit d613960) and record the result here",
   "notVerified": [
-    "External/physical simulator (only the local scripted simulator endpoint is exercised)",
-    "Demo routes use Paris coordinates; moving them to the DTU scenario needs team agreement"
+    "P4 investigation: the hold and durable P4 handoff are implemented, but P4 does not consume the handoff yet; release is a stand-in",
+    "TomTom with a valid key on the current commit (the 2026-11-15 key now returns HTTP 401)",
+    "External/physical simulator (only the local scripted simulator endpoint is exercised)"
   ],
   "sha256": {
     "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
     "bpmn/receiving.bpmn": "8cc19a7aca38dae2ed937d8a49daf35d7b8e00cace4dec627968983178527013",
-    "siddhi-apps/ColdChainTelemetry.siddhi": "0d29e8435cc80bde667402db02e6bb6c2d121a627454a2c990045cd3362a8768",
-    "deployer/app.py": "3f24dda3df10293846f28d94fcb9059a89d4075796e17284c70138a38188fd1d",
-    "deployer/registry.py": "78361711da7f5c28b6a0ac7eefc25b47d6665392f0f8231f98fec34d0e9e46ac",
-    "deployer/transport_integrations.py": "a686c9e72810eca99c7c5362c186c84264f1eebd7bd6c46d742b9feffaf53a99",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2780932253e1ec32b2622c41dfa659bc74f86cfeb5019bd65d45b803151683bd",
+    "deployer/app.py": "bb77768e34ba44b414e788abb4e786a8620732d9545ba3baa3093df9a7fac3aa",
+    "deployer/registry.py": "ee8b95d761f5b67246be448253fafae8c02cece448c0ea3c914d606c4c7d49df",
+    "deployer/transport_integrations.py": "c570fd4f361051e3b5fabdb77c2b1abdf7c1d45042ada900346f179ac3237617",
     "docker-compose.yml": "aec9151c62eb51ba7af84ff752a36167484a8551a72b06a3ec074da63cb5c8f2",
-    "stage_tests/check_p2_siddhi.py": "3cc552dc3ddebd02e7b843321ecbe0227fec18ed5d7a94e59be2be6888223cbc",
-    "stage_tests/check_stage1.py": "cdfb6ca7685301da5ee83986b1da9f338bb12dff30452fa0b7715ab56099f441",
+    "stage_tests/check_p2_siddhi.py": "3203e721de3e58bfe47b606d3dded2f3bed2215aaccc29abede3375dcbec13e8",
+    "stage_tests/check_siddhi_risk_rule.py": "d5111e8168174f01ab25d09efc73ff4fd0984793529d02040b78d6f5eb437179",
+    "stage_tests/check_stage1.py": "4ef95c9f9ff24b45a1f2303fc180436ecd7618259a7e30d8820bfa151a0750ab",
     "compliance/check.py": "eb2421c8b29795b39e2e415b75abd560c1448749211af4083bca989a270fe2e6",
     "compliance/p2/rules.xml": "d93d0a9d04e47403a96b53ad0e20b495ddac09430cf2bd823a833bfbe804f1e8",
-    "compliance/p2/execution-log.xes": "c768258bd58152e89d2cdfb96067e00ef23a1acc008de743335d4244ccc07679",
+    "compliance/p2/execution-log.xes": "9b6c170ef5114e055e9f6906cda18fad300f427df6e86d72ce6d5d654cf90a78",
     "compliance/p2/invalid-traces.json": "3a62b71a7bdbe7bd1a7d98f7de595a18fb1a2f68d5d719b2b7fd4f88f937f7bb"
   },
   "bpmnLint": "Not run in this session (npx download not permitted); run npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn. Zeebe accepted the model at deployment.",
@@ -140,8 +181,14 @@
   },
   "p1Regression": {
     "command": "stage_tests/check_stage1.py (P2_SIMULATOR_ENABLED=false)",
-    "checkedAt": "2026-11-15",
-    "result": "PASS - manual arrival, receipt recorded through P3, manual P2 receipt refused, two independent completions, vehicle reuse"
+    "testedCommit": "d613960",
+    "result": "PASS"
   },
-  "processDoctorPreviousLog": "Superseded log (receipt via the manual P2 endpoint): Checked 2026-11-14 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces | 3 variants), coverage threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png"
+  "processDoctorPreviousLog": "Run 100628 log: Checked 2026-11-15 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces from the P3-integrated run), threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png",
+  "testedCommit": "d613960",
+  "siddhiRuleCheck": {
+    "command": "python stage_tests/check_siddhi_risk_rule.py",
+    "testedCommit": "d613960",
+    "result": "PASS - isolated, stale and gap-broken late ETAs raised no alert; three consecutive fresh late ETAs raised one alert per route revision"
+  }
 }
