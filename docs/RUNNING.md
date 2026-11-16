@@ -94,7 +94,24 @@ Operate displays engine execution. The terminal represents the person submitting
 
 The dataset must be prepared before recording/presenting. The menu preserves existing data and does not reset containers or reservations. A used dataset may have unavailable vehicles even if stock remains; use the isolated-dataset instructions below to rehearse again.
 
-For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. The GPS simulator and P3–P6 workflows remain planned.
+For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; P4–P6 and the cross-process incident workflow remain planned.
+
+### P3 compliance evidence
+
+`compliance/p3/` contains the P3 DCR graph, an XES log captured from four live P1/P2/P3 runs, and the local replay/forbidden-admission result. The scenarios cover normal receipt/admission, quality hold → release, inspection failure/rejection and quality rejection. The hold traces include the accepted PENDING integration request and P3's `StockAdmissionHeld` event, plus neighbouring dispatch, arrival, receipt, inspection and disposition events. P4 dispositions were sent by the test harness to the P3 integration endpoint; this does not claim that a P4 DCR process is deployed or that cross-process P4 integration is complete.
+
+To reproduce the live scenarios without altering the usual demo stack, use a fresh registry and the alternate-port Compose overlay:
+
+```powershell
+$env:REGISTRY_DIR = '.\runtime\p3-compliance-run-01'
+docker compose -p cold-chain-p3-compliance -f docker-compose.yml -f stage_tests\p3-compliance.compose.yml up --build -d --wait --wait-timeout 240
+python stage_tests\check_p3_compliance.py --base http://localhost:5011 --output runtime\p3-compliance\evidence.json
+python compliance\p3\build_p3_evidence.py log runtime\p3-compliance\evidence.json
+python compliance\p3\build_p3_evidence.py verify compliance\p3\execution-log.xes
+docker compose -p cold-chain-p3-compliance -f docker-compose.yml -f stage_tests\p3-compliance.compose.yml down
+```
+
+Choose a new, empty `REGISTRY_DIR` each time you repeat this run. The runner requires an empty version-3 registry and exercises the real engine and durable event registry. The DCR replay must accept all four actual traces and reject the synthetic attempt to admit stock while a quality hold is unresolved. `compliance/p3/verification.json` records the local replay, forbidden-admission check, and the reported ProcessDoctor result: all four trace variants conform at 100% coverage. Repeat the external check if the model or execution log changes.
 
 ## Manual walkthrough
 
@@ -404,8 +421,10 @@ Expect both real traces to be valid and accepting. Each synthetic violation in [
 The reviewed five-product [execution log](../compliance/p1/execution-log.xes) and [verification report](../compliance/p1/verification.json) contain actual execution evidence and source/model hashes from this checkpoint. Regenerate and review them when implementation or models change. The report also records successful ProcessDoctor import/conformance and the metadata-only model correction. Repeat external conformance checking when the rules or log change. P1 ownership is recorded in the project documentation. The BPMN source and PDF omit student attribution at the owner's request. The DCR display title includes the owner; its semantics are unchanged and the report preserves the hashes used in the original checks. Model PDFs can be exported in Modeler or with [bpmn-to-image](https://github.com/bpmn-io/bpmn-to-image):
 
 ```bash
-npx --yes bpmn-to-image@0.10.0 --title 'P1 Shipment preparation' 'bpmn/shipment_preparation.bpmn;bpmn/shipment_preparation.pdf'
-npx --yes bpmn-to-image@0.10.0 'bpmn/transport.bpmn;bpmn/transport.pdf'
+npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/receiving.bpmn
+npx --yes bpmn-to-image@0.10.0 --title='P1 Shipment preparation' bpmn/shipment_preparation.bpmn:bpmn/shipment_preparation.pdf
+npx --yes bpmn-to-image@0.10.0 bpmn/transport.bpmn:bpmn/transport.pdf
+npx --yes bpmn-to-image@0.10.0 --title='P3 Receiving and stock admission' bpmn/receiving.bpmn:bpmn/receiving.pdf
 ```
 
 ## Persistence, isolated checks and troubleshooting

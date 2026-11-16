@@ -1,0 +1,89 @@
+{
+  "source": "compliance\\p3\\execution-log.xes",
+  "localReplay": {
+    "status": "passed",
+    "scenarios": {
+      "normal-receipt-admission": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "GoodsReceived",
+          "InspectionPassed",
+          "StockAdmitted"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "quality-hold-release": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "QualityHoldRaised",
+          "GoodsReceived",
+          "InspectionPassed",
+          "StockAdmissionHeld",
+          "QualityHoldReleased",
+          "StockAdmitted"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "inspection-rejection": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "GoodsReceived",
+          "InspectionFailed",
+          "GoodsRejected"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "quality-rejection": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "QualityHoldRaised",
+          "GoodsReceived",
+          "InspectionPassed",
+          "StockAdmissionHeld",
+          "QualityRejected",
+          "GoodsRejected"
+        ],
+        "valid": true,
+        "accepting": true
+      }
+    }
+  },
+  "forbiddenAdmission": {
+    "status": "rejected-as-required",
+    "attempt": "StockAdmitted while QualityHoldRaised remains unresolved",
+    "result": {
+      "valid": false,
+      "accepting": false,
+      "violationIndex": 5,
+      "event": "StockAdmitted",
+      "reason": "activity is excluded"
+    }
+  },
+  "processDoctor": {
+    "status": "passed",
+    "model": "compliance/p3/rules.xml",
+    "eventLog": "compliance/p3/execution-log.xes",
+    "coverageThreshold": 100,
+    "totalTraceVariants": 4,
+    "conformingTraces": 4,
+    "partiallyViolatingTraces": 0,
+    "violatingTraces": 0,
+    "unlinkedTraces": 0,
+    "traceVariantOccurrences": {
+      "each": 1,
+      "percentageEach": 25
+    },
+    "observedConformance": {
+      "percentage": 100,
+      "conforming": 4,
+      "totalTraceVariants": 4
+    }
+  }
+}

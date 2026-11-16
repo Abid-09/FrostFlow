@@ -41,12 +41,16 @@
       <bpmn:outgoing>Flow_7</bpmn:outgoing>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="StockAdmissionMerge" name="Admission paths merge" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
     <bpmn:serviceTask id="AdmitStock" name="Admit stock or hold for quality decision">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="p3-admit-stock" retries="3" />
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_7</bpmn:incoming>
-      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_15</bpmn:incoming>
       <bpmn:outgoing>Flow_9</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:exclusiveGateway id="AdmissionDecision" name="Admission outcome" default="Flow_11">
@@ -58,9 +62,13 @@
     <bpmn:endEvent id="StockAdmitted" name="Stock admitted">
       <bpmn:incoming>Flow_10</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:endEvent id="GoodsRejected" name="Goods rejected">
+    <bpmn:exclusiveGateway id="GoodsRejectionMerge" name="Rejection paths merge" gatewayDirection="Converging">
       <bpmn:incoming>Flow_8</bpmn:incoming>
       <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="GoodsRejected" name="Goods rejected">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:intermediateCatchEvent id="WaitForQualityDecision" name="Wait for P4 quality disposition">
       <bpmn:incoming>Flow_12</bpmn:incoming>
@@ -80,22 +88,24 @@
     <bpmn:sequenceFlow id="Flow_4" sourceRef="RecordReceipt" targetRef="WaitForGoodsInspected" />
     <bpmn:sequenceFlow id="Flow_5" sourceRef="WaitForGoodsInspected" targetRef="RecordInspection" />
     <bpmn:sequenceFlow id="Flow_6" sourceRef="RecordInspection" targetRef="InspectionDecision" />
-    <bpmn:sequenceFlow id="Flow_7" sourceRef="InspectionDecision" targetRef="AdmitStock">
+    <bpmn:sequenceFlow id="Flow_7" name="Passed" sourceRef="InspectionDecision" targetRef="StockAdmissionMerge">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=inspectionPassed = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_8" sourceRef="InspectionDecision" targetRef="GoodsRejected" />
+    <bpmn:sequenceFlow id="Flow_8" name="Failed" sourceRef="InspectionDecision" targetRef="GoodsRejectionMerge" />
     <bpmn:sequenceFlow id="Flow_9" sourceRef="AdmitStock" targetRef="AdmissionDecision" />
-    <bpmn:sequenceFlow id="Flow_10" sourceRef="AdmissionDecision" targetRef="StockAdmitted">
+    <bpmn:sequenceFlow id="Flow_10" name="Admitted" sourceRef="AdmissionDecision" targetRef="StockAdmitted">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "ADMITTED"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_11" sourceRef="AdmissionDecision" targetRef="GoodsRejected">
+    <bpmn:sequenceFlow id="Flow_11" name="Rejected" sourceRef="AdmissionDecision" targetRef="GoodsRejectionMerge">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "REJECTED"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_12" sourceRef="AdmissionDecision" targetRef="WaitForQualityDecision">
+    <bpmn:sequenceFlow id="Flow_12" name="Held" sourceRef="AdmissionDecision" targetRef="WaitForQualityDecision">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=admissionOutcome = "HELD"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_13" sourceRef="WaitForQualityDecision" targetRef="RecordQualityDecision" />
-    <bpmn:sequenceFlow id="Flow_14" sourceRef="RecordQualityDecision" targetRef="AdmitStock" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="RecordQualityDecision" targetRef="StockAdmissionMerge" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="StockAdmissionMerge" targetRef="AdmitStock" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="GoodsRejectionMerge" targetRef="GoodsRejected" />
   </bpmn:process>
   <bpmn:message id="Message_P3ShipmentArrived" name="P3ShipmentArrived" />
   <bpmn:message id="Message_GoodsReceived" name="GoodsReceived">
@@ -143,21 +153,29 @@
         <dc:Bounds x="900" y="140" width="40" height="40" />
         <bpmndi:BPMNLabel><dc:Bounds x="872" y="100" width="95" height="36" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StockAdmissionMerge_di" bpmnElement="StockAdmissionMerge">
+        <dc:Bounds x="995" y="120" width="40" height="40" />
+        <bpmndi:BPMNLabel><dc:Bounds x="965" y="82" width="100" height="36" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="AdmitStock_di" bpmnElement="AdmitStock">
-        <dc:Bounds x="1000" y="120" width="130" height="80" />
+        <dc:Bounds x="1060" y="120" width="130" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="AdmissionDecision_di" bpmnElement="AdmissionDecision">
-        <dc:Bounds x="1180" y="140" width="40" height="40" />
-        <bpmndi:BPMNLabel><dc:Bounds x="1155" y="100" width="95" height="36" /></bpmndi:BPMNLabel>
+        <dc:Bounds x="1220" y="140" width="40" height="40" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1195" y="100" width="95" height="36" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StockAdmitted_di" bpmnElement="StockAdmitted">
-        <dc:Bounds x="1310" y="142" width="36" height="36" />
-        <bpmndi:BPMNLabel><dc:Bounds x="1283" y="184" width="95" height="35" /></bpmndi:BPMNLabel>
+        <dc:Bounds x="1380" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1353" y="184" width="95" height="35" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GoodsRejectionMerge_di" bpmnElement="GoodsRejectionMerge">
+        <dc:Bounds x="1040" y="300" width="40" height="40" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1010" y="342" width="100" height="36" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="GoodsRejected_di" bpmnElement="GoodsRejected">
-        <dc:Bounds x="1010" y="300" width="36" height="36" />
-        <bpmndi:BPMNLabel><dc:Bounds x="986" y="341" width="90" height="35" /></bpmndi:BPMNLabel>
+        <dc:Bounds x="1160" y="300" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1133" y="341" width="90" height="35" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="WaitForQualityDecision_di" bpmnElement="WaitForQualityDecision">
         <dc:Bounds x="1182" y="382" width="36" height="36" />
@@ -193,30 +211,36 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
         <di:waypoint x="940" y="160" />
-        <di:waypoint x="1000" y="160" />
+        <di:waypoint x="995" y="140" />
+        <bpmndi:BPMNLabel><dc:Bounds x="946" y="116" width="48" height="20" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
         <di:waypoint x="920" y="180" />
         <di:waypoint x="920" y="318" />
-        <di:waypoint x="1010" y="318" />
+        <di:waypoint x="1040" y="318" />
+        <bpmndi:BPMNLabel><dc:Bounds x="930" y="288" width="44" height="20" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
-        <di:waypoint x="1130" y="160" />
-        <di:waypoint x="1180" y="160" />
+        <di:waypoint x="1190" y="160" />
+        <di:waypoint x="1220" y="160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
-        <di:waypoint x="1220" y="160" />
-        <di:waypoint x="1310" y="160" />
+        <di:waypoint x="1260" y="160" />
+        <di:waypoint x="1380" y="160" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1295" y="132" width="62" height="20" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
-        <di:waypoint x="1200" y="180" />
-        <di:waypoint x="1200" y="260" />
-        <di:waypoint x="1028" y="260" />
-        <di:waypoint x="1028" y="300" />
+        <di:waypoint x="1240" y="180" />
+        <di:waypoint x="1240" y="260" />
+        <di:waypoint x="1060" y="260" />
+        <di:waypoint x="1060" y="300" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1120" y="238" width="57" height="20" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
-        <di:waypoint x="1200" y="180" />
-        <di:waypoint x="1200" y="382" />
+        <di:waypoint x="1240" y="180" />
+        <di:waypoint x="1240" y="360" />
+        <di:waypoint x="1218" y="382" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1248" y="286" width="34" height="20" /></bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
         <di:waypoint x="1218" y="400" />
@@ -225,8 +249,16 @@
       <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
         <di:waypoint x="1365" y="440" />
         <di:waypoint x="1365" y="500" />
-        <di:waypoint x="1065" y="500" />
-        <di:waypoint x="1065" y="200" />
+        <di:waypoint x="1015" y="500" />
+        <di:waypoint x="1015" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1035" y="140" />
+        <di:waypoint x="1060" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1080" y="320" />
+        <di:waypoint x="1160" y="318" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

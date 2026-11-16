@@ -1,0 +1,349 @@
+<?xml version='1.0' encoding='utf-8'?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <extension name="Organization" prefix="org" uri="http://www.xes-standard.org/org.xesext" />
+  <string key="source" value="Accepted P4-test inputs and live P1/P2/P3 registry event history" />
+  <trace>
+    <string key="concept:name" value="normal-receipt-admission|p3comp-85bd817a-normal-receipt-admission" />
+    <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+    <string key="scenario" value="normal-receipt-admission" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <date key="time:timestamp" value="2026-11-16T17:39:03.247681Z" />
+      <string key="eventId" value="P1:p3comp-85bd817a-normal-receipt-admission:ShipmentDispatched" />
+      <string key="sourceEventType" value="ShipmentDispatched" />
+      <string key="process" value="P1" />
+      <string key="processInstanceKey" value="2251799813685419" />
+      <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <date key="time:timestamp" value="2026-11-16T17:39:24.534191Z" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-85bd817a-normal-receipt-admission:SIM:journey-p3comp-85bd817a-normal-receipt-admission:ShipmentArrived" />
+      <string key="sourceEventType" value="ShipmentArrived" />
+      <string key="process" value="P2" />
+      <string key="processInstanceKey" value="2251799813685478" />
+      <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <date key="time:timestamp" value="2026-11-16T17:39:28.016000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-normal-receipt-admission:GoodsReceived" />
+      <string key="sourceEventType" value="GoodsReceived" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813685583" />
+      <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <date key="time:timestamp" value="2026-11-16T17:39:32.171000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-normal-receipt-admission:GoodsInspected" />
+      <string key="sourceEventType" value="GoodsInspected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813685583" />
+      <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <date key="time:timestamp" value="2026-11-16T17:39:34.918303Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-normal-receipt-admission:StockAdmitted" />
+      <string key="sourceEventType" value="StockAdmitted" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813685583" />
+      <string key="shipmentId" value="p3comp-85bd817a-normal-receipt-admission" />
+      <string key="org:resource" value="system" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="quality-hold-release|p3comp-85bd817a-quality-hold-release" />
+    <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+    <string key="scenario" value="quality-hold-release" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <date key="time:timestamp" value="2026-11-16T17:43:33.405826Z" />
+      <string key="eventId" value="P1:p3comp-85bd817a-quality-hold-release:ShipmentDispatched" />
+      <string key="sourceEventType" value="ShipmentDispatched" />
+      <string key="process" value="P1" />
+      <string key="processInstanceKey" value="2251799813686087" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <date key="time:timestamp" value="2026-11-16T17:43:50.478347Z" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-85bd817a-quality-hold-release:SIM:journey-p3comp-85bd817a-quality-hold-release:ShipmentArrived" />
+      <string key="sourceEventType" value="ShipmentArrived" />
+      <string key="process" value="P2" />
+      <string key="processInstanceKey" value="2251799813686161" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <date key="time:timestamp" value="2026-11-16T17:43:55.047000Z" />
+      <string key="eventId" value="quality-pending-p3comp-85bd817a-quality-hold-release" />
+      <string key="sourceEventType" value="QualityStatusChanged" />
+      <string key="process" value="P4-test" />
+      <string key="processInstanceKey" value="" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="qualityStatus" value="PENDING" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-hold-release" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <date key="time:timestamp" value="2026-11-16T17:43:57.143000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-hold-release:GoodsReceived" />
+      <string key="sourceEventType" value="GoodsReceived" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686256" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <date key="time:timestamp" value="2026-11-16T17:44:01.303000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-hold-release:GoodsInspected" />
+      <string key="sourceEventType" value="GoodsInspected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686256" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <date key="time:timestamp" value="2026-11-16T17:44:04.339433Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-hold-release:StockAdmissionHeld" />
+      <string key="sourceEventType" value="StockAdmissionHeld" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686256" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="system" />
+      <string key="qualityStatus" value="PENDING" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-hold-release" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldReleased" />
+      <date key="time:timestamp" value="2026-11-16T17:44:05.438000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-hold-release:QualityStatusChanged:quality-released-p3comp-85bd817a-quality-hold-release" />
+      <string key="sourceEventType" value="QualityStatusChanged" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686256" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="system" />
+      <string key="qualityStatus" value="RELEASED" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-hold-release" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <date key="time:timestamp" value="2026-11-16T17:44:08.580322Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-hold-release:StockAdmitted" />
+      <string key="sourceEventType" value="StockAdmitted" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686256" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-hold-release" />
+      <string key="org:resource" value="system" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-hold-release" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="inspection-rejection|p3comp-85bd817a-inspection-rejection" />
+    <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+    <string key="scenario" value="inspection-rejection" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <date key="time:timestamp" value="2026-11-16T17:44:21.312281Z" />
+      <string key="eventId" value="P1:p3comp-85bd817a-inspection-rejection:ShipmentDispatched" />
+      <string key="sourceEventType" value="ShipmentDispatched" />
+      <string key="process" value="P1" />
+      <string key="processInstanceKey" value="2251799813686428" />
+      <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <date key="time:timestamp" value="2026-11-16T17:44:41.011131Z" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-85bd817a-inspection-rejection:SIM:journey-p3comp-85bd817a-inspection-rejection:ShipmentArrived" />
+      <string key="sourceEventType" value="ShipmentArrived" />
+      <string key="process" value="P2" />
+      <string key="processInstanceKey" value="2251799813686502" />
+      <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <date key="time:timestamp" value="2026-11-16T17:44:45.886000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-inspection-rejection:GoodsReceived" />
+      <string key="sourceEventType" value="GoodsReceived" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686598" />
+      <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionFailed" />
+      <date key="time:timestamp" value="2026-11-16T17:44:50.026000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-inspection-rejection:GoodsInspected" />
+      <string key="sourceEventType" value="GoodsInspected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686598" />
+      <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsRejected" />
+      <date key="time:timestamp" value="2026-11-16T17:44:52.560668Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-inspection-rejection:GoodsRejected" />
+      <string key="sourceEventType" value="GoodsRejected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686598" />
+      <string key="shipmentId" value="p3comp-85bd817a-inspection-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="quality-rejection|p3comp-85bd817a-quality-rejection" />
+    <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+    <string key="scenario" value="quality-rejection" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <date key="time:timestamp" value="2026-11-16T17:45:05.245344Z" />
+      <string key="eventId" value="P1:p3comp-85bd817a-quality-rejection:ShipmentDispatched" />
+      <string key="sourceEventType" value="ShipmentDispatched" />
+      <string key="process" value="P1" />
+      <string key="processInstanceKey" value="2251799813686720" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <date key="time:timestamp" value="2026-11-16T17:45:26.396300Z" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-85bd817a-quality-rejection:SIM:journey-p3comp-85bd817a-quality-rejection:ShipmentArrived" />
+      <string key="sourceEventType" value="ShipmentArrived" />
+      <string key="process" value="P2" />
+      <string key="processInstanceKey" value="2251799813686794" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <date key="time:timestamp" value="2026-11-16T17:45:30.268000Z" />
+      <string key="eventId" value="quality-pending-p3comp-85bd817a-quality-rejection" />
+      <string key="sourceEventType" value="QualityStatusChanged" />
+      <string key="process" value="P4-test" />
+      <string key="processInstanceKey" value="" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="qualityStatus" value="PENDING" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-rejection" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <date key="time:timestamp" value="2026-11-16T17:45:32.355000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-rejection:GoodsReceived" />
+      <string key="sourceEventType" value="GoodsReceived" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686891" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <date key="time:timestamp" value="2026-11-16T17:45:36.530000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-rejection:GoodsInspected" />
+      <string key="sourceEventType" value="GoodsInspected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686891" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <date key="time:timestamp" value="2026-11-16T17:45:39.668915Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-rejection:StockAdmissionHeld" />
+      <string key="sourceEventType" value="StockAdmissionHeld" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686891" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="system" />
+      <string key="qualityStatus" value="PENDING" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-rejection" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityRejected" />
+      <date key="time:timestamp" value="2026-11-16T17:45:40.706000Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-rejection:QualityStatusChanged:quality-rejected-p3comp-85bd817a-quality-rejection" />
+      <string key="sourceEventType" value="QualityStatusChanged" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686891" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="system" />
+      <string key="qualityStatus" value="REJECTED" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-rejection" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsRejected" />
+      <date key="time:timestamp" value="2026-11-16T17:45:43.901809Z" />
+      <string key="eventId" value="P3:p3comp-85bd817a-quality-rejection:GoodsRejected" />
+      <string key="sourceEventType" value="GoodsRejected" />
+      <string key="process" value="P3" />
+      <string key="processInstanceKey" value="2251799813686891" />
+      <string key="shipmentId" value="p3comp-85bd817a-quality-rejection" />
+      <string key="org:resource" value="system" />
+      <string key="incidentId" value="incident-p3comp-85bd817a-quality-rejection" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+    </event>
+  </trace>
+</log>

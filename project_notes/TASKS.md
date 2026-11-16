@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | MANUAL FLOW + SCRIPTED SIMULATOR/DECISION PATH IMPLEMENTED; external verification IN PROGRESS | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
-| P3 Receiving and admission | Unassigned | IMPLEMENTED / VERIFY locally on `feat/p3-receiving-admission` | P2 arrival + P4 shared hold |
+| P3 Receiving and admission | Unassigned | IMPLEMENTED; MODEL LINT PASS; DCR COMPLIANCE VERIFIED LOCALLY AND IN PROCESSDOCTOR (4/4 trace variants) | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Unassigned | TODO | DCR access + incident integration |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
@@ -92,7 +92,11 @@ The local Siddhi app now consumes durable GPS/ETA telemetry, emits deduplicated 
 - [x] Record admission/rejection outcome and preserve replacement links in activity history.
 - [x] Add CLI actions for physical receipt, inspection and receiving-stock view.
 - [x] Prove receipt is distinct from admission and stale releases cannot clear a newer hold in offline tests.
-- [ ] Rehearse P3 in a live Zeebe/Operate stack and verify message-start/catch completion.
+- [x] Fix P3 BPMN lint labels and fake joins; pinned Camunda BPMN linter passes; regenerate receiving PDF.
+- [x] Run four real Zeebe scenarios for normal admission, hold/release, inspection rejection and quality rejection; capture neighboring P1/P2/P3 events in `compliance/p3/execution-log.xes`.
+- [x] Add P3 DCR graph, local replay and forbidden-admission check in `compliance/p3/`; all four traces conform locally.
+- [x] Rehearse P3 message-start/catch flow in a live isolated Zeebe stack (run `85bd817a`, 2026-11-16).
+- [x] Import P3 graph and XES into ProcessDoctor at 100% coverage; record the reported 4/4 conforming trace variants in `compliance/p3/verification.json`.
 
 ## P4 — Quality investigation (knowledge-intensive DCR process)
 

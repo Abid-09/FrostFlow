@@ -1,0 +1,219 @@
+<?xml version='1.0' encoding='utf-8'?>
+<dcrgraph title="P3 receiving and stock admission compliance" dataTypesStatus="hide">
+  <specification>
+    <resources>
+      <events>
+        <event id="ShipmentDispatched">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="60" yLoc="170" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="ShipmentArrived">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="320" yLoc="170" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="GoodsReceived">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="580" yLoc="170" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="InspectionPassed">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="840" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="InspectionFailed">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="840" yLoc="300" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="StockAdmitted">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1360" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="GoodsRejected">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1360" yLoc="300" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="QualityHoldRaised">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="580" yLoc="520" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="StockAdmissionHeld">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="840" yLoc="520" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="QualityHoldReleased">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1080" yLoc="520" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="QualityRejected">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1360" yLoc="520" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+      </events>
+      <labels>
+        <label id="ShipmentDispatched" />
+        <label id="ShipmentArrived" />
+        <label id="GoodsReceived" />
+        <label id="InspectionPassed" />
+        <label id="InspectionFailed" />
+        <label id="StockAdmitted" />
+        <label id="GoodsRejected" />
+        <label id="QualityHoldRaised" />
+        <label id="StockAdmissionHeld" />
+        <label id="QualityHoldReleased" />
+        <label id="QualityRejected" />
+      </labels>
+      <labelMappings>
+        <labelMapping eventId="ShipmentDispatched" labelId="ShipmentDispatched" />
+        <labelMapping eventId="ShipmentArrived" labelId="ShipmentArrived" />
+        <labelMapping eventId="GoodsReceived" labelId="GoodsReceived" />
+        <labelMapping eventId="InspectionPassed" labelId="InspectionPassed" />
+        <labelMapping eventId="InspectionFailed" labelId="InspectionFailed" />
+        <labelMapping eventId="StockAdmitted" labelId="StockAdmitted" />
+        <labelMapping eventId="GoodsRejected" labelId="GoodsRejected" />
+        <labelMapping eventId="QualityHoldRaised" labelId="QualityHoldRaised" />
+        <labelMapping eventId="StockAdmissionHeld" labelId="StockAdmissionHeld" />
+        <labelMapping eventId="QualityHoldReleased" labelId="QualityHoldReleased" />
+        <labelMapping eventId="QualityRejected" labelId="QualityRejected" />
+      </labelMappings>
+      <subProcesses />
+    </resources>
+    <constraints>
+      <conditions>
+        <condition sourceId="ShipmentDispatched" targetId="ShipmentArrived" />
+        <condition sourceId="ShipmentArrived" targetId="GoodsReceived" />
+        <condition sourceId="GoodsReceived" targetId="InspectionPassed" />
+        <condition sourceId="GoodsReceived" targetId="InspectionFailed" />
+        <condition sourceId="InspectionPassed" targetId="StockAdmitted" />
+        <condition sourceId="InspectionPassed" targetId="GoodsRejected" />
+        <condition sourceId="InspectionFailed" targetId="GoodsRejected" />
+        <condition sourceId="QualityHoldRaised" targetId="QualityHoldReleased" />
+        <condition sourceId="QualityHoldRaised" targetId="QualityRejected" />
+        <condition sourceId="QualityHoldRaised" targetId="StockAdmissionHeld" />
+        <condition sourceId="InspectionPassed" targetId="StockAdmissionHeld" />
+        <condition sourceId="StockAdmissionHeld" targetId="StockAdmitted" />
+        <condition sourceId="QualityHoldReleased" targetId="StockAdmitted" />
+        <condition sourceId="QualityRejected" targetId="GoodsRejected" />
+      </conditions>
+      <responses>
+        <response sourceId="ShipmentDispatched" targetId="ShipmentArrived" />
+        <response sourceId="ShipmentArrived" targetId="GoodsReceived" />
+        <response sourceId="GoodsReceived" targetId="InspectionPassed" />
+        <response sourceId="GoodsReceived" targetId="InspectionFailed" />
+        <response sourceId="InspectionPassed" targetId="StockAdmitted" />
+        <response sourceId="InspectionPassed" targetId="GoodsRejected" />
+        <response sourceId="InspectionFailed" targetId="GoodsRejected" />
+        <response sourceId="QualityHoldRaised" targetId="QualityHoldReleased" />
+        <response sourceId="QualityHoldRaised" targetId="QualityRejected" />
+        <response sourceId="StockAdmissionHeld" targetId="QualityHoldReleased" />
+        <response sourceId="StockAdmissionHeld" targetId="QualityRejected" />
+        <response sourceId="QualityHoldReleased" targetId="StockAdmitted" />
+        <response sourceId="QualityRejected" targetId="GoodsRejected" />
+      </responses>
+      <includes>
+        <include sourceId="QualityHoldRaised" targetId="QualityHoldReleased" />
+        <include sourceId="QualityHoldRaised" targetId="QualityRejected" />
+        <include sourceId="QualityHoldRaised" targetId="StockAdmissionHeld" />
+        <include sourceId="QualityHoldReleased" targetId="StockAdmitted" />
+        <include sourceId="QualityRejected" targetId="GoodsRejected" />
+        <include sourceId="InspectionFailed" targetId="GoodsRejected" />
+      </includes>
+      <excludes>
+        <exclude sourceId="InspectionPassed" targetId="InspectionFailed" />
+        <exclude sourceId="InspectionFailed" targetId="InspectionPassed" />
+        <exclude sourceId="InspectionFailed" targetId="StockAdmitted" />
+        <exclude sourceId="QualityHoldRaised" targetId="StockAdmitted" />
+        <exclude sourceId="QualityHoldReleased" targetId="QualityRejected" />
+        <exclude sourceId="QualityRejected" targetId="QualityHoldReleased" />
+        <exclude sourceId="QualityRejected" targetId="StockAdmitted" />
+        <exclude sourceId="StockAdmissionHeld" targetId="StockAdmissionHeld" />
+        <exclude sourceId="StockAdmissionHeld" targetId="StockAdmitted" />
+        <exclude sourceId="QualityHoldRaised" targetId="QualityHoldRaised" />
+        <exclude sourceId="QualityHoldReleased" targetId="QualityHoldReleased" />
+        <exclude sourceId="QualityRejected" targetId="QualityRejected" />
+        <exclude sourceId="QualityHoldReleased" targetId="StockAdmissionHeld" />
+        <exclude sourceId="QualityRejected" targetId="StockAdmissionHeld" />
+        <exclude sourceId="StockAdmitted" targetId="GoodsRejected" />
+        <exclude sourceId="StockAdmitted" targetId="QualityHoldRaised" />
+        <exclude sourceId="StockAdmitted" targetId="QualityHoldReleased" />
+        <exclude sourceId="StockAdmitted" targetId="QualityRejected" />
+        <exclude sourceId="StockAdmitted" targetId="InspectionFailed" />
+        <exclude sourceId="GoodsRejected" targetId="StockAdmitted" />
+        <exclude sourceId="GoodsRejected" targetId="QualityHoldRaised" />
+        <exclude sourceId="GoodsRejected" targetId="QualityHoldReleased" />
+        <exclude sourceId="GoodsRejected" targetId="QualityRejected" />
+        <exclude sourceId="GoodsRejected" targetId="InspectionPassed" />
+        <exclude sourceId="GoodsRejected" targetId="InspectionFailed" />
+      </excludes>
+    </constraints>
+  </specification>
+  <runtime>
+    <marking>
+      <executed />
+      <included>
+        <event id="ShipmentDispatched" />
+        <event id="ShipmentArrived" />
+        <event id="GoodsReceived" />
+        <event id="InspectionPassed" />
+        <event id="InspectionFailed" />
+        <event id="StockAdmitted" />
+        <event id="GoodsRejected" />
+        <event id="QualityHoldRaised" />
+      </included>
+      <pendingResponses />
+    </marking>
+  </runtime>
+</dcrgraph>
