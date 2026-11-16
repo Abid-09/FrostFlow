@@ -8,20 +8,45 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 
-ROUTES = {
-    "route-01": [
-        [48.8566, 2.3522], [48.8582, 2.3407], [48.8611, 2.3252],
-        [48.8647, 2.3118], [48.8698, 2.2947],
-    ],
-    "route-02": [
-        [48.8566, 2.3522], [48.8509, 2.3372], [48.8461, 2.3201],
-        [48.8404, 2.3028], [48.8347, 2.2872],
-    ],
-    "route-03": [
-        [48.8566, 2.3522], [48.8624, 2.3471], [48.8672, 2.3338],
-        [48.8720, 2.3163], [48.8763, 2.2989],
-    ],
+# Scripted demo geography. Every route is a corridor from the depot (or, after an
+# approved change, from the vehicle's current position) through its own via point
+# to the RECIPIENT's location, so changing route never changes the destination.
+DEPOT = [48.8566, 2.3522]
+DESTINATIONS = {
+    "C-01": [48.8698, 2.2947],
+    "C-02": [48.8347, 2.2872],
+    "C-03": [48.8763, 2.2989],
 }
+CORRIDOR_VIA = {
+    "route-01": [48.8650, 2.3250],  # northern corridor
+    "route-02": [48.8450, 2.3200],  # southern corridor
+    "route-03": [48.8600, 2.3330],  # central corridor
+}
+LEGS_TO_VIA = 3
+LEGS_TO_DESTINATION = 4
+
+
+def _between(start, end, fraction):
+    return [round(start[0] + (end[0] - start[0]) * fraction, 6),
+            round(start[1] + (end[1] - start[1]) * fraction, 6)]
+
+
+def plan_route(route_id, recipient_id, start=None):
+    """Waypoints from start (default: depot) via the route's corridor to the recipient.
+
+    Raises ValueError for an unknown route or recipient, so an incompatible
+    route cannot be planned at all.
+    """
+    if route_id not in CORRIDOR_VIA:
+        raise ValueError(f"unknown route {route_id}")
+    if recipient_id not in DESTINATIONS:
+        raise ValueError(f"no delivery location is defined for recipient {recipient_id}")
+    start = list(start or DEPOT)
+    via, destination = CORRIDOR_VIA[route_id], DESTINATIONS[recipient_id]
+    points = [_between(start, via, i / LEGS_TO_VIA) for i in range(LEGS_TO_VIA + 1)]
+    points += [_between(via, destination, j / LEGS_TO_DESTINATION) for j in range(1, LEGS_TO_DESTINATION + 1)]
+    points[0], points[-1] = start, list(destination)
+    return points
 
 
 def post_json(url, payload, headers=None, timeout=5):
@@ -54,13 +79,12 @@ class TransportIntegrations:
             if registry else None
         )
 
-    def route(self, route_id):
-        return ROUTES[route_id]
+    def route(self, route_id, recipient_id, start=None):
+        return plan_route(route_id, recipient_id, start)
 
-    def eta(self, route_id, position, route_index):
-        points = self.route(route_id)[route_index:]
-        if points and points[0] != position:
-            points = [position, *points]
+    def eta(self, remaining_points, route_id, route_index):
+        """ETA along the remaining waypoints (current position first) to the destination."""
+        points = [list(p) for p in remaining_points]
         if len(points) < 2:
             # Already at the last route point: nothing left to route.
             return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"), "at-destination"

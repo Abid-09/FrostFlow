@@ -5,10 +5,17 @@ Run against a fresh dataset with the full Compose stack (including the
 
 Two shipments travel at the same time:
 
-* A has a one-minute deadline. Its first late ETA must reach Siddhi, come back
-  as a SIDDHI:RISK alert, wait for a dispatcher decision, and an approved route
-  change must be acknowledged through Siddhi before GPS/ETA use the new route.
+* A has a one-minute deadline. Only after THREE consecutive fresh late ETAs may
+  Siddhi raise a SIDDHI:RISK alert; accepting it must establish a quality hold.
+  An approved route change must be acknowledged through Siddhi, keep the same
+  destination, and be visible in Camunda's exported variables (what Operate
+  shows) exactly as in the shipment API. A must arrive at its original destination.
 * B has a generous deadline and must complete without any risk alert.
+* C gets an alert nobody answers: arrival closes it and a late decision is refused.
+
+After receipt, every shipment is inspected: B is admitted, while A and C stay
+ON_HOLD until their CURRENT quality incident is released (P4 stand-in); a
+release naming any other incident is refused.
 
 Arrival starts P3. Both must stay ARRIVED (vehicle reserved) while P2's manual
 receipt input is refused, until P3 records the receipt; P3's acknowledgement then
@@ -121,6 +128,37 @@ def acknowledge_receipt(record):
     return completed
 
 
+def operate_variable(process_instance_key, name):
+    """Latest value of a process variable as exported by Zeebe (what Operate shows)."""
+    request = Request(
+        "http://localhost:9200/zeebe-record_variable*/_search",
+        data=json.dumps({
+            "query": {"bool": {"filter": [
+                {"term": {"value.processInstanceKey": int(process_instance_key)}},
+                {"term": {"value.name": name}},
+            ]}},
+            "sort": [{"position": "desc"}], "size": 1,
+        }).encode(),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urlopen(request, timeout=10) as response:
+            hits = json.loads(response.read())["hits"]["hits"]
+    except HTTPError:
+        return None
+    return json.loads(hits[0]["_source"]["value"]["value"]) if hits else None
+
+
+def inspect_goods(shipment_id):
+    post(f"/shipments/{shipment_id}/receiving/inspection", dict(
+        eventId=f"check-inspection-{shipment_id}", occurredAt=utc(),
+        inspector="check-inspector", passed=True,
+    ))
+    return wait(f"{shipment_id} admission decision", lambda: (
+        lambda r: r if r.get("p3Status") in ("ADMITTED", "ON_HOLD", "REJECTED") else None
+    )(get(shipment_id)))
+
+
 def main():
     status, health = http("/health")
     assert status == 200 and health.get("status") == "ready", health
@@ -142,8 +180,19 @@ def main():
     print(f"Dispatched {a} (short deadline) and {b} (generous deadline)")
 
     # 1. Siddhi detects A's late ETA and P2 waits for a dispatcher decision.
+    destination = wait("A journey started", lambda: get(a).get("routeCoordinates"))[-1]
     risk_id = wait("Siddhi risk alert for A", lambda: get(a).get("pendingDeliveryRisk"))
     assert risk_id.startswith("SIDDHI:RISK:P2:" + a + ":ETAUpdated:0:"), risk_id
+    # Persistence rule: the alert comes from the third (or later) consecutive late ETA.
+    trigger_index = int(risk_id.rsplit(":", 1)[1])
+    assert trigger_index >= 3, f"alert raised before three late ETAs: {risk_id}"
+    late_before = [e for e in events(a) if e["eventType"] == "ETAUpdated"
+                   and e["eventId"].startswith(f"P2:{a}:ETAUpdated:0:")
+                   and int(e["eventId"].rsplit(":", 1)[1]) <= trigger_index
+                   and e["payload"]["etaMillis"] > e["payload"]["deliveryDeadlineMillis"]]
+    assert len(late_before) >= 3, late_before
+    held = get(a)
+    assert held["qualityStatus"] == "PENDING" and held["qualityIncidentId"] == "DELAY:" + risk_id, held
     wait("P2 DeliveryRiskDetected activity", lambda: any(
         e["eventType"] == "DeliveryRiskDetected" and e.get("producerEventId") == risk_id
         for e in events(a)))
@@ -163,7 +212,13 @@ def main():
         f"acknowledgement did not pass through Siddhi's http-service bridge: {ack}")
     changed = get(a)
     assert changed["routeId"] == target and changed.get("routeRevision") == 1, changed
-    print(f"Route change {before['routeId']} -> {target} acknowledged via Siddhi")
+    assert changed["routeCoordinates"][-1] == destination, "route change moved the destination"
+    p2_key = changed["p2ProcessInstanceKey"]
+    wait("Camunda route variables match the shipment API", lambda: (
+        operate_variable(p2_key, "routeId") == target
+        and operate_variable(p2_key, "routeRevision") == 1))
+    print(f"Route change {before['routeId']} -> {target} acknowledged via Siddhi; "
+          "same destination; Operate variables match")
 
     # 3. Later telemetry follows the new route revision.
     wait("GPS/ETA on the new route", lambda: (
@@ -193,7 +248,11 @@ def main():
         record = get(shipment_id)
         assert record["transportState"] == "ARRIVED" and record["vehicleReleased"] is False, (
             f"{shipment_id} must wait for receipt: {record}")
-    print("Both shipments arrived automatically and are blocked until receipt")
+    arrived = get(a)
+    assert arrived["currentPosition"] == destination, (arrived["currentPosition"], destination)
+    arrival = next(e for e in events(a) if e["eventType"] == "ShipmentArrived")
+    assert [arrival["payload"]["latitude"], arrival["payload"]["longitude"]] == destination, arrival
+    print("Both shipments arrived automatically (A at its original destination) and are blocked until receipt")
 
     completed = {s: acknowledge_receipt(get(s)) for s in (a, b)}
     b_events = events(b)
@@ -214,8 +273,27 @@ def main():
     status, refused = http(f"/shipments/{c}/dispatcher-decision", dict(
         eventId="check-late-decision", decision="APPROVE_ALTERNATIVE_ROUTE", routeId="route-02"))
     assert status == 409, (status, refused)
+    assert arrived_c["qualityStatus"] == "PENDING", arrived_c
     completed[c] = acknowledge_receipt(get(c))
     print("C: arrival closed the undecided alert; late decision refused (409)")
+
+    # 6. Quality hold: risk shipments wait for their CURRENT incident's release.
+    outcomes = {s: inspect_goods(s)["p3Status"] for s in (a, b, c)}
+    assert outcomes == {a: "ON_HOLD", b: "ADMITTED", c: "ON_HOLD"}, outcomes
+    releases = {}
+    for s in (a, c):
+        incident = get(s)["qualityIncidentId"]
+        status, refused = http("/integrations/p4/quality-status", dict(
+            shipmentId=s, eventId=f"check-stale-release-{s}", occurredAt=utc(),
+            qualityStatus="RELEASED", incidentId="DELAY:some-older-incident"))
+        assert status == 409, (status, refused)
+        assert get(s)["p3Status"] == "ON_HOLD"
+        post("/integrations/p4/quality-status", dict(
+            shipmentId=s, eventId=f"check-release-{s}", occurredAt=utc(),
+            qualityStatus="RELEASED", incidentId=incident))
+        releases[s] = incident
+        wait(f"{s} admitted after release", lambda s=s: get(s).get("p3Status") == "ADMITTED")
+    print("Quality hold: B admitted; A and C held until their current incident was released")
 
     evidence = {
         "checkedAt": utc(),
@@ -224,7 +302,14 @@ def main():
         "riskAlertFromSiddhi": risk_id,
         "routeChange": {"from": before["routeId"], "to": target, "acknowledgement": ack},
         "additionalAcceptedDelays": accepted,
+        "riskRule": {"triggerEtaIndex": trigger_index, "lateEtasBeforeAlert": len(late_before)},
+        "destinationPreserved": destination,
+        "operateRouteVariables": {"routeId": target, "routeRevision": 1},
+        "qualityReleases": releases,
+        "admission": outcomes,
     }
+    for s in completed:
+        evidence["shipments"][s]["record"] = get(s)
     EVIDENCE.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE.write_text(json.dumps(evidence, indent=2))
     print(f"PASS - evidence written to {EVIDENCE}")
