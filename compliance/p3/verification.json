@@ -69,7 +69,8 @@
   "processDoctor": {
     "status": "pending",
     "reason": "Browser access host unavailable; refresh required for the regenerated log.",
-    "logSha256": "7654763fc3c0600dc86099bb8d64a466fd9bf79e58de9b0169bc5ce401cc7f2f"
+    "logSha256": "7654763fc3c0600dc86099bb8d64a466fd9bf79e58de9b0169bc5ce401cc7f2f",
+    "mergeDecision": "User explicitly approved merging with this external check pending."
   },
   "verifiedAt": "2026-11-17T13:20:23.821196+00:00",
   "testedCommit": "89dfd26cf20548c9c2d9e30a4bbd9fe74ad332e7",
@@ -310,8 +311,7 @@
     "External ProcessDoctor refresh for this log",
     "Real P4 investigation consumer and authorised disposition workflow",
     "Live TomTom on the current commit",
-    "External physical simulator",
-    "Merged-main smoke test (merge awaits external verification gate)"
+    "External physical simulator"
   ],
   "dockerManagement": {
     "removedObsoleteContainers": 15,
@@ -324,5 +324,11 @@
     "missingBeforeCleanup": "frostflow-p2p3-tomtom registry.sqlite was absent from its bind mount before cleanup",
     "activeStack": "frostflow-repair, P3 dataset; P1 and P2 paired data retained",
     "overlay": "stage_tests/verification.compose.yml; P1/P2 used equivalent runtime/repair/compose.yml volume names"
+  },
+  "mergedMainSmoke": {
+    "status": "passed",
+    "testedCommit": "ad47a3c4cf252b7758915b2ad8eb7c4a5b068ece",
+    "report": "compliance/merged-main-verification.json",
+    "command": ".venv/bin/python stage_tests/check_integration_smoke.py"
   }
 }

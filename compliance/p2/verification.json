@@ -151,7 +151,8 @@
   "processDoctor": {
     "status": "pending",
     "reason": "Attempt to open https://processdoctor.compute.dtu.dk/ via the browser tool failed: The browser access host is unavailable. No current portal result is claimed.",
-    "logSha256": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445"
+    "logSha256": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445",
+    "mergeDecision": "User explicitly approved merging with this external check pending."
   },
   "historicalProcessDoctor": {
     "testedCommit": "d613960",
@@ -184,8 +185,7 @@
     "External ProcessDoctor refresh for this log",
     "Real P4 investigation consumer and authorised disposition workflow",
     "Live TomTom on the current commit",
-    "External physical simulator",
-    "Merged-main smoke test (merge awaits external verification gate)"
+    "External physical simulator"
   ],
   "dockerManagement": {
     "removedObsoleteContainers": 15,
@@ -198,5 +198,11 @@
     "missingBeforeCleanup": "frostflow-p2p3-tomtom registry.sqlite was absent from its bind mount before cleanup",
     "activeStack": "frostflow-repair, P3 dataset; P1 and P2 paired data retained",
     "overlay": "stage_tests/verification.compose.yml; P1/P2 used equivalent runtime/repair/compose.yml volume names"
+  },
+  "mergedMainSmoke": {
+    "status": "passed",
+    "testedCommit": "ad47a3c4cf252b7758915b2ad8eb7c4a5b068ece",
+    "report": "compliance/merged-main-verification.json",
+    "command": ".venv/bin/python stage_tests/check_integration_smoke.py"
   }
 }

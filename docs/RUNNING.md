@@ -390,6 +390,14 @@ docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up 
 
 Expected results: P1 verifies shortage/replenishment/cancellation, two independent P2 completions, exact retries and vehicle reuse; P2 verifies Siddhi persistence, route acknowledgement/destination, exported Camunda variables, arrival closing an undecided alert, receipt-gated release and current-incident quality release; P3 verifies admission, hold/release, inspection rejection and quality rejection. P1 requires all 100 initial crates. The other suites also require fresh registries. P2/P3 use local demo ETAs here (`TOMTOM_API_KEY=`); live TomTom evidence is identified separately.
 
+After merging, smoke-test an existing healthy default-port stack with free vehicles and at least one salad and one chicken crate:
+
+```bash
+.venv/bin/python stage_tests/check_integration_smoke.py
+```
+
+This creates two new shipments and checks admission and quality hold/rejection, Zeebe end events and exact warehouse/receiving deltas. It writes `runtime/verification-results/main-smoke.json`. It deliberately supports consumed inventory and does not rerun the fresh-data suites. The quality disposition still comes from the P4 test stand-in.
+
 P1 writes `runtime/verification-results/{execution-log.xes,verification.json,p2-completion.json}`. P2 writes `runtime/verification-results/p2-siddhi.json`. P3 writes `runtime/p3-compliance/evidence.json`. Copy reviewed evidence and regenerate logs only after successful execution. Raw histories stay under ignored `runtime/`.
 
 Remove obsolete stopped **containers** only after inspecting mounts and preserving needed evidence. Use explicit container names or the identified project's `docker compose down` without `-v`; retain the paired registry and named volumes. Do not broadly prune or delete unverified volumes. Rebuild only communication when its Python code changes; BPMN and Siddhi sources are mounted. Ordinary resume uses `start`, and recreation uses `up` with the same project, dataset and registry variables.
@@ -448,7 +456,7 @@ Each result below is tied to the code it ran against. Runtime output stays under
 | ProcessDoctor | external conformance | current P2/P3 logs | **Pending:** browser tool returned “The browser access host is unavailable”. Previous results remain historical in each report; no fresh portal result is claimed |
 | TomTom | historical live provider check | earlier code/log | Preserved in P2 report and `tomtom-responses.jsonl`; current deterministic checks use local demo ETAs |
 
-Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. Merging and merged-main smoke testing remain pending the external verification gate.
+Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. PR #4 merged first (`e36b0ac`); PR #5 was updated against main, its remaining diff inspected, then merged (`ad47a3c`). The user explicitly approved merging while fresh ProcessDoctor checks remain pending. Merged-main smoke passed normal admission and hold/rejection, both process end events and exact inventory deltas; see [merged-main verification](../compliance/merged-main-verification.json).
 
 **Not implemented:** P4's DCR investigation. The delivery-risk hold and the durable P4 handoff exist, and admission stays blocked until the current incident is released, but the release is a stand-in until P4 consumes the handoff (tracked on the task board).
 
