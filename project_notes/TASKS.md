@@ -1,13 +1,13 @@
 # Team task board
 
-**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** P4–P6 and external simulator/CEP owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
+**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** P4 ownership awaits team confirmation (an earlier guide named Abid); P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks and real P4 consumer remain outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Unassigned | TODO | DCR access + incident integration |
+| P4 Quality investigation (DCR) | To be confirmed | TODO | Confirm ownership (earlier guide named Abid), DCR access + incident integration |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -23,22 +23,25 @@
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
 - [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
-- [ ] P4 owner (unassigned): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
+- [ ] P4 owner (awaiting confirmation): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
 
-The sections below retain earlier checkpoints and original P1–P6 work. Current commands and measured results are in [RUNNING.md](../docs/RUNNING.md) and the P2/P3 verification reports.
+Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
+
+The sections below retain dated historical checkpoints and original P1–P6 work. Historical results apply only to the named revision/log; current pending actions refer to the latest evidence above. Current commands and measured results are in [RUNNING.md](../docs/RUNNING.md) and the P2/P3 verification reports.
 
 ## Foundation and access
 
 - [x] Read course specification, proposal, signed contract and both existing guides.
 - [x] Track Markdown guides and shared project notes; ignore secrets, PDFs and runtime data.
 - [x] Add project README, shared task board and consolidated run/verification guide.
-- [ ] Team reviews the scope and integration agreement; assigns P2–P6 owners.
+- [ ] Team reviews scope/contracts; confirms P4 ownership and assigns P5/P6 and shared integration owners. P1/P2/P3 owners are already recorded above.
 - [x] Run the P1 engine check and restart assertions; record results in [the run guide](../docs/RUNNING.md#automated-verification).
 - [ ] Create and execute one minimal real DCR case; record access instructions without credentials.
-- [ ] Check live Open-Meteo and TomTom requests; record response fixtures and data provenance.
+- [x] Historical live TomTom requests and sanitized provider evidence recorded; see P2 report for the tested revision.
+- [ ] Recheck TomTom with a valid current key, and implement/verify Open-Meteo independently.
 - [x] Import the P1 DCR graph and real three-trace log into processdoctor.compute.dtu.dk and run conformance checking.
 
-P1 external conformance checking has passed. DCR-PAIS and live API access checks remain pending; P4 still needs its own executable DCR investigation and account/graph access.
+P1 external conformance checking has passed. A real P4 DCR-PAIS check, weather integration and a current TomTom recheck remain pending; P4 still needs its own executable DCR investigation and account/graph access.
 
 ## Dataset decision — 1 November 2026
 
@@ -81,7 +84,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] Manually observe the CLI/Operate flow through `WaitForReceiptAcknowledged`, `TransportCompleted` and vehicle release.
 - [x] Add the P3 arrival notification to the durable outbox with a distinct delivery ID and shipment/journey/product/batch/replacement/incident references.
 - [x] Script GPS positions and record ETA updates; make the last route point publish automatic arrival.
-- [x] Add a TomTom traffic-ETA adapter with a labeled local fallback.
+- [x] Add a TomTom traffic-ETA adapter. Local estimates apply only with no configured key; configured-provider failure yields unavailable ETA, never an estimated fallback.
 - [x] Add the correlated `DeliveryRiskDetected` BPMN branch and deduplicate unresolved alerts.
 - [x] Add delay acceptance and alternative-route decisions; require matching simulator acknowledgement before recording route change.
 - [x] Add CLI controls for test risk, delay acceptance and route approval.
@@ -93,15 +96,15 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] Live-verify an approved route command passes through Siddhi to the local scripted simulator, receives acknowledgement, then changes GPS/ETA; a physical/external simulator remains a separate integration.
 - [x] Rehearse the risk/decision/route controls from the CLI against the live stack.
 - [x] Rerun the offline suite under Python 3.12 (40 tests OK on 2026-11-14, run inside the service image because the local Python lacks `grpc`).
-- [x] Deliver P2 DCR rules and a real execution log; verify conformance separately from P1 (`compliance/p2/`; local replay passes, 4 invalid traces rejected).
-- [x] Import `compliance/p2/rules.xml` and the P3-integrated `execution-log.xes` (run `100628`) into processdoctor.compute.dtu.dk: 3 conforming.
-- [ ] Re-run ProcessDoctor for the log regenerated from run `130506` (tested commit `d613960`); record the result in `compliance/p2/verification.json` and replace `processdoctor-conforming.png`.
-- [x] Run the live P2 acceptance (`check_p2_siddhi.py`, run `130506`, commit `d613960`): independent journeys, automatic arrival, dispatcher outcomes, P3 notification and receipt-gated release, quality hold and release.
+- [x] Deliver P2 DCR rules and real execution logs separately from P1. Current run `131337` has three locally valid/accepting traces; six synthetic violations are rejected by the offline suite. Earlier runs/check counts remain in Git history.
+- [x] Historical ProcessDoctor check: imported the P2 graph and P3-integrated execution log from run `100628` into processdoctor.compute.dtu.dk: 3 conforming.
+- [ ] Run ProcessDoctor for the current P2 log (run `131337`, tested checkout `89dfd26`); record its exact log hash/result in `compliance/p2/verification.json`. Retain earlier screenshots as historical until a current screenshot is captured.
+- [x] Historical live P2 acceptance (`check_p2_siddhi.py`, run `130506`, commit `d613960`): independent journeys, automatic arrival, dispatcher outcomes, P3 notification and receipt-gated release, quality hold and release.
 - [x] PR review (a): routes are corridors to the recipient's location; a change keeps the destination and incompatible routes are rejected; regression and live check assert arrival at the original destination.
 - [x] PR review (b): the decision worker returns `routeId`/`routeRevision`; the live check confirms Operate's exported variables match the shipment API.
-- [x] PR review (d): Siddhi alerts only after three consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
+- [x] PR review (d), extended by the duplicate-event repair: Siddhi alerts only after three distinct consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
 - [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
-- [ ] **P4 dependency (owner: P4, unassigned):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
+- [ ] **P4 dependency (owner awaiting confirmation):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
 - [ ] Re-verify TomTom with a valid key (the 2026-11-15 key now returns HTTP 401).
 
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
@@ -109,7 +112,7 @@ Historical state (commit `d613960`; superseded by the repair checkpoint above):
 - **P2 DCR:** rules and log are delivered; local replay passes. ProcessDoctor needs a re-run for the latest log.
 - **Outstanding:** the P4 consumer of the hold handoff, a TomTom re-check with a valid key, and the external simulator (team decision).
 
-See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where). External service owners and follow-up PR/issue links have not been agreed yet; record names and links after team review. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
+See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where). P2/P3 fixes and integration were merged through [#4](https://github.com/ash-01xor/FrostFlow/pull/4) and [#5](https://github.com/ash-01xor/FrostFlow/pull/5); smoke tests/evidence through [#6](https://github.com/ash-01xor/FrostFlow/pull/6). External integration owners and P4–P6 follow-up links still require team coordination. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
 
 ## P3 — Receiving and stock admission
 
@@ -123,7 +126,8 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 - [x] Run four real Zeebe scenarios for normal admission, hold/release, inspection rejection and quality rejection; capture neighboring P1/P2/P3 events in `compliance/p3/execution-log.xes`.
 - [x] Add P3 DCR graph, local replay and forbidden-admission check in `compliance/p3/`; all four traces conform locally.
 - [x] Rehearse P3 message-start/catch flow in a live isolated Zeebe stack (run `85bd817a`, 2026-11-16).
-- [x] Import P3 graph and XES into ProcessDoctor at 100% coverage; record the reported 4/4 conforming trace variants in `compliance/p3/verification.json`.
+- [x] Historical P3 ProcessDoctor check reported 4/4 conforming trace variants for the earlier log; preserved as `historicalProcessDoctor` in the report.
+- [ ] Refresh ProcessDoctor for the current P3 log (run `9d1cd66e`, tested checkout `89dfd26`) and record the actual result and log hash.
 
 ## P4 — Quality investigation (knowledge-intensive DCR process)
 
@@ -153,13 +157,20 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 
 ## Shared integration and demonstration
 
-- [ ] Agree reading cadence, windows, gap limits, API freshness, demo durations and units.
-- [ ] Implement agreed event/command envelope validation and durable ID deduplication.
-- [ ] Implement temperature excursion, persistent ETA risk and post-command recovery in Siddhi.
-- [ ] Demonstrate PAIS → Siddhi → simulator → telemetry → Siddhi → PAIS in both directions.
-- [ ] Label live, recorded, simulated, manual and system inputs; retain original evidence times.
-- [ ] Check missing/stale data, repeated alerts/commands, two shipments and a new incident after release.
-- [ ] Rehearse normal delivery, temperature release, replacement/return + eligible claim, and delay handling.
+- [x] Implement/document the current ETA rule: three distinct consecutive fresh late observations, 30-second freshness and 180-second window.
+- [ ] Agree temperature/recovery thresholds, reading cadence, gap limits and units before implementing those patterns.
+- [x] Implement P1–P3 envelope validation, transactional handoffs and event/delivery/command deduplication.
+- [ ] Extend those contracts and retry checks to real P4 and future P5/P6 connections.
+- [x] Implement persistent distinct-ETA delivery risk in Siddhi; isolated-rule and live P2 checks pass.
+- [ ] Implement temperature excursion and post-cooling-command recovery in Siddhi.
+- [x] Verify the P2 dispatcher-command/Siddhi/scripted-simulator/telemetry loop.
+- [ ] Demonstrate the planned P4 cooling-command/recovery loop and any external simulator connection.
+- [x] Preserve source/input-mode and evidence timestamps for implemented P1–P3 paths.
+- [ ] Extend provenance to weather, temperature/recovery, real P4 and P5/P6 activities.
+- [x] Check unavailable/stale ETA observations, duplicate events/commands and independent journeys in the P1–P3 regressions/live runs.
+- [ ] Verify missing temperature/recovery data and full new-incident-after-release behavior with the real P4 investigation.
+- [x] Rehearse current P1–P3 delivery and delay paths, including admission and hold/release/rejection.
+- [ ] Rehearse real temperature investigation/release, replacement/return and an eligible claim after those workflows exist.
 - [ ] Compare assumed manual baseline with improved process on the same recorded inputs.
 
 ## Every process owner's completion checklist

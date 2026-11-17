@@ -86,9 +86,11 @@ For the normal P1 demonstration:
 | 4, then A | Dispatch is rejected | Loading verification is required |
 | 3, then A | Confirm the simulated loading checks | P1 moves to the dispatch-approval wait |
 | 4, then A | Dispatch; register P2 | P1 completes; P2 starts the scripted journey and records position/ETA updates |
-| wait, then 10, then A | Allow automatic arrival, then acknowledge receipt | P2 moves through `WaitForShipmentArrived` to `WaitForReceiptAcknowledged`; V-01 stays reserved until receipt |
-| 11, then A; 12 or 13, then A | Exercise risk and dispatcher decisions during transit | For route approval, choose a route different from the current route and check the acknowledgement and subsequent route movement |
-| 10, then A | Submit manual/test receipt acknowledgement | P2 reaches `TransportCompleted`; registry shows `COMPLETED` and releases V-01 |
+| while in transit: 11, then A; 12 or 13, then A | Optional manual risk and dispatcher decision | Use a different compatible route for route approval; verify acknowledgement and subsequent movement. For actual Siddhi detection, use the short-deadline walkthrough instead |
+| wait, then 2, then A | Observe automatic arrival and P3 starting | P2 waits for receipt; V-01 stays reserved; P3 reaches `AWAITING_RECEIPT` |
+| 14, then A | Record physical receipt through P3 | P3 acknowledges P2; transport completes and V-01 is released |
+| 15, then A | Submit passing receiving inspection | Clear goods are admitted; risk goods stay on hold until current-incident release |
+| 16 | Inspect receiving inventory | Only admitted goods appear; receipt alone does not add stock |
 
 For a stock exception, choose **1, B**, then milk again: 10 milk crates are requested while only five milk crates remain. The other four products still have 20 crates each; they cannot satisfy this order. Show the stock-wait gateway, then choose either **5, B** to replenish five milk crates and continue preparation, or **6, B** to cancel. After cancelling B, **1, C** creates another stock-wait case on the released vehicle if you want to rehearse the other branch. Menu **2** displays state/keys; **7** displays the activity history; **8** lists product/batch stock; **0** exits without stopping the stack.
 
@@ -113,9 +115,13 @@ python compliance\p3\build_p3_evidence.py verify compliance\p3\execution-log.xes
 docker compose -p cold-chain-p3-compliance -f docker-compose.yml -f stage_tests\p3-compliance.compose.yml down
 ```
 
+The log/verification builder commands overwrite their target artifacts. Preserve historical external results and add the new tested revision, environment, hashes and actual outcomes before committing regenerated evidence. Do not run them for documentation-only edits.
+
 Choose a new project name and empty `REGISTRY_DIR` together each time you repeat this run; preserve the old registry with its matching engine volumes. The runner requires an empty version-3 registry and exercises the real engine and durable event registry. The DCR replay must accept all four actual traces and reject the synthetic attempt to admit stock while a quality hold is unresolved. `compliance/p3/verification.json` records the current local replay, forbidden-admission check and external-check status. Historical ProcessDoctor results apply only to their original logs; repeat the external check whenever the model or log changes. The runner waits for `AWAITING_LOADING` with no pending command before verification, using bounded polling.
 
 ## Manual walkthrough
+
+Use a fresh paired dataset and the default local P3 receiver. Set example delivery deadlines to a future UTC time for your run, and use actual UTC observation/receipt times. Example timestamps below are illustrative. The default simulator publishes arrival automatically.
 
 ### 1. Reserve most of the milk stock
 
@@ -129,7 +135,7 @@ curl -s http://localhost:5001/shipments/S-001
 curl -s http://localhost:5001/stock
 ```
 
-Creation returns **202**. Poll until `AWAITING_LOADING`; milk stock should be **5**, while total availability is **85**. The engine ran `CheckStock`, took the available branch, allocated stock and assigned transport. Checking and reserving are one transaction so another shipment cannot take the same crates between those steps.
+Creation returns **202**. Poll until `AWAITING_LOADING` with no `pendingCommand`; milk stock should be **5**, while total availability is **85**. The engine ran `CheckStock`, took the available branch, allocated stock and assigned transport. Checking and reserving are one transaction so another shipment cannot take the same crates between those steps.
 
 Shipment IDs are at most 100 characters, start with an ASCII letter or digit, and contain only ASCII letters, digits, `.`, `_` or `-`. IDs containing slashes, percent escapes or other URL-special characters are rejected before reserving a vehicle or starting a process.
 
@@ -184,7 +190,7 @@ curl -s -i -X POST http://localhost:5001/shipments/S-003/replenish-stock \
   -d '{"eventId":"supply-002","actor":"warehouse-demo","quantity":4}'
 ```
 
-Poll until S-003 reaches `AWAITING_LOADING`. It has now reserved ten milk crates; available milk stock is zero. The other four products still have 20 crates each, so total availability is 80. A replenishment updates the shared inventory but wakes only its addressed shipment. Other waiting shipments need their own accepted replenishment action. This prototype does not implement supplier purchasing or warehouse stock optimisation.
+Poll until S-003 reaches `AWAITING_LOADING` with no `pendingCommand`. It has now reserved ten milk crates; available milk stock is zero. The other four products still have 20 crates each, so total availability is 80. A replenishment updates the shared inventory but wakes only its addressed shipment. Other waiting shipments need their own accepted replenishment action. This prototype does not implement supplier purchasing or warehouse stock optimisation.
 
 ### 4. Verify loading and dispatch
 
@@ -208,55 +214,65 @@ curl -s http://localhost:5001/shipments/S-003/events
 
 P1 reaches `DISPATCHED`. Poll until `handoffStatus` is `ACKNOWLEDGED`: the record now includes a distinct `p2ProcessInstanceKey`; P2 starts the journey and waits at **Wait for shipment arrival** with `transportState: IN_TRANSIT`. Inspect P2 variables for shipment, journey, product, batch, unit/pack definition, vehicle, recipient, route, quantity and deadline. Repeat verification/dispatch attempts return 409.
 
-For a manual P2 run, the menu above polls after arrival and receipt. The equivalent API inputs are below. First, an early receipt must be rejected with HTTP **409** while transport is `IN_TRANSIT`:
+### 5. Receive through P3, then inspect
+
+The default integrated flow records receipt in P3. CLI option **10** and `POST /shipments/<id>/acknowledge-receipt` are P2-only test shortcuts and return **409** while P3 receiving is enabled, even after arrival. Use option **14** or the receiving endpoint below.
+
+If S-003 is still in transit, an early P3 receipt must return **409** because P3 has not recorded arrival:
 
 ```bash
-curl -s -i -X POST http://localhost:5001/shipments/S-003/acknowledge-receipt \
+curl -s -i -X POST http://localhost:5001/shipments/S-003/receiving/receipt \
   -H 'Content-Type: application/json' \
-  -d '{"eventId":"receipt-S-003-001","occurredAt":"2026-11-15T10:24:00Z","recipientId":"C-02","quantityReceived":10,"receiptReference":"RCPT-003"}'
+  -d '{"eventId":"receipt-S-003-001","occurredAt":"2026-11-15T10:24:00Z","recipientId":"C-02","quantityReceived":10,"receiver":"cafeteria-demo","receiptReference":"RCPT-003"}'
 ```
 
-Expect HTTP **409** because the shipment is still `IN_TRANSIT`. Now submit arrival for S-003; expect **202**:
-
-```bash
-curl -s -i -X POST http://localhost:5001/shipments/S-003/arrive \
-  -H 'Content-Type: application/json' \
-  -d '{"eventId":"arr-S-003-001","occurredAt":"2026-11-15T10:22:00Z","recipientId":"C-02"}'
-```
-
-After arrival is accepted, poll `GET /shipments/S-003` until `transportState` is `ARRIVED` and `vehicleReleased` is `false`. In Windows PowerShell:
+Wait for automatic arrival and P3's `AWAITING_RECEIPT`. P2 remains `ARRIVED` and `vehicleReleased: false`. The following PowerShell helper bounds each wait; keep it available for the later steps:
 
 ```powershell
-do {
-  $record = Invoke-RestMethod http://localhost:5001/shipments/S-003
-  if ($record.transportState -ne "ARRIVED") { Start-Sleep -Seconds 1 }
-} while ($record.transportState -ne "ARRIVED")
-$record | Format-List shipmentId,transportState,vehicleReleased
-```
-
-In Operate, P2 passes `WaitForShipmentArrived` and waits at `WaitForReceiptAcknowledged`. It cannot complete yet. Submit the same receipt payload again after arrival; expect **202**:
-
-```bash
-curl -s -i -X POST http://localhost:5001/shipments/S-003/acknowledge-receipt \
-  -H 'Content-Type: application/json' \
-  -d '{"eventId":"receipt-S-003-001","occurredAt":"2026-11-15T10:24:00Z","recipientId":"C-02","quantityReceived":10,"receiptReference":"RCPT-003"}'
-```
-
-Then poll until `transportState` is `COMPLETED` and `vehicleReleased` is `true`:
-
-```powershell
-do {
-  $record = Invoke-RestMethod http://localhost:5001/shipments/S-003
-  if ($record.transportState -ne "COMPLETED" -or -not $record.vehicleReleased) {
+function Wait-Shipment {
+  param([scriptblock]$Condition, [string]$Description)
+  $deadline = (Get-Date).AddSeconds(120)
+  do {
+    $record = Invoke-RestMethod http://localhost:5001/shipments/S-003
+    if (& $Condition $record) { return $record }
     Start-Sleep -Seconds 1
-  }
-} while ($record.transportState -ne "COMPLETED" -or -not $record.vehicleReleased)
-$record | Format-List shipmentId,transportState,vehicleReleased
+  } while ((Get-Date) -lt $deadline)
+  throw "Timed out waiting for $Description; last state: $($record | ConvertTo-Json -Compress)"
+}
+$record = Wait-Shipment { param($r) $r.transportState -eq "ARRIVED" -and $r.p3Status -eq "AWAITING_RECEIPT" } "arrival and P3 receipt readiness"
+$record | Format-List shipmentId,transportState,p3Status,vehicleReleased
 ```
 
-In Operate, confirm `ReleaseVehicle` completes and the process reaches `TransportCompleted`.
+In Operate, P2 waits at `WaitForReceiptAcknowledged` and P3 waits for physical receipt. Submit the receipt command above now; expect **202**. If the earlier command was rejected, it did not consume the event identity. Use actual UTC receipt time, and keep the same accepted ID/payload for retries.
 
-The `/arrive` and `/acknowledge-receipt` endpoints remain manual/test inputs; the simulator now publishes its own arrival event. Both correlate by `shipmentId`. On arrival, P2 writes a separate durable `ShipmentArrivalNotification` to its outbox; it is sent when `P3_ARRIVAL_URL` is configured; the Compose default points at the local P3 receiver. `/acknowledge-receipt` is refused while P3 receiving is enabled, or once P3 has started for that shipment, so P2 completes only from P3's receipt. Exact event retries reuse one message/activity; changed content and wrong-state requests return **409**. The live completion check records receipt through P3; run the route/risk check separately for Siddhi decisions. P2 DCR rules and logs are delivered; consult the evidence table for current conformance status. Damaged-packaging handling is outside this increment: all loading checks must be true for verification.
+```powershell
+$record = Wait-Shipment { param($r) $r.transportState -eq "COMPLETED" -and $r.vehicleReleased -and $r.p3Status -eq "AWAITING_INSPECTION" } "P2 completion and P3 inspection readiness"
+$record | Format-List shipmentId,transportState,p3Status,vehicleReleased
+```
+
+P2 reaches `TransportCompleted` and the vehicle becomes available. P3 has not admitted goods yet. Submit a passing inspection (CLI option **15**):
+
+```bash
+curl -s -i -X POST http://localhost:5001/shipments/S-003/receiving/inspection \
+  -H 'Content-Type: application/json' \
+  -d '{"eventId":"inspection-S-003-001","occurredAt":"2026-11-15T10:25:00Z","inspector":"cafeteria-demo","passed":true}'
+```
+
+Expect **202**, then inspect the admission result:
+
+```powershell
+$record = Wait-Shipment { param($r) $r.p3Status -in @("ADMITTED", "ON_HOLD", "REJECTED") } "inspection and admission outcome"
+$record | Format-List shipmentId,p3Status,qualityStatus,qualityIncidentId
+```
+
+```bash
+curl -s 'http://localhost:5001/receiving-stock?recipientId=C-02'
+curl -s http://localhost:5001/stock
+```
+
+For clear goods and a passing inspection, P3 reaches `ADMITTED` and C-02 receives ten milk crates. Warehouse availability remains 80; receiving never credits warehouse stock. A risk shipment remains `ON_HOLD` until release of its current incident through the labelled P4 stand-in; rejection never adds receiving stock. See the risk walkthrough for hold/release and `check_p3_compliance.py` for all four admission/rejection scenarios.
+
+An exact retry of an accepted receipt or inspection returns **202** without repeating stock or journal effects. Changed content under the accepted identity returns **409**. The optional `/arrive` endpoint remains a manual/test input for simulator-off runs; automatic arrival is used in this walkthrough. P2's durable arrival notification and P3 receipt acknowledgement are distinct messages, and damaged-packaging loading exceptions remain outside this increment.
 
 ## What the BPMN and Python each do
 
@@ -506,7 +522,7 @@ docker compose -p cold-chain-five-products-01 stop
 docker compose -p cold-chain-five-products-01 start
 ```
 
-`start` reuses the existing mounts; it does not recreate containers. For `up`/rebuild/recreation, also supply `REGISTRY_DIR=./runtime/five-products-01` again. Other stacks should stay stopped to avoid port conflicts. Do not point a fresh registry at an existing engine or discard one without the other. Raw generated data stays under ignored `runtime/`; only reviewed submission evidence is retained in `compliance/p1/`.
+`start` reuses the existing mounts; it does not recreate containers. For `up`/rebuild/recreation, also supply `REGISTRY_DIR=./runtime/five-products-01` again. Other stacks should stay stopped to avoid port conflicts. Do not point a fresh registry at an existing engine or discard one without the other. Raw generated data stays under ignored `runtime/`; reviewed evidence is retained under the appropriate `compliance/p1/`, `compliance/p2/` or `compliance/p3/` directory, with shared smoke evidence in `compliance/merged-main-verification.json`.
 
 For disposable data only, `docker compose down -v` removes that project's engine volumes. After saving needed evidence, move its matching registry directory out of the way before starting fresh. This is a deliberate reset, not a normal startup step.
 
