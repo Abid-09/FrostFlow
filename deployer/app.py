@@ -897,7 +897,8 @@ async def main():
     }
     for job_type, handler in zip(JOB_TYPES, handlers):
         variables = variables_by_job.get(job_type, ["shipmentId"])
-        worker.task(task_type=job_type, variables_to_fetch=variables)(handler)
+        worker.task(task_type=job_type, variables_to_fetch=variables,
+                    timeout_ms=60000 if job_type == "p3-finalize-monitoring" else 10000)(handler)
     threading.Thread(
         target=lambda: app.run(host="0.0.0.0", port=5001, threaded=True), daemon=True
     ).start()

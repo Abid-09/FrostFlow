@@ -193,7 +193,7 @@ class MonitoringRegistry:
                 if any(data[k] != previous[k] for k in ("excursion", "combined")):
                     raise Conflict("conflicting evaluation result")
                 return {"status": "accepted", "sequence": data["sequence"]}
-            if seconds(evaluated_at) < seconds(obs["occurredAt"]) or seconds(evaluated_at) > seconds(stamp()) + 1:
+            if seconds(evaluated_at) + 0.001 < seconds(obs["occurredAt"]) or seconds(evaluated_at) > seconds(stamp()) + 1:
                 raise ValueError("evaluation timestamp is outside the observation interval")
             excursion, rising = evaluate(context["window"], record["monitoringProfile"], evaluated_at)
             combined = self.combined_candidate(context, record["monitoringProfile"], evaluated_at, rising)

@@ -71,6 +71,12 @@ class Preparation(unittest.TestCase):
     def create(self, **kwargs):
         response = self.http.post("/shipments", json=sample(**kwargs))
         self.assertEqual(response.status_code, 202, response.json)
+        # This original suite remains the legacy/unmonitored compatibility cohort.
+        # test_monitoring exercises new shipment snapshots and monitoring gates.
+        with self.db.transaction() as db:
+            record = self.db.read(db, sample(**kwargs)["shipmentId"])
+            record.pop("monitoringProfile", None)
+            self.db.save(db, record)
 
     def available(self, product="PRD-001"):
         return next(
@@ -1289,6 +1295,7 @@ class P3Receiving(unittest.TestCase):
         self.db.create(sample())
         with self.db.transaction() as db:
             record = self.db.read(db, "S-test")
+            record.pop("monitoringProfile", None)  # legacy fixture bypasses loading
             record.update(
                 state="DISPATCHED",
                 stockReserved=True,

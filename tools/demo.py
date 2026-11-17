@@ -63,6 +63,12 @@ def show(record):
         f"({record['productId']}, batch {record['batchId']})"
     )
     print(f"P1 instance key: {record.get('processInstanceKey') or 'not assigned yet'}")
+    session = record.get("monitoring")
+    print("Container monitoring:", json.dumps(session or {"state": "legacy/unmonitored"}, indent=2))
+    print("Monitoring profile:", record.get("monitoringProfile", "legacy/unmonitored"))
+    print("Outdoor conditions:", record.get("weather", "unavailable"))
+    print("Assessment:", record.get("assessmentReasons", []), record.get("assessmentPriority"),
+          "evidence version", record.get("evidenceVersion", 0))
     if record.get("p2ProcessInstanceKey"):
         print(f"P2 instance key: {record['p2ProcessInstanceKey']}")
         print(f"Dispatch handoff: {record.get('handoffStatus')}")
@@ -206,6 +212,7 @@ def release_quality_hold(base, shipment_id):
         "occurredAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "qualityStatus": "RELEASED",
         "incidentId": incident,
+        "expectedEvidenceVersion": record.get("evidenceVersion", 0),
     })
     if status != 202:
         print(f"\nAction rejected (HTTP {status}): {response.get('error', response)}")
@@ -272,6 +279,12 @@ def perform(base, choice, deadline_minutes=60):
         return
     shipment_id, vehicle, quantity = choose_case()
     path = f"/shipments/{shipment_id}"
+    if choice == "18":
+        scenario = input("Scenario (normal/isolated-spike/sustained-excursion/missing-telemetry): ").strip()
+        status, result = http(base, path + "/simulation/temperature", {
+            "commandId": "temperature-" + str(time.time_ns()), "actor": "demo-operator", "scenario": scenario})
+        print(status, result)
+        return
     if choice == "17":
         release_quality_hold(base, shipment_id)
         return
@@ -488,11 +501,12 @@ def main():
             print("11 Simulate delivery risk 12 Accept delay 13 Approve route change")
             print("14 Confirm physical receipt 15 Inspect goods 16 Show receiving stock")
             print("17 Release quality hold (P4 stand-in)")
+            print("18 Change simulated temperature scenario")
             choice = input("Action: ").strip()
             if choice == "0":
                 return 0
-            if choice not in {str(value) for value in range(1, 18)}:
-                print("Choose an action from 0 to 17.")
+            if choice not in {str(value) for value in range(1, 19)}:
+                print("Choose an action from 0 to 18.")
                 continue
             try:
                 perform(base, choice, args.deadline_minutes)

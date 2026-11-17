@@ -290,7 +290,8 @@ def main():
         assert get(s)["p3Status"] == "ON_HOLD"
         post("/integrations/p4/quality-status", dict(
             shipmentId=s, eventId=f"check-release-{s}", occurredAt=utc(),
-            qualityStatus="RELEASED", incidentId=incident))
+            qualityStatus="RELEASED", incidentId=incident,
+            expectedEvidenceVersion=get(s)["evidenceVersion"]))
         releases[s] = incident
         wait(f"{s} admitted after release", lambda s=s: get(s).get("p3Status") == "ADMITTED")
     print("Quality hold: B admitted; A and C held until their current incident was released")
