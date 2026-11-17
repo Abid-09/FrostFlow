@@ -81,6 +81,14 @@ def main():
         send("GAP-2", "S-GAP", 0, deadline, unavailable=True)
         send("GAP-3", "S-GAP", 0, deadline)
         send("GAP-4", "S-GAP", 0, deadline)
+        # Retries of one observation cannot satisfy the persistence count.
+        for _ in range(4):
+            send("DUP-1", "S-DUP", 0, deadline)
+        time.sleep(1)
+        assert "SIDDHI:RISK:DUP-1" not in logs(), logs()
+        send("DUP-2", "S-DUP", 0, deadline)
+        send("DUP-3", "S-DUP", 0, deadline)
+        send("DUP-3", "S-DUP", 0, deadline)
         # 4. Three fresh late readings, another shipment interleaved: one alert.
         send("OK-1", "S-OK", 0, deadline)
         send("NOISE-1", "S-NOISE", 0, deadline, late=False)
@@ -94,8 +102,8 @@ def main():
         time.sleep(4)
 
         alerts = re.findall(r"COLD-CHAIN-RISK : Event\{[^]]*data=\[([^,]+), ([^,]+),", logs())
-        assert alerts == [("S-OK", "SIDDHI:RISK:OK-3"), ("S-OK", "SIDDHI:RISK:REV1-2")], alerts
-        print("PASS - isolated, stale and gap-broken late ETAs raised no alert; three "
+        assert alerts == [("S-DUP", "SIDDHI:RISK:DUP-3"), ("S-OK", "SIDDHI:RISK:OK-3"), ("S-OK", "SIDDHI:RISK:REV1-2")], alerts
+        print("PASS - duplicate, isolated, stale and gap-broken late ETAs raised no alert; three "
               "consecutive fresh late ETAs raised exactly one alert per route revision")
     finally:
         docker("rm", "-f", CONTAINER, check=False)

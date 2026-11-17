@@ -899,7 +899,7 @@ class Registry:
         Only P4 releasing this incident (RELEASED) lets P3 admit the stock.
         """
         shipment_id = record["shipmentId"]
-        if record.get("qualityStatus") == "PENDING" and record.get("qualityIncidentId"):
+        if record.get("qualityStatus") in ("PENDING", "REJECTED") and record.get("qualityIncidentId"):
             incident_id, opened = record["qualityIncidentId"], False
         else:
             incident_id, opened = f"DELAY:{risk_event['eventId']}", True
@@ -917,7 +917,7 @@ class Registry:
             "deliveryId": handoff_id, "eventType": "DeliveryRiskDetected",
             "shipmentId": shipment_id, "journeyId": record["journeyId"],
             "incidentId": incident_id, "incidentOpened": opened,
-            "qualityStatus": "PENDING", "riskEvent": risk_event,
+            "qualityStatus": record["qualityStatus"], "riskEvent": risk_event,
             "productId": record["productId"], "batchId": record["batchId"],
         }}, needs_ack=True, destination="p4-http")
         return incident_id

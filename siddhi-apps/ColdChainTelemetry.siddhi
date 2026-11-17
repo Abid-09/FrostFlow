@@ -9,7 +9,7 @@
  * GPSPositionUpdated events carry no ETA fields, so the mapper must accept
  * missing attributes (they become null) instead of dropping the event.
  * Delivery-risk rule (agreed persistence rule, see docs/RUNNING.md):
- *   per shipment and route revision, THREE CONSECUTIVE ETAUpdated readings that
+ *   per shipment and route revision, THREE DISTINCT CONSECUTIVE ETAUpdated readings that
  *   are each late (ETA after the deadline) and fresh (computed at most 30 s
  *   before Siddhi evaluates it), all within 180 s, raise one alert. An on-time,
  *   unavailable (no ETA) or stale reading in between breaks the sequence.
@@ -192,6 +192,7 @@ insert into TransportLogStream;
 
 @info(name='classify-eta')
 from TransportTelemetryStream[eventType == 'ETAUpdated']
+     #window.unique:first(shipmentId, journeyId, eventId)
 select eventId, shipmentId, journeyId, occurredAt, eta, deliveryDeadline,
        etaMillis, deliveryDeadlineMillis, routeRevision,
        ifThenElse(not (etaMillis is null) and not (deliveryDeadlineMillis is null)
@@ -199,7 +200,7 @@ select eventId, shipmentId, journeyId, occurredAt, eta, deliveryDeadline,
                   and etaMillis > deliveryDeadlineMillis
                   and (currentTimeMillis() - observedAtMillis) <= 30000,
                   true, false) as lateAndFresh
-insert into EtaReadingStream;
+insert current events into EtaReadingStream;
 
 -- Partitioning by shipment keeps other shipments' readings from interleaving;
 -- the sequence (",") requires the three readings to be consecutive.

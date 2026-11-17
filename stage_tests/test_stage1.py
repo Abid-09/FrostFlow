@@ -712,6 +712,39 @@ class Preparation(unittest.TestCase):
                                       "RELEASED", incident)
         self.assertEqual(self.db.admit_p3_stock("S-test", 777), {"admissionOutcome": "ADMITTED"})
 
+    def test_delivery_risk_preserves_terminal_quality_rejection(self):
+        self.start_p2_transport()
+        self.risk_at_index(2)
+        incident = self.db.get("S-test")["qualityIncidentId"]
+        self.db.accept_quality_status("S-test", "reject-1", "2026-12-01T11:00:00Z",
+                                      "REJECTED", incident)
+        decision = self.decide("delay-1", "ACCEPT_DELAY")
+        self.db.apply_dispatcher_decision(
+            "S-test", 999, decision, {"commandId": "delay-1", "simulatorAcknowledged": True})
+        self.risk_at_index(3, "SIDDHI:RISK:late-2")
+        record = self.db.get("S-test")
+        self.assertEqual(record["qualityStatus"], "REJECTED")
+        self.assertEqual(record["qualityIncidentId"], incident)
+        handoff = self.db.pending_messages(destination="p4-http")[-1]["variables"]["event"]
+        self.assertEqual(handoff["qualityStatus"], "REJECTED")
+        self.assertEqual(handoff["incidentId"], incident)
+        self.assertFalse(handoff["incidentOpened"])
+        self.assertEqual(len([e for e in self.db.events("S-test")
+                              if e["eventType"] == "QualityHoldEstablished"]), 1)
+        with self.assertRaises(Conflict):
+            self.db.accept_quality_status("S-test", "release-1", "2026-12-01T11:01:00Z",
+                                          "RELEASED", incident)
+        # Transport decisions remain possible after terminal quality rejection.
+        decision = self.decide("delay-2", "ACCEPT_DELAY")
+        self.db.apply_dispatcher_decision(
+            "S-test", 999, decision, {"commandId": "delay-2", "simulatorAcknowledged": True})
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record.update(p3ProcessInstanceKey="777", inspectionStatus="PASSED",
+                          p3Status="AWAITING_ADMISSION")
+            self.db.save(db, record)
+        self.assertEqual(self.db.admit_p3_stock("S-test", 777), {"admissionOutcome": "REJECTED"})
+
     def test_simulator_accepts_siddhi_accept_delay_without_route(self):
         """Siddhi's JSON sink sends a null routeId as the string "undefined"."""
         self.start_p2_transport()
