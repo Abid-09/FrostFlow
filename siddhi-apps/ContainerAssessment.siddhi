@@ -1,0 +1,37 @@
+@App:name("ContainerAssessment")
+@App:description("Evaluate persisted three-reading windows and return ordered observation acknowledgements")
+
+-- The registry stores the immutable window/profile, computes its threshold and
+-- gap predicates, and validates this acknowledgement before applying any effect.
+-- Synchronous response avoids losing a callback when the receiver is down.
+@source(type='http-service', receiver.url='http://0.0.0.0:8008/container',
+        source.id='container', basic.auth.enabled='false',
+        @map(type='json', @attributes(
+            messageId='trp:messageId', eventId='$.event.eventId',
+            shipmentId='$.event.shipmentId', journeyId='$.event.journeyId',
+            sequence='$.event.sequence', candidateExcursion='$.event.candidateExcursion',
+            candidateCombined='$.event.candidateCombined', oldestMillis='$.event.oldestMillis',
+            newestMillis='$.event.newestMillis', freshMillis='$.event.freshMillis',
+            combinedUntilMillis='$.event.combinedUntilMillis'
+        )))
+define stream ContainerStream (
+    messageId string, eventId string, shipmentId string, journeyId string,
+    sequence long, candidateExcursion bool, candidateCombined bool,
+    oldestMillis long, newestMillis long, freshMillis long, combinedUntilMillis long
+);
+
+@sink(type='http-service-response', source.id='container', message.id='{{messageId}}', @map(type='json'))
+define stream ContainerAckStream (
+    messageId string, eventId string, shipmentId string, journeyId string,
+    sequence long, evaluatedAtMillis long, excursion bool, combined bool
+);
+
+from ContainerStream
+select messageId, eventId, shipmentId, journeyId, sequence,
+       currentTimeMillis() as evaluatedAtMillis,
+       candidateExcursion and currentTimeMillis() >= newestMillis
+           and currentTimeMillis() - oldestMillis <= freshMillis as excursion,
+       candidateCombined and currentTimeMillis() >= newestMillis
+           and currentTimeMillis() - oldestMillis <= freshMillis
+           and currentTimeMillis() <= combinedUntilMillis as combined
+insert into ContainerAckStream;

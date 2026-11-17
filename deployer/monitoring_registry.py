@@ -69,7 +69,7 @@ class MonitoringRegistry:
         active = record.get("qualityStatus") in ("PENDING", "REJECTED") and record.get("qualityIncidentId")
         opened = not active
         if opened:
-            record.update(qualityStatus="PENDING", qualityIncidentId=f"ASSESS:{shipment_id}:{evidence['eventId']}",
+            record.update(qualityStatus="PENDING", qualityIncidentId=(f"DELAY:{evidence['eventId']}" if reason == "delivery-risk" else f"ASSESS:{shipment_id}:{evidence['eventId']}"),
                           assessmentReasons=[], assessmentPriority="normal", evidenceVersion=0, assessmentEvidenceKeys=[])
         key = f"{reason}:{episode or evidence['eventId']}"
         if key in record.setdefault("assessmentEvidenceKeys", []):
@@ -93,12 +93,15 @@ class MonitoringRegistry:
             "source": "container-monitoring", "inputMode": "simulated", "occurredAt": evidence.get("occurredAt", at), "recordedAt": at,
         }
         handoff_id = f"P4:Assessment:{shipment_id}:{record['qualityIncidentId']}:{record['evidenceVersion']}"
+        record["lastAssessment"] = extension
         envelope = {"deliveryId": handoff_id, "eventId": handoff_id, "eventType": "AssessmentRequested",
                     "shipmentId": shipment_id, "journeyId": record["journeyId"], "productId": record["productId"],
                     "batchId": record["batchId"], "incidentId": record["qualityIncidentId"], "incidentOpened": opened,
                     "qualityStatus": record["qualityStatus"], "assessment": extension,
                     "occurredAt": extension["occurredAt"], "recordedAt": at}
-        self.enqueue(db, handoff_id, "AssessmentRequested", shipment_id, {"event": envelope},
+        if reason == "delivery-risk":
+            envelope.update(eventType="DeliveryRiskDetected", riskEvent=evidence)
+        self.enqueue(db, handoff_id, "DeliveryRiskIncident" if reason == "delivery-risk" else "AssessmentRequested", shipment_id, {"event": envelope},
                      needs_ack=True, destination="p4-http")
         self.event(db, record, "QualityHoldEstablished" if opened else "AssessmentEvidenceAdded", process="P4",
                    event_id=handoff_id, source="container-monitoring", input_mode="simulated", payload=envelope)
@@ -149,7 +152,9 @@ class MonitoringRegistry:
             payload = {"eventId": event_id, "shipmentId": shipment_id, "journeyId": record["journeyId"], "sequence": seq,
                        "candidateExcursion": excursion, "candidateCombined": combined,
                        "oldestMillis": int(seconds(window[0]["occurredAt"]) * 1000),
-                       "newestMillis": int(seconds(at) * 1000), "freshMillis": int(settings["freshSeconds"] * 1000)}
+                       "newestMillis": int(seconds(at) * 1000), "freshMillis": int(settings["freshSeconds"] * 1000),
+                       "combinedUntilMillis": int(min(seconds((context.get("eta") or {}).get("observedAt", at)) + 30,
+                                                       seconds((context.get("weather") or {}).get("providerTime", at)) + settings["weatherMaxAgeSeconds"]) * 1000)}
             self.enqueue(db, event_id, "ContainerObservation", shipment_id, {"event": payload}, destination="container-siddhi")
             self.save(db, record)
             return observation
@@ -211,7 +216,9 @@ class MonitoringRegistry:
                                          {**evidence, "missingEvidence": ["fresh Siddhi evaluation"]}, episode="evaluation")
                 for flag, reason, priority, label in (("excursion", "temperature-excursion", "normal", "excursion"),
                                                       ("combined", "combined-transport-risk", "urgent", "combined")):
-                    if ack[flag]:
+                    applied_key = f"{label}:{item['episodes'].get(label, next_seq)}"
+                    if ack[flag] and applied_key not in session.setdefault("appliedEpisodes", []):
+                        session["appliedEpisodes"].append(applied_key)
                         self.assessment_hold(db, record, reason, evidence, priority, str(item["episodes"].get(label, next_seq)))
                 session["evaluatedThrough"] = next_seq
             self.monitoring_finalize(db, record)
@@ -224,6 +231,9 @@ class MonitoringRegistry:
             # Test the durable silence clock in the same transaction as receipt.
             self.monitoring_watchdog(db, record, at)
             session.update(state="CLOSED", closedAt=at, closingSequence=session["sequence"], finalization="PENDING")
+            if not session["sequence"]:
+                self.assessment_hold(db, record, "container-telemetry-unavailable",
+                                     {"eventId": "empty-session", "occurredAt": at, "missingEvidence": ["container readings"]})
             self.monitoring_finalize(db, record)
 
     def monitoring_finalize(self, db, record):
@@ -259,3 +269,14 @@ class MonitoringRegistry:
         for record in self.monitored_shipments():
             if record["monitoring"]["state"] == "ACTIVE":
                 self.sample_container(record["shipmentId"], at)
+
+    def finalize_monitoring(self, shipment_id):
+        with self.transaction() as db:
+            record = self.read(db, shipment_id)
+            if "monitoringProfile" not in record:
+                return True
+            session = record.get("monitoring", {})
+            self.monitoring_watchdog(db, record, stamp())
+            self.monitoring_finalize(db, record)
+            self.save(db, record)
+            return session.get("finalization") in ("FINALIZED", "HELD")

@@ -15,6 +15,9 @@ services:
       TOMTOM_API_KEY: ${TOMTOM_API_KEY:-}
       SIDDIHI_TELEMETRY_URL: ${SIDDIHI_TELEMETRY_URL:-http://siddhi:8006/telemetry}
       SIDDIHI_COMMAND_URL: ${SIDDIHI_COMMAND_URL:-http://siddhi:8007/route-command}
+      SIDDIHI_CONTAINER_URL: ${SIDDIHI_CONTAINER_URL:-http://siddhi:8008/container}
+      P4_INCIDENT_URL: ${P4_INCIDENT_URL:-}
+      MONITORING_PROFILE_JSON: ${MONITORING_PROFILE_JSON:-{}}
       P3_ARRIVAL_URL: ${P3_ARRIVAL_URL:-http://communication:5001/integrations/p3/arrival}
     volumes:
       - ./bpmn:/bpmn:ro
@@ -67,9 +70,10 @@ services:
     ports:
       - "127.0.0.1:8006:8006"
       - "127.0.0.1:8007:8007"
+      - "127.0.0.1:8008:8008"
     volumes:
       - ./siddhi-apps:/apps:ro
-    command: ["-Dapps=/apps/ColdChainTelemetry.siddhi"]
+    command: ["-Dapps=/apps"]
 
   operate:
     image: camunda/operate:8.8.0

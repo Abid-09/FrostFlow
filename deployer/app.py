@@ -13,6 +13,7 @@ from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.errors import MessageAlreadyExistsError
 
 from registry import Conflict, Registry
+from weather import WeatherAdapter
 from transport_integrations import TransportIntegrations, post_json
 
 PROCESS_ID = "ShipmentPreparation"
@@ -34,10 +35,12 @@ JOB_TYPES = [
     "p3-record-inspection",
     "p3-admit-stock",
     "p3-record-quality-status",
+    "p3-finalize-monitoring",
 ]
 app = Flask(__name__)
 registry = Registry(os.getenv("REGISTRY_PATH", "runtime/registry.sqlite"))
 transport_integrations = TransportIntegrations()
+weather_adapter = WeatherAdapter(os.path.join(os.path.dirname(registry.path), "open-meteo-responses.jsonl"))
 ready = threading.Event()
 client = None
 event_loop = None
@@ -256,6 +259,7 @@ def p4_quality_status():
         utc_timestamp(data, "occurredAt"),
         text_field(data, "qualityStatus"),
         text_field(data, "incidentId"),
+        data.get("expectedEvidenceVersion"),
     )
     return jsonify(
         status="accepted",
@@ -263,6 +267,19 @@ def p4_quality_status():
         eventId=data["eventId"],
         messageId=accepted["messageId"],
     ), 202
+
+
+@app.post("/shipments/<shipment_id>/simulation/temperature")
+def temperature_scenario(shipment_id):
+    data = body()
+    return jsonify(registry.temperature_scenario(shipment_id, text_field(data, "commandId"),
+                   text_field(data, "actor"), text_field(data, "scenario"))), 202
+
+
+@app.post("/integrations/siddhi/container-assessment")
+def container_assessment():
+    data = body()
+    return jsonify(registry.acknowledge_container(data.get("event", data))), 202
 
 
 @app.post("/shipments")
@@ -675,6 +692,14 @@ async def p3_record_quality_status(shipmentId, qualityStatusEvent, job: Job):
     return {}
 
 
+async def p3_finalize_monitoring(shipmentId, job: Job):
+    # Keep the engine on this explicit service task while durable evaluation is
+    # pending. The watchdog converts unresolved closure to a hold after 20 s.
+    while not registry.finalize_monitoring(shipmentId):
+        await asyncio.sleep(0.5)
+    return {}
+
+
 async def record_delivery_risk(shipmentId, deliveryRiskEvent, job: Job):
     registry.record_delivery_risk(shipmentId, job.process_instance_key, deliveryRiskEvent)
     return {}
@@ -742,6 +767,44 @@ async def advance_simulated_journeys():
             except Exception:
                 app.logger.exception("Simulator tick failed for %s", record["shipmentId"])
         await asyncio.sleep(max(0.1, float(os.getenv("GPS_TICK_SECONDS", "5"))))
+
+
+async def monitor_containers():
+    while True:
+        try:
+            await asyncio.to_thread(registry.tick_monitoring)
+        except Exception:
+            app.logger.exception("Container monitoring tick failed")
+        await asyncio.sleep(0.5)
+
+
+async def refresh_weather():
+    async def refresh(record):
+        try:
+            context = await asyncio.to_thread(weather_adapter.current, record["journeyId"],
+                                             record.get("currentPosition", [48.8566, 2.3522]))
+            await asyncio.to_thread(registry.store_weather, record["shipmentId"], context)
+        except Exception:
+            app.logger.exception("Weather refresh failed")
+    while True:
+        await asyncio.gather(*(refresh(r) for r in registry.monitored_shipments()
+                               if r["monitoring"]["state"] == "ACTIVE"))
+        await asyncio.sleep(1)
+
+
+async def deliver_container_observations():
+    while True:
+        url = os.getenv("SIDDIHI_CONTAINER_URL")
+        if url:
+            for message in registry.pending_messages(destination="container-siddhi"):
+                try:
+                    result = await asyncio.to_thread(post_json, url, message["variables"],
+                                                     {"Idempotency-Key": message["messageId"]})
+                    registry.acknowledge_container(result.get("event", result))
+                    registry.message_result(message["messageId"])
+                except Exception as error:
+                    registry.message_result(message["messageId"], str(error))
+        await asyncio.sleep(0.25)
 
 
 async def deliver_messages():
@@ -819,6 +882,7 @@ async def main():
         p3_record_inspection,
         p3_admit_stock,
         p3_record_quality_status,
+        p3_finalize_monitoring,
     )
     variables_by_job = {
         "p2-start-transport": ["shipmentId", "dispatchEvent"],
@@ -857,6 +921,9 @@ async def main():
         ready.set()
         async with asyncio.TaskGroup() as tasks:
             tasks.create_task(deliver_messages())
+            tasks.create_task(monitor_containers())
+            tasks.create_task(refresh_weather())
+            tasks.create_task(deliver_container_observations())
             if os.getenv("P2_SIMULATOR_ENABLED", "true").lower() == "true":
                 tasks.create_task(advance_simulated_journeys())
             tasks.create_task(worker.work())
