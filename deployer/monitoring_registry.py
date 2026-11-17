@@ -120,6 +120,8 @@ class MonitoringRegistry:
             if session.get("state") != "ACTIVE":
                 return None
             settings = record["monitoringProfile"]
+            if seconds(at) > seconds(stamp()) + 0.001 or seconds(at) < seconds(session["startedAt"]) - 0.001:
+                raise ValueError("container reading timestamp is outside this session")
             if session.get("lastSampleAt") and seconds(at) - seconds(session["lastSampleAt"]) < settings["sampleSeconds"]:
                 return None
             session["lastSampleAt"] = at
@@ -229,7 +231,10 @@ class MonitoringRegistry:
                     (was_excursion and not ack["excursion"]) or
                     (self.combined_candidate(item, record["monitoringProfile"], item["observation"]["occurredAt"], was_rising) and not ack["combined"])):
                     self.assessment_hold(db, record, "monitoring-evaluation-unavailable",
-                                         {**evidence, "missingEvidence": ["fresh Siddhi evaluation"]}, episode="evaluation")
+                                         {**evidence, "missingEvidence": ["fresh Siddhi evaluation"]},
+                                         episode=session.setdefault("evaluationEpisode", f"evaluation:{next_seq}"))
+                else:
+                    session.pop("evaluationEpisode", None)
                 for flag, reason, priority, label in (("excursion", "temperature-excursion", "normal", "excursion"),
                                                       ("combined", "combined-transport-risk", "urgent", "combined")):
                     applied_key = f"{label}:{item['episodes'].get(label, next_seq)}"
@@ -271,7 +276,7 @@ class MonitoringRegistry:
             if seconds(at) - seconds(session["closedAt"]) >= record["monitoringProfile"]["finalizeSeconds"]:
                 self.assessment_hold(db, record, "monitoring-evaluation-unavailable",
                                      {"eventId": f"close:{session['closingSequence']}", "occurredAt": at,
-                                      "missingEvidence": ["evaluation through closing sequence"]}, episode="evaluation")
+                                      "missingEvidence": ["evaluation through closing sequence"]}, episode=f"closure:{session['closingSequence']}")
                 session["finalization"] = "HELD"
                 self.monitoring_finalized_event(db, record)
 

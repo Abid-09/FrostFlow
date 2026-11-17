@@ -14,7 +14,7 @@ from pyzeebe.errors import MessageAlreadyExistsError
 
 from registry import Conflict, Registry
 from weather import WeatherAdapter
-from transport_integrations import TransportIntegrations, post_json
+from transport_integrations import TransportIntegrations, post_json, validate_p4_acknowledgement
 
 PROCESS_ID = "ShipmentPreparation"
 JOB_TYPES = [
@@ -41,6 +41,8 @@ app = Flask(__name__)
 registry = Registry(os.getenv("REGISTRY_PATH", "runtime/registry.sqlite"))
 transport_integrations = TransportIntegrations()
 weather_adapter = WeatherAdapter(os.path.join(os.path.dirname(registry.path), "open-meteo-responses.jsonl"))
+for stored_shipment in registry.monitored_shipments():
+    weather_adapter.restore(stored_shipment["journeyId"], stored_shipment.get("weather"))
 ready = threading.Event()
 client = None
 event_loop = None
@@ -850,10 +852,12 @@ async def deliver_messages():
                 continue
             for message in registry.pending_messages(destination=destination):
                 try:
-                    await asyncio.to_thread(
+                    acknowledgement = await asyncio.to_thread(
                         post_json, url, message["variables"],
                         {"Idempotency-Key": message["messageId"]},
                     )
+                    if destination == "p4-http":
+                        validate_p4_acknowledgement(acknowledgement, message["messageId"])
                 except Exception as error:
                     registry.message_result(message["messageId"], str(error))
                     app.logger.warning("%s delivery %s pending: %s", destination,

@@ -32,3 +32,13 @@ class WeatherTests(unittest.TestCase):
         adapter = WeatherAdapter(fetch=lambda *p: {})
         self.assertFalse(adapter.current("J", [48, 2])["available"])
         self.assertIsNone(adapter.current("J", [48, 2]))
+
+    def test_cache_and_journey_throttle_restore_after_restart(self):
+        raw = json.loads(Path(__file__).with_name("fixtures").joinpath("open-meteo-current.json").read_text())
+        first = WeatherAdapter(fetch=lambda *p: raw).current("J", [48.8566, 2.3522], "2026-11-17T12:00:00Z")
+        calls = []
+        restored = WeatherAdapter(fetch=lambda *p: calls.append(p) or raw)
+        restored.restore("J", first)
+        self.assertIsNone(restored.current("J", [48.8566, 2.3522], "2026-11-17T12:00:59Z"))
+        self.assertTrue(restored.current("J2", [48.8566, 2.3522], "2026-11-17T12:01:00Z")["cached"])
+        self.assertEqual(calls, [])

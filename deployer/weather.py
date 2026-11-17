@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+import threading
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ UNITS = {"temperature_2m": "°C", "precipitation": "mm", "wind_speed_10m": "km/h
 
 class WeatherAdapter:
     def __init__(self, log_path=None, fetch=None):
+        self.lock = threading.Lock()
         self.cache = {}
         self.attempts = {}
         self.log_path = log_path
@@ -30,7 +32,21 @@ class WeatherAdapter:
         with urllib.request.urlopen("https://api.open-meteo.com/v1/forecast?" + query, timeout=5) as response:
             return json.load(response)
 
+    def restore(self, journey_id, context):
+        if not context:
+            return
+        self.attempts[journey_id] = seconds(context.get("attemptedAt", context["retrievedAt"]))
+        if context.get("available"):
+            grid = tuple(round(v / 0.05) for v in context["requestedCoordinates"])
+            self.cache[grid] = context
+
     def current(self, journey_id, position, at=None):
+        # Serialize cache fill across journeys; this lock is only held off the
+        # event loop and never blocks container sampling or engine workers.
+        with self.lock:
+            return self._current(journey_id, position, at)
+
+    def _current(self, journey_id, position, at=None):
         at = at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         tick = seconds(at)
         if tick - self.attempts.get(journey_id, float("-inf")) < 60:
@@ -39,7 +55,7 @@ class WeatherAdapter:
         grid = tuple(round(v / 0.05) for v in position)
         cached = self.cache.get(grid)
         if cached and 0 <= tick - seconds(cached["retrievedAt"]) < 600:
-            return {**cached, "cached": True, "requestedCoordinates": list(position)}
+            return {**cached, "attemptedAt": at, "cached": True, "requestedCoordinates": list(position)}
         try:
             raw = self.fetch(*position)
             current, units = raw["current"], raw["current_units"]
@@ -61,11 +77,13 @@ class WeatherAdapter:
                      "requestedCoordinates": list(position), "retrievedAt": at, "units": {k: units[k] for k in FIELDS},
                      "provider": "open-meteo", "source": "model-based-current-conditions",
                      "inputMode": "live-api", "available": True, "cached": False}
+            entry["attemptedAt"] = at
             self.cache[grid] = entry
         except Exception as error:
             entry = {"available": False, "provider": "open-meteo", "inputMode": "live-api",
                      "requestedCoordinates": list(position), "retrievedAt": at,
                      "error": type(error).__name__}
+        entry["attemptedAt"] = at
         if self.log_path:
             Path(self.log_path).parent.mkdir(parents=True, exist_ok=True)
             with open(self.log_path, "a", encoding="utf-8") as log:

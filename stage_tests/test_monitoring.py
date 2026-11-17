@@ -227,7 +227,7 @@ class MonitoringTests(unittest.TestCase):
         import threading
         from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
         from urllib.error import HTTPError
-        from transport_integrations import post_json
+        from transport_integrations import post_json, validate_p4_acknowledgement
         for t in (0, 5, 10):
             self.sample(t, 10)
             self.ack(t // 5 + 1)
@@ -238,7 +238,7 @@ class MonitoringTests(unittest.TestCase):
                 deliveries.append((inner.headers["Idempotency-Key"], body))
                 inner.send_response(503 if len(deliveries) == 1 else 200)
                 inner.end_headers()
-                inner.wfile.write(b'{}')
+                inner.wfile.write(json.dumps({"deliveryId": inner.headers["Idempotency-Key"], "status": "accepted"}).encode())
             def log_message(inner, *args):
                 pass
         server = ThreadingHTTPServer(("127.0.0.1", 0), Consumer)
@@ -252,7 +252,11 @@ class MonitoringTests(unittest.TestCase):
             self.db.message_result(message["messageId"], "HTTP 503")
             self.assertEqual(self.db.get("S")["qualityStatus"], "PENDING")
             retry = self.db.pending_messages("p4-http")[0]
-            post_json(url, retry["variables"], {"Idempotency-Key": retry["messageId"]})
+            response = post_json(url, retry["variables"], {"Idempotency-Key": retry["messageId"]})
+            validate_p4_acknowledgement(response, retry["messageId"])
+            for invalid in ({}, {"deliveryId": "wrong", "status": "accepted"}):
+                with self.assertRaises(ValueError):
+                    validate_p4_acknowledgement(invalid, retry["messageId"])
             self.db.message_result(retry["messageId"])
             self.assertEqual(deliveries[0], deliveries[1])
             self.assertEqual(self.db.pending_messages("p4-http"), [])
@@ -288,3 +292,23 @@ class MonitoringTests(unittest.TestCase):
         self.assertEqual(self.db.get("C")["monitoringProfile"]["thresholdC"], 8)
         with self.assertRaises(ValueError):
             profile("PRD-001", {"MONITORING_PROFILE_JSON": '{"sampleSeconds": 0}'})
+
+    def test_new_evaluation_gap_after_release_opens_new_incident(self):
+        self.sample(0)
+        self.ack(1, 40)
+        first = self.db.get("S")["qualityIncidentId"]
+        self.disposition()
+        self.sample(5)
+        self.ack(2, 5)
+        self.sample(10)
+        self.ack(3, 50)
+        record = self.db.get("S")
+        self.assertEqual(record["qualityStatus"], "PENDING")
+        self.assertNotEqual(record["qualityIncidentId"], first)
+
+    def test_future_reading_does_not_move_valid_reading_clock(self):
+        self.sample(0)
+        before = self.db.get("S")["monitoring"]["lastValidAt"]
+        with self.assertRaises(ValueError):
+            self.sample(700)
+        self.assertEqual(self.db.get("S")["monitoring"]["lastValidAt"], before)

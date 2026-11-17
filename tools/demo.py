@@ -65,6 +65,7 @@ def show(record):
     print(f"P1 instance key: {record.get('processInstanceKey') or 'not assigned yet'}")
     session = record.get("monitoring")
     print("Container monitoring:", json.dumps(session or {"state": "legacy/unmonitored"}, indent=2))
+    print("Container reading fresh:", record.get("containerReadingFresh", False))
     print("Monitoring profile:", record.get("monitoringProfile", "legacy/unmonitored"))
     print("Outdoor conditions:", record.get("weather", "unavailable"))
     print("Assessment:", record.get("assessmentReasons", []), record.get("assessmentPriority"),
