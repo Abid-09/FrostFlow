@@ -10,6 +10,9 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
+from monitoring import profile
+from monitoring_registry import MonitoringRegistry
+
 
 def now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -26,7 +29,7 @@ class Conflict(Exception):
     pass
 
 
-class Registry:
+class Registry(MonitoringRegistry):
     def __init__(self, path):
         self.path = str(path)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +70,9 @@ class Registry:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS outbox (id TEXT PRIMARY KEY, data TEXT NOT NULL)"
             )
+            db.execute("CREATE TABLE IF NOT EXISTS container_observations ("
+                       "shipment_id TEXT NOT NULL, sequence INTEGER NOT NULL, data TEXT NOT NULL, ack TEXT, "
+                       "PRIMARY KEY(shipment_id,sequence))")
             if not db.execute("SELECT 1 FROM products").fetchone():
                 catalog = json.loads(
                     Path(__file__).with_name("catalog.json").read_text()
@@ -346,6 +352,7 @@ class Registry:
                 schemaVersion=3,
             )
             record.update({k: v for k, v in details.items() if k != "initialCrates"})
+            record["monitoringProfile"] = profile(record["productId"])
             self.save(db, record)
             self.event(db, record, "ShipmentCreated")
 
@@ -548,6 +555,8 @@ class Registry:
             record.update(
                 state=target, processInstanceKey=str(key), pendingCommand=None
             )
+            if activity == "LoadingVerified":
+                self.monitoring_start(record, now())
             if activity == "ShipmentCancelled":
                 record["vehicleReleased"] = True
             event = self.event(db, record, activity, actor)
@@ -1383,6 +1392,7 @@ class Registry:
                 input_mode=receipt_event["inputMode"],
                 producer_event_id=receipt_event["eventId"],
             )
+            self.monitoring_close(db, record, now())
             p2_receipt = {
                 "eventId": f"P3:{shipment_id}:ReceiptAcknowledged",
                 "eventType": "ReceiptAcknowledged",
