@@ -1,22 +1,26 @@
 @App:name("ContainerAssessment")
 @App:description("Evaluate persisted three-reading windows and return ordered observation acknowledgements")
 
--- The registry stores the immutable window/profile, computes its threshold and
--- gap predicates, and validates this acknowledgement before applying any effect.
+-- The registry stores the immutable window/profile, passes its raw temperatures and
+-- profile settings, and validates this acknowledgement before applying any effect.
 -- Synchronous response avoids losing a callback when the receiver is down.
 @source(type='http-service', receiver.url='http://0.0.0.0:8008/container',
         source.id='container', basic.auth.enabled='false',
         @map(type='json', @attributes(
             messageId='trp:messageId', eventId='$.event.eventId',
             shipmentId='$.event.shipmentId', journeyId='$.event.journeyId',
-            sequence='$.event.sequence', candidateExcursion='$.event.candidateExcursion',
+            sequence='$.event.sequence', count='$.event.count',
+            firstC='$.event.firstC', middleC='$.event.middleC', lastC='$.event.lastC',
+            middleMillis='$.event.middleMillis', thresholdC='$.event.thresholdC', riseC='$.event.riseC',
+            spanMillis='$.event.spanMillis', maxGapMillis='$.event.maxGapMillis',
             candidateCombined='$.event.candidateCombined', oldestMillis='$.event.oldestMillis',
             newestMillis='$.event.newestMillis', freshMillis='$.event.freshMillis',
             combinedUntilMillis='$.event.combinedUntilMillis'
         )))
 define stream ContainerStream (
     messageId string, eventId string, shipmentId string, journeyId string,
-    sequence long, candidateExcursion bool, candidateCombined bool,
+    sequence long, count int, firstC double, middleC double, lastC double,
+    middleMillis long, thresholdC double, riseC double, spanMillis long, maxGapMillis long, candidateCombined bool,
     oldestMillis long, newestMillis long, freshMillis long, combinedUntilMillis long
 );
 
@@ -29,9 +33,15 @@ define stream ContainerAckStream (
 from ContainerStream
 select messageId, eventId, shipmentId, journeyId, sequence,
        currentTimeMillis() as evaluatedAtMillis,
-       candidateExcursion and currentTimeMillis() >= newestMillis
+       count == 3 and firstC > thresholdC and middleC > thresholdC and lastC > thresholdC
+           and middleMillis > oldestMillis and newestMillis > middleMillis
+           and middleMillis - oldestMillis <= maxGapMillis and newestMillis - middleMillis <= maxGapMillis
+           and newestMillis - oldestMillis >= spanMillis and currentTimeMillis() >= newestMillis
            and currentTimeMillis() - oldestMillis <= freshMillis as excursion,
-       candidateCombined and currentTimeMillis() >= newestMillis
+       candidateCombined and count == 3 and firstC < middleC and middleC < lastC and lastC - firstC >= riseC
+           and middleMillis > oldestMillis and newestMillis > middleMillis
+           and middleMillis - oldestMillis <= maxGapMillis and newestMillis - middleMillis <= maxGapMillis
+           and newestMillis - oldestMillis >= spanMillis and currentTimeMillis() >= newestMillis
            and currentTimeMillis() - oldestMillis <= freshMillis
            and currentTimeMillis() <= combinedUntilMillis as combined
 insert into ContainerAckStream;

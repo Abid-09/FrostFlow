@@ -18,7 +18,7 @@ A fresh dataset has **100 crates / 1,200 retail packs in total**, zero shipments
 
 One shipment carries one product and one batch; a vehicle carries one active shipment. Stock is reserved atomically by `(productId, batchId)`. Replenishment credits that exact pair; it cannot borrow from other products or batches. Reopening a registry does not restore seed stock. Seed changes apply only to new datasets. The current API uses one seeded batch per product; supplier purchasing, new-batch creation, mixed loads, shelf life, hygiene/segregation and physical vehicle capacity are outside this increment.
 
-All products carry the placeholder `temperatureProfileId: CHILLED-DEMO`. It identifies the agreed shared configurable demonstration profile for future CEP integration. No numeric temperature range, validated product-specific storage rule or food-safety suitability is asserted; future temperature settings must be documented before telemetry/CEP is implemented.
+All products carry `temperatureProfileId: CHILLED-DEMO`. New shipments snapshot the approved configurable `CHILLED-DEMO-v1` assessment settings described in [the foundation contract](PRE-P4-FOUNDATION.md). These numeric triggers are demonstration settings, not validated product-specific storage rules or food-safety suitability.
 
 `GET /stock` lists each product/batch, pack definition, initial crates and current availability. Its top-level `available` is only the sum across products; shipment eligibility uses the selected product/batch. The response also contains `datasetVersion: 3` and `shipmentCount`.
 
@@ -374,7 +374,7 @@ npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn
 npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/receiving.bpmn
 ```
 
-The offline suite defines **57 tests** (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
+The offline suite includes the original **57 tests** plus foundation monitoring/weather regressions (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
 
 The Siddhi delivery-risk rule has its own check, which needs only Docker: `python stage_tests/check_siddhi_risk_rule.py`. It starts a throwaway Siddhi runner and proves that repeated delivery of one ETA event, an isolated late ETA, stale late ETAs and a run broken by an unavailable ETA raise no alert, while three distinct consecutive fresh late ETAs raise exactly one alert per route revision.
 
@@ -532,4 +532,36 @@ For disposable data only, `docker compose down -v` removes that project's engine
 - **502 on creation:** engine-start outcome uncertain; inspect engine/logs before retrying. The registry entry is retained.
 - **A pending command/handoff does not advance:** check `docker compose logs communication` and Operate for publication/worker incidents. Published messages expire after 24 hours if unconsumed; recovery is manual.
 
-One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and temperature/weather integration remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
+One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and cooling/recovery remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
+
+
+## Container monitoring foundation
+
+Use one matched registry/engine stack, with the same sequential dataset commands above. Compose loads both Siddhi apps from `/apps`; container assessment uses `SIDDIHI_CONTAINER_URL=http://siddhi:8008/container` (host port 8008). Sampling and the durable watchdog run independently from GPS ticks, HTTP delivery and Open-Meteo refresh. Both normal GPS-disabled P1 runs and arrivals awaiting receipt continue container monitoring.
+
+`MONITORING_PROFILE_JSON` accepts JSON overrides for the numeric defaults and profile ID in `deployer/monitoring.py`; invalid/unknown settings are refused at shipment creation. New shipments snapshot settings, so changing configuration affects only later shipments. Defaults: normal 3°C, fault 10°C, chicken assessment above 4°C, others above 5°C, 5 s samples, three readings spanning at least 10 s, gap ≤10 s, freshness ≤15 s, silence/finalization timeouts 20 s. Ten seconds demonstrates persistence, not spoilage. No product safety certification is implied.
+
+Use CLI option 18 or:
+
+```bash
+curl -s -X POST http://localhost:5001/shipments/S-DEMO/simulation/temperature \
+  -H 'Content-Type: application/json' \
+  -d '{"commandId":"temperature-demo-1","actor":"demo-operator","scenario":"sustained-excursion"}'
+```
+
+The shipment must have processed loading verification. `normal` emits 3°C; `isolated-spike` emits one fault reading then normal; `sustained-excursion` emits a three-reading rising ramp (3, 3.25, 3.5°C by default), then 10°C; `missing-telemetry` emits no readings. Scenario changes are durable journal entries. They are scripted inputs, not cooling commands or refrigeration physics.
+
+Shipment views show monitoring session/profile, sequence/evaluation cursor, closing sequence/finalization, last reading/freshness, weather, assessment reasons/priority and evidence version. Inspect all stored windows via `GET /shipments/<id>/monitoring/observations`. Raw container observations live in `container_observations`; compliance exports include only business effects such as `MonitoringFinalized`, holds and admission. Existing shipments without a profile snapshot show `legacy/unmonitored`; no migration of their running instances or invented samples occurs.
+
+Open-Meteo requests current temperature, precipitation, wind speed and weather code at the simulated position. Responses retain requested/provider coordinates, UTC model-data time, retrieval time, units and model-based provenance; sanitized JSONL is saved beside the ignored registry. Success caches for 10 minutes by 0.05° grid; at most one refresh attempt per journey per minute. Combined risk requires data age ≤30 minutes and distance ≤10 km, ≥30°C outdoors, current-revision qualified and still-fresh late ETA, plus three rising fresh container readings spanning 10 s and rising ≥0.5°C. Failed/stale data is unavailable. Repeated/cached provider observations retain their identity, and weather alone cannot hold/reject goods.
+
+P3 receipt releases the vehicle independently of assessment. Admission waits for closing evaluation or a durable timeout hold. Unavailable Siddhi or silence cannot silently permit admission. Test dispositions must name `expectedEvidenceVersion` as well as the current incident; CLI option 17 fetches these. New material evidence invalidates older dispositions. No `P4_INCIDENT_URL` leaves immutable handoffs pending and the hold intact.
+
+```bash
+# Existing healthy stack, simulator enabled; four milk crates and a free vehicle:
+.venv/bin/python stage_tests/check_foundation.py
+# Same local Siddhi, isolated temporary SQLite fixtures; no shared engine data:
+.venv/bin/python stage_tests/check_container_assessment.py
+```
+
+These checks distinguish live Siddhi/engine behavior from recorded ETA/weather inputs. Actual Open-Meteo and TomTom checks are recorded separately in [foundation verification](../compliance/foundation-verification.json). The schema fixture and sanitized captured Open-Meteo response in `stage_tests/fixtures/` are labelled separately. New external ProcessDoctor conformance remains pending for changed evidence; historical screenshots do not validate the foundation model/log.

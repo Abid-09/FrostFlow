@@ -13,6 +13,19 @@
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
 
+## Pre-P4 foundation checkpoint — 17 November 2026
+
+- [x] Record authority/checklist, approved demo profile and v1 future-P4 assessment boundary.
+- [x] Add Open-Meteo current conditions, bounded asynchronous calls, cache/eligibility and sanitized replay evidence.
+- [x] Persist container sessions/scenarios through receipt, including after arrival; restart-safe silence watchdog.
+- [x] Ordered Siddhi evaluation, coalesced/versioned holds, urgent combined-risk priority and terminal rejection guards.
+- [x] Explicit P3 monitoring finalization before transactional admission; receipt acknowledgement remains independent.
+- [ ] Complete/review integrated foundation verification and refresh external ProcessDoctor for changed evidence. See [verification report](../compliance/foundation-verification.json).
+- [ ] Review integration PR, then merge only with explicit authorization; smoke-test merged main afterward.
+- [ ] Implement real P4 consumer/investigation only after foundation review and authorised merge. P5/P6 remain later work.
+
+The repair checkpoint below is historical; its reports identify the original revisions. Foundation results and external pending work are recorded separately.
+
 ## Current repair checkpoint — 17 November 2026
 
 - [x] [P2 PR #4](https://github.com/ash-01xor/FrostFlow/pull/4), Rahul: preserve terminal rejection and its incident; later alerts remain evidence with `incidentOpened: false`. Regression proves transport decisions remain usable while release/admission stay forbidden.
@@ -38,10 +51,10 @@ The sections below retain dated historical checkpoints and original P1–P6 work
 - [x] Run the P1 engine check and restart assertions; record results in [the run guide](../docs/RUNNING.md#automated-verification).
 - [ ] Create and execute one minimal real DCR case; record access instructions without credentials.
 - [x] Historical live TomTom requests and sanitized provider evidence recorded; see P2 report for the tested revision.
-- [ ] Recheck TomTom with a valid current key, and implement/verify Open-Meteo independently.
+- [x] Independently call TomTom (HTTP 200) and Open-Meteo current conditions on 17 November 2026; sanitized foundation evidence records exact modes and timestamps.
 - [x] Import the P1 DCR graph and real three-trace log into processdoctor.compute.dtu.dk and run conformance checking.
 
-P1 external conformance checking has passed. A real P4 DCR-PAIS check, weather integration and a current TomTom recheck remain pending; P4 still needs its own executable DCR investigation and account/graph access.
+P1 external conformance checking has passed. A real P4 DCR-PAIS check remains pending; P4 still needs its own executable DCR investigation and account/graph access.
 
 ## Dataset decision — 1 November 2026
 
@@ -50,7 +63,7 @@ P1 external conformance checking has passed. A real P4 DCR-PAIS check, weather i
 - [x] Update menu controls, manual scenario, API contract and offline regression coverage.
 - [x] Preserve legacy pooled datasets; require fresh matching registry/engine data for version 3.
 - [x] Re-run P1/P2 engine scenarios on fresh five-product data, verify persistence after stack recreation and refresh reviewed evidence/source hashes.
-- [ ] Agree numeric demonstration temperature settings before CEP work; CHILLED-DEMO is currently a profile identifier only.
+- [x] Approved pre-P4 plan supplies numeric demonstration assessment settings; snapshot per shipment. See [foundation contract](../docs/PRE-P4-FOUNDATION.md).
 
 The catalogue and scope assumptions are documented in [the run guide](../docs/RUNNING.md#demonstration-dataset). The reviewed execution evidence now covers the five-product catalogue.
 
@@ -105,7 +118,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] PR review (d), extended by the duplicate-event repair: Siddhi alerts only after three distinct consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
 - [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
 - [ ] **P4 dependency (owner awaiting confirmation):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
-- [ ] Re-verify TomTom with a valid key (the 2026-11-15 key now returns HTTP 401).
+- [x] Current foundation TomTom request succeeds (HTTP 200, 17 November 2026); earlier HTTP 401 observations remain historical.
 
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
 - **Implemented and verified:** the Siddhi persistence rule (three consecutive fresh late ETAs), destination-preserving route changes, Camunda route variables, the P3 receipt gate, and the delivery-risk quality hold.
@@ -158,15 +171,18 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 ## Shared integration and demonstration
 
 - [x] Implement/document the current ETA rule: three distinct consecutive fresh late observations, 30-second freshness and 180-second window.
-- [ ] Agree temperature/recovery thresholds, reading cadence, gap limits and units before implementing those patterns.
+- [x] Document approved temperature assessment cadence, persistence, gap limits, freshness and units.
+- [ ] Agree cooling/recovery settings as part of real P4 work.
 - [x] Implement P1–P3 envelope validation, transactional handoffs and event/delivery/command deduplication.
 - [ ] Extend those contracts and retry checks to real P4 and future P5/P6 connections.
 - [x] Implement persistent distinct-ETA delivery risk in Siddhi; isolated-rule and live P2 checks pass.
-- [ ] Implement temperature excursion and post-cooling-command recovery in Siddhi.
+- [x] Implement temperature excursion and weather-supported combined assessment in Siddhi with durable ordered acknowledgements.
+- [ ] Implement post-cooling-command recovery with real P4.
 - [x] Verify the P2 dispatcher-command/Siddhi/scripted-simulator/telemetry loop.
 - [ ] Demonstrate the planned P4 cooling-command/recovery loop and any external simulator connection.
 - [x] Preserve source/input-mode and evidence timestamps for implemented P1–P3 paths.
-- [ ] Extend provenance to weather, temperature/recovery, real P4 and P5/P6 activities.
+- [x] Extend provenance to container assessment and Open-Meteo current conditions.
+- [ ] Extend provenance to recovery, real P4 and P5/P6 activities.
 - [x] Check unavailable/stale ETA observations, duplicate events/commands and independent journeys in the P1–P3 regressions/live runs.
 - [ ] Verify missing temperature/recovery data and full new-incident-after-release behavior with the real P4 investigation.
 - [x] Rehearse current P1–P3 delivery and delay paths, including admission and hold/release/rejection.

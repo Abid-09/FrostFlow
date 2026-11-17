@@ -10,7 +10,7 @@
 
 **Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 awaiting team confirmation; P5–P6 unassigned
 
-**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
+**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. Container excursion/combined-risk CEP, independent Open-Meteo current conditions and P3 monitoring finalization are implemented in the [pre-P4 foundation](PRE-P4-FOUNDATION.md). P4 investigation, cooling/recovery and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
 
 ## 1. What problem are we solving?
 
@@ -49,7 +49,7 @@ We will not build route optimisation, physical sensors, detailed refrigeration p
 
 ## 3. How the system will work
 
-This is the target P1–P6 design. The implemented checkpoint above distinguishes current P1–P3 delivery-risk behavior from future temperature, real DCR investigation and corrective/claim workflows.
+This is the target P1–P6 design. The implemented checkpoint above distinguishes current P1–P3 delivery-risk behavior from future recovery, real DCR investigation and corrective/claim workflows.
 
 1. The warehouse prepares a shipment and confirms loading before dispatch.
 2. During transport, simulated GPS and temperature data enter Siddhi alongside weather and ETA updates.
@@ -160,7 +160,9 @@ Each person also models their process's compliance rules as a DCR graph and chec
 
 | Pattern | What Siddhi checks | Result |
 | --- | --- | --- |
-| Temperature excursion | Container temperature stays above a configured limit for a configured duration | Open quality investigation and hold admission |
+| Temperature excursion (implemented assessment) | Three distinct consecutive fresh readings above the snapshotted threshold span 10 s, with at most 10 s gaps | Persist assessment hold and versioned future-P4 handoff; no DCR case yet |
+| Combined transport risk (implemented assessment) | Current-revision persistent fresh late ETA, three rising readings over 10 s (≥0.5°C rise), eligible outdoor temperature ≥30°C | Urgent assessment, coalescing/escalating the current incident |
+| Missing container data (implemented watchdog) | No valid reading for 20 s, including after restart | Assessment hold; missing data never means normal |
 | Delivery risk | Repeated fresh ETA updates predict arrival after the delivery deadline | Start delay handling and quality assessment |
 | Recovery | After an acknowledged cooling command, readings remain within the configured range for a configured duration | Send recovery evidence to the investigation |
 

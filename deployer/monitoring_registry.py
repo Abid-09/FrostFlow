@@ -66,14 +66,15 @@ class MonitoringRegistry:
     def assessment_hold(self, db, record, reason, evidence, priority="normal", episode=None):
         """Only new material evidence creates a version; continuous alerts coalesce."""
         shipment_id = record["shipmentId"]
+        key = f"{reason}:{episode or evidence['eventId']}"
+        if key in record.setdefault("materialAssessmentKeys", []):
+            return record.get("qualityIncidentId")
+        record["materialAssessmentKeys"].append(key)
         active = record.get("qualityStatus") in ("PENDING", "REJECTED") and record.get("qualityIncidentId")
         opened = not active
         if opened:
             record.update(qualityStatus="PENDING", qualityIncidentId=(f"DELAY:{evidence['eventId']}" if reason == "delivery-risk" else f"ASSESS:{shipment_id}:{evidence['eventId']}"),
                           assessmentReasons=[], assessmentPriority="normal", evidenceVersion=0, assessmentEvidenceKeys=[])
-        key = f"{reason}:{episode or evidence['eventId']}"
-        if key in record.setdefault("assessmentEvidenceKeys", []):
-            return record["qualityIncidentId"]
         record["assessmentEvidenceKeys"].append(key)
         record["evidenceVersion"] = record.get("evidenceVersion", 0) + 1
         if reason not in record.setdefault("assessmentReasons", []):
@@ -89,8 +90,11 @@ class MonitoringRegistry:
             "profile": record.get("monitoringProfile"), "observationReference": evidence,
             "interval": {"from": evidence.get("from", evidence.get("occurredAt", at)), "to": evidence.get("occurredAt", at)},
             "weather": evidence.get("weather", record.get("weather")), "eta": evidence.get("eta", record.get("etaAssessment")),
-            "missingEvidence": evidence.get("missingEvidence", []),
-            "source": "container-monitoring", "inputMode": "simulated", "occurredAt": evidence.get("occurredAt", at), "recordedAt": at,
+            "missingEvidence": evidence.get("missingEvidence", []) +
+                ([] if evidence.get("weather", record.get("weather", {})) else ["outdoor conditions"]) +
+                ([] if evidence.get("eta", record.get("etaAssessment", {})) else ["ETA context"]),
+            "source": "delivery-risk-integration" if reason == "delivery-risk" else "container-monitoring",
+            "inputMode": evidence.get("inputMode", "simulated"), "occurredAt": evidence.get("occurredAt", at), "recordedAt": at,
         }
         handoff_id = f"P4:Assessment:{shipment_id}:{record['qualityIncidentId']}:{record['evidenceVersion']}"
         record["lastAssessment"] = extension
@@ -109,7 +113,7 @@ class MonitoringRegistry:
 
     def sample_container(self, shipment_id, at=None, celsius=None):
         """Persist before delivery. Optional explicit values support recorded replay tests."""
-        at = at or stamp()
+        at = datetime.fromtimestamp(seconds(at or stamp()), timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
         with self.transaction() as db:
             record = self.read(db, shipment_id)
             session = record.get("monitoring", {})
@@ -125,6 +129,8 @@ class MonitoringRegistry:
             if celsius is None:
                 fault = session["scenario"] == "sustained-excursion" or (session["scenario"] == "isolated-spike" and session["scenarioIndex"] == 0)
                 celsius = settings["faultC"] if fault else settings["normalC"]
+                if session["scenario"] == "sustained-excursion" and session["scenarioIndex"] < 3:
+                    celsius = settings["normalC"] + session["scenarioIndex"] * settings["riseC"] / 2
             if isinstance(celsius, bool) or not isinstance(celsius, (int, float)) or not math.isfinite(celsius):
                 raise ValueError("celsius must be finite")
             session["scenarioIndex"] += 1
@@ -146,11 +152,15 @@ class MonitoringRegistry:
                     session["episode"][label] = seq
             context = {"observation": observation, "window": window, "weather": record.get("weather"),
                        "eta": record.get("etaAssessment"), "position": record.get("currentPosition", [48.8566, 2.3522]),
-                       "episodes": dict(session["episode"])}
+                       "episodes": dict(session["episode"]), "routeRevision": record.get("routeRevision", 0)}
             db.execute("INSERT INTO container_observations VALUES (?,?,?,?)", (shipment_id, seq, json.dumps(context), None))
-            combined = self.combined_candidate(context, settings, at, rising)
             payload = {"eventId": event_id, "shipmentId": shipment_id, "journeyId": record["journeyId"], "sequence": seq,
-                       "candidateExcursion": excursion, "candidateCombined": combined,
+                       "candidateCombined": self.combined_candidate(context, settings, at, True),
+                       "count": len(window), "firstC": window[0]["celsius"],
+                       "middleC": window[1]["celsius"] if len(window) > 1 else celsius, "lastC": celsius,
+                       "middleMillis": int(seconds(window[1]["occurredAt"] if len(window) > 1 else at) * 1000),
+                       "thresholdC": settings["thresholdC"], "riseC": settings["riseC"],
+                       "spanMillis": int(settings["spanSeconds"] * 1000), "maxGapMillis": int(settings["maxGapSeconds"] * 1000),
                        "oldestMillis": int(seconds(window[0]["occurredAt"]) * 1000),
                        "newestMillis": int(seconds(at) * 1000), "freshMillis": int(settings["freshSeconds"] * 1000),
                        "combinedUntilMillis": int(min(seconds((context.get("eta") or {}).get("observedAt", at)) + 30,
@@ -163,7 +173,7 @@ class MonitoringRegistry:
     def combined_candidate(context, settings, at, rising):
         eta = context.get("eta") or {}
         weather = context.get("weather")
-        return bool(rising and eta.get("qualified") and eta.get("late")
+        return bool(rising and eta.get("revision", 0) == context.get("routeRevision", 0) and eta.get("qualified") and eta.get("late")
                     and 0 <= seconds(at) - seconds(eta["observedAt"]) <= 30
                     and eligible(weather, context["position"], settings, at)
                     and weather["conditions"]["temperature_2m"] >= settings["hotC"])
@@ -177,6 +187,8 @@ class MonitoringRegistry:
             raise ValueError("invalid evaluation sequence or result")
         if type(data["evaluatedAtMillis"]) not in (int, float) or not math.isfinite(data["evaluatedAtMillis"]):
             raise ValueError("invalid evaluation timestamp")
+        if not 0 <= data["evaluatedAtMillis"] <= seconds(stamp()) * 1000 + 1000:
+            raise ValueError("evaluation timestamp is out of range")
         evaluated_at = datetime.fromtimestamp(data["evaluatedAtMillis"] / 1000, timezone.utc).isoformat()
         with self.transaction() as db:
             record = self.read(db, data["shipmentId"])
@@ -211,7 +223,11 @@ class MonitoringRegistry:
                 item, ack = json.loads(pending[0]), json.loads(pending[1])
                 evidence = {**item["observation"], "weather": item["weather"], "eta": item["eta"],
                             "from": item["window"][0]["occurredAt"]}
-                if ack["evaluatedAtMillis"] / 1000 - seconds(item["observation"]["occurredAt"]) > record["monitoringProfile"]["freshSeconds"]:
+                evaluation_age = ack["evaluatedAtMillis"] / 1000 - seconds(item["observation"]["occurredAt"])
+                was_excursion, was_rising = evaluate(item["window"], record["monitoringProfile"], item["observation"]["occurredAt"])
+                if (evaluation_age > record["monitoringProfile"]["freshSeconds"] or
+                    (was_excursion and not ack["excursion"]) or
+                    (self.combined_candidate(item, record["monitoringProfile"], item["observation"]["occurredAt"], was_rising) and not ack["combined"])):
                     self.assessment_hold(db, record, "monitoring-evaluation-unavailable",
                                          {**evidence, "missingEvidence": ["fresh Siddhi evaluation"]}, episode="evaluation")
                 for flag, reason, priority, label in (("excursion", "temperature-excursion", "normal", "excursion"),
@@ -242,6 +258,7 @@ class MonitoringRegistry:
             return
         if session["evaluatedThrough"] == session["closingSequence"]:
             session["finalization"] = "FINALIZED"
+            self.monitoring_finalized_event(db, record)
 
     def monitoring_watchdog(self, db, record, at):
         session = record.get("monitoring", {})
@@ -256,6 +273,7 @@ class MonitoringRegistry:
                                      {"eventId": f"close:{session['closingSequence']}", "occurredAt": at,
                                       "missingEvidence": ["evaluation through closing sequence"]}, episode="evaluation")
                 session["finalization"] = "HELD"
+                self.monitoring_finalized_event(db, record)
 
     def tick_monitoring(self, at=None):
         at = at or stamp()
@@ -280,3 +298,18 @@ class MonitoringRegistry:
             self.monitoring_finalize(db, record)
             self.save(db, record)
             return session.get("finalization") in ("FINALIZED", "HELD")
+
+    def monitoring_finalized_event(self, db, record):
+        session = record["monitoring"]
+        self.event(db, record, "MonitoringFinalized", process="P3",
+                   event_id=f"P3:{record['shipmentId']}:MonitoringFinalized",
+                   payload={"closingSequence": session["closingSequence"],
+                            "evaluatedThrough": session["evaluatedThrough"],
+                            "finalization": session["finalization"],
+                            "incidentId": record.get("qualityIncidentId")})
+
+    def container_observations(self, shipment_id):
+        with self.transaction() as db:
+            self.read(db, shipment_id)
+            return [json.loads(raw) for (raw,) in db.execute(
+                "SELECT data FROM container_observations WHERE shipment_id=? ORDER BY sequence", (shipment_id,))]

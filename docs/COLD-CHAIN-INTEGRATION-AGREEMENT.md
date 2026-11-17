@@ -200,7 +200,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | Fresh ProcessDoctor checks for current P2/P3 logs | Rahul (P2), Arunima Garg (P3); portal access | Record actual results for the current log hashes; historical checks do not establish current conformance |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
 | Real P4 investigation consumer and authorised dispositions | P4 owner awaiting confirmation; executable DCR service | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
-| External physical simulator, temperature/recovery CEP and weather | Shared owners to be assigned | Agree external contracts and verify new end-to-end paths; the local scripted simulator remains the current implementation |
+| External physical simulator and cooling/recovery CEP | Shared owners to be assigned | Remain future work. The foundation implements simulated container assessment and Open-Meteo current conditions; see the contract below |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.
 
@@ -271,3 +271,16 @@ ETA retries are removed by `(shipmentId, journeyId, eventId)` before Siddhi clas
 A delivery-risk alert for `REJECTED` goods preserves the quality status, original incident and recorded disposition. The durable `DeliveryRiskIncident` handoff contains the new risk evidence, `qualityStatus: REJECTED` and `incidentOpened: false`. Transport decisions remain available; quality release and stock admission remain forbidden. This is a persisted handoff contract, not an implemented P4 investigation.
 
 The P3 compliance runner waits for `AWAITING_LOADING` with no `pendingCommand` before requesting loading verification. The application guard remains enforced. Current live execution, local replay and external conformance results are recorded separately in the verification reports; see the run guide for commands and remaining checks.
+
+
+## Pre-P4 monitoring and assessment contract
+
+The [foundation specification](PRE-P4-FOUNDATION.md) defines the approved profile, provenance, weather eligibility and v1 assessment extension. It extends P1–P3 and the future P4 boundary; it creates no executable investigation or authorised decision workflow.
+
+- `POST /shipments/<id>/simulation/temperature`: `commandId`, `actor`, and `scenario` (`normal`, `isolated-spike`, `sustained-excursion`, `missing-telemetry`). Exact retries return the accepted result; conflicting command reuse fails. Changes affect future readings and are journalled.
+- `GET /shipments/<id>/monitoring/observations`: persisted observation/window/context references in sequence order. Raw samples are separate from compliance business activities.
+- `POST /integrations/siddhi/container-assessment`: eventId, shipmentId, journeyId, sequence, evaluatedAtMillis, excursion and combined booleans. The production outbox consumes this same acknowledgement from Siddhi's synchronous `/container` response on port 8008. Stored evidence/profile must match. Out-of-order acknowledgements wait for all preceding sequences; risk effects and cursor advancement are atomic. Changed result reuse fails.
+- `p4-http` / `P4_INCIDENT_URL`: existing `DeliveryRiskIncident` delay fields remain. Container/uncertainty reasons use `AssessmentRequested`, with the same identity/quality envelope and `assessment.schemaVersion: 1`. Handoff payloads are immutable per delivery ID; unavailable consumer means PENDING, with hold intact.
+- `POST /integrations/p4/quality-status`: monitored RELEASED/REJECTED dispositions require `expectedEvidenceVersion` and the current incident. This trusted-local test endpoint is a stand-in. Material new reason/episode/urgent escalation advances the version. Normal readings never release goods; terminal rejection retains its incident.
+
+Loading verification starts a session with an immutable profile. Physical receipt closes it at a final sequence and promptly sends P2 acknowledgement. `p3-finalize-monitoring` keeps P3 at an explicit service task until evaluation reaches closure, or a 20-second timeout establishes a durable uncertainty hold. Admission rechecks closed/finalized monitoring and current quality permission in one transaction. Legacy shipments without a snapshot are labelled legacy/unmonitored and retain their original engine model.

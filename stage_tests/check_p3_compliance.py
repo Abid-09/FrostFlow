@@ -53,7 +53,7 @@ def require(response, expected, action):
     return result
 
 
-def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, passed=True):
+def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, passed=True, monitoring_scenario=None):
     shipment_id = f"p3comp-{run_id}-{scenario}"
     now = datetime.now(timezone.utc)
     data = {
@@ -95,6 +95,10 @@ def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, 
         "verify loading",
     )
     wait_for("loading verification", lambda: http(base, url)[1].get("state") == "AWAITING_DISPATCH")
+    if monitoring_scenario:
+        require(http(base, url + "/simulation/temperature", {
+            "commandId": f"temperature-{shipment_id}", "actor": "foundation-check", "scenario": monitoring_scenario}),
+            202, "set container scenario")
     require(
         http(base, url + "/dispatch", {"actor": "p3-compliance-check"}),
         202,
@@ -110,8 +114,16 @@ def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, 
         ),
     )
 
+    if monitoring_scenario in ("sustained-excursion", "missing-telemetry"):
+        record = wait_for("container assessment hold", lambda: (
+            current if (current := http(base, url)[1]).get("qualityStatus") == "PENDING" else None))
+    elif monitoring_scenario == "isolated-spike":
+        wait_for("three container observations", lambda: http(base, url)[1].get("monitoring", {}).get("sequence", 0) >= 3)
+        record = http(base, url)[1]
+        if record["qualityStatus"] != "CLEAR":
+            raise RuntimeError("isolated spike unexpectedly held goods")
     accepted_integration_events = []
-    if hold_outcome:
+    if hold_outcome and not monitoring_scenario:
         pending_event_id = f"quality-pending-{shipment_id}"
         pending_occurred_at = timestamp()
         pending_payload = {
@@ -183,7 +195,7 @@ def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, 
                 "occurredAt": timestamp(),
                 "qualityStatus": hold_outcome,
                 "expectedEvidenceVersion": http(base, url)[1].get("evidenceVersion", 0),
-                "incidentId": f"incident-{shipment_id}",
+                "incidentId": http(base, url)[1]["qualityIncidentId"],
             }),
             202,
             f"send P4 {hold_outcome.lower()} disposition",

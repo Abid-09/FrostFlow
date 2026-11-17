@@ -8,13 +8,13 @@ Developed for **02268 — Process-oriented and Event-driven Software Systems**, 
 
 The system follows refrigerated shipments from warehouse preparation to cafeteria receiving and any subsequent quality investigation, corrective fulfilment or supplier claim. The scenario covers two vehicles, three campus cafeterias and five chilled products: milk, yoghurt, fresh cheese, chicken breast and prepared salad.
 
-Delivery-risk events already support workflow decisions through the local Siddhi app; temperature-excursion and recovery patterns remain planned. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated. Optional TomTom traffic ETAs are implemented; weather integration remains planned.
+Delivery-risk events support workflow decisions through the local Siddhi app. Container excursion and combined transport-risk assessment are implemented; recovery remains planned. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated. Optional TomTom traffic ETAs are implemented; Open-Meteo current outdoor conditions support urgent combined-risk assessment.
 
 ## Demonstration dataset
 
 A fresh dataset contains **20 crates of each of five products: 100 crates total**. Each crate represents 12 retail packs, with the pack size defined in [the catalogue](deployer/catalog.json). Every shipment contains one product from one batch. Reservations and replenishment use that exact product/batch; total stock cannot substitute for a missing item.
 
-The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all products, batches, units and stored records. These are simulated quantities and handling assumptions. `CHILLED-DEMO` identifies a shared demonstration profile; product-specific food-safety limits have not been validated or implemented.
+The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all products, batches, units and stored records. These are simulated quantities and handling assumptions. `CHILLED-DEMO` identifies a shared demonstration profile; new shipments snapshot configurable assessment triggers, whose product-specific food-safety suitability has not been validated.
 
 **Existing pooled-stock databases require a new dataset.** Preserve their matching engine data and follow [the upgrade/start instructions](docs/RUNNING.md#persistence-isolated-checks-and-troubleshooting); they are not converted automatically.
 
@@ -120,7 +120,7 @@ P4 will use DCR to **execute** the quality investigation. Its model will belong 
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** P4 ownership awaits team confirmation; P5/P6 and shared external integration owners remain unassigned. P4's real investigation/consumer, fresh P2/P3 ProcessDoctor checks, a current live TomTom recheck, temperature/weather integration and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** P4 ownership awaits team confirmation; P5/P6 and shared external integration owners remain unassigned. P4's real investigation/consumer, ProcessDoctor refreshes for changed foundation evidence, recovery and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 
@@ -133,3 +133,10 @@ P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival
 - [AI-use record](project_notes/AI-USAGE.md) — assistance recorded for the team contract declaration.
 
 Team members work on feature branches and review changes before merging into `main`. Changes to shared interfaces must update the integration agreement and their affected producers and consumers. Credentials, generated runtime data and supplied course/team PDFs are excluded from version control.
+
+
+## Pre-P4 monitoring foundation
+
+See the [requirements and assessment contract](docs/PRE-P4-FOUNDATION.md) and [run instructions](docs/RUNNING.md#container-monitoring-foundation). New shipments monitor from processed loading verification through physical receipt. Container observations are persisted and evaluated by Siddhi; silence or unresolved closing evaluation creates a durable assessment hold. P3 finalizes monitoring before checking current quality permission and admitting stock. Holds do not delay P2 vehicle release after receipt.
+
+CLI option 18 selects normal, isolated-spike, sustained-excursion or missing-telemetry scenarios. Open-Meteo outdoor heat can raise a combined assessment to urgent when fresh persistent ETA lateness and rising container readings coincide. Weather cannot replace container measurements or reject goods. The versioned retry-safe P4 handoff remains queued without a consumer; CLI dispositions are labelled stand-ins and require current incident/evidence version. P4–P6 execution, cooling, recovery and incident closure are excluded. [Foundation verification](compliance/foundation-verification.json) separates recorded fixtures, live providers, live engine execution and pending external conformance.

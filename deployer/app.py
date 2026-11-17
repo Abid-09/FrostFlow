@@ -119,6 +119,9 @@ def health():
         jobTypes=JOB_TYPES,
         integrations={
             "gps": "scripted-demo" if os.getenv("P2_SIMULATOR_ENABLED", "true").lower() == "true" else "disabled",
+            "containerMonitoring": "simulated-independent",
+            "containerEvaluation": "siddhi" if os.getenv("SIDDIHI_CONTAINER_URL") else "unavailable-hold-on-timeout",
+            "weather": "open-meteo-current-model",
             "tomtom": "enabled" if os.getenv("TOMTOM_API_KEY") else "local-demo-estimate",
             "siddhiTelemetry": "enabled" if os.getenv("SIDDIHI_TELEMETRY_URL") else "not-configured",
             "siddhiCommands": "enabled" if os.getenv("SIDDIHI_COMMAND_URL") else "local-demo-acknowledgement",
@@ -136,6 +139,11 @@ def shipment(shipment_id):
 @app.get("/shipments/<shipment_id>/events")
 def events(shipment_id):
     return jsonify(registry.events(shipment_id))
+
+
+@app.get("/shipments/<shipment_id>/monitoring/observations")
+def container_observations(shipment_id):
+    return jsonify(registry.container_observations(shipment_id))
 
 
 @app.get("/stock")
@@ -255,10 +263,10 @@ def p4_quality_status():
     data = body()
     accepted = registry.accept_quality_status(
         text_field(data, "shipmentId"),
-        text_field(data, "eventId"),
+        text_field(data, "eventId", max_length=1000),
         utc_timestamp(data, "occurredAt"),
         text_field(data, "qualityStatus"),
-        text_field(data, "incidentId"),
+        text_field(data, "incidentId", max_length=1000),
         data.get("expectedEvidenceVersion"),
     )
     return jsonify(

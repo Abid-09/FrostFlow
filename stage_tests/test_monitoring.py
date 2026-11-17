@@ -196,3 +196,95 @@ class MonitoringTests(unittest.TestCase):
         for times, at in (([0, 5, 10], 16), ([0, 5, 10], 9), ([0, 11, 16], 16), ([0, 4, 8], 8), ([0, 0, 10], 10)):
             self.assertEqual(run(times, at), (False, False))
         self.assertEqual(run([0, 5, 10], 15), (True, False))
+
+    def test_invalid_acknowledgements_and_exact_retries(self):
+        self.sample(0)
+        self.ack(1)
+        with self.db.transaction() as db:
+            raw = db.execute("SELECT ack FROM container_observations WHERE shipment_id='S' AND sequence=1").fetchone()[0]
+        data = json.loads(raw)
+        self.assertEqual(self.db.acknowledge_container(data)["status"], "accepted")
+        with self.assertRaises(Conflict):
+            self.db.acknowledge_container({**data, "excursion": True})
+        with self.assertRaises(Conflict):
+            self.db.acknowledge_container({**data, "eventId": "wrong"})
+        with self.assertRaises(Conflict):
+            self.db.acknowledge_container({**data, "sequence": 999})
+        with self.assertRaises(ValueError):
+            self.db.acknowledge_container({**data, "evaluatedAtMillis": 10**100})
+
+    def test_empty_session_and_release_not_reopened_without_new_episode(self):
+        self.close(1)
+        record = self.db.get("S")
+        self.assertEqual(record["monitoring"]["finalization"], "FINALIZED")
+        self.assertEqual(record["qualityStatus"], "PENDING")
+        self.assertEqual(self.db.admit_p3_stock("S", 3), {"admissionOutcome": "HELD"})
+        self.disposition()
+        self.db.tick_monitoring(self.at(50))
+        self.assertEqual(self.db.get("S")["qualityStatus"], "RELEASED")
+
+    def test_mock_consumer_retry_receives_same_delivery_and_payload(self):
+        import threading
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        from urllib.error import HTTPError
+        from transport_integrations import post_json
+        for t in (0, 5, 10):
+            self.sample(t, 10)
+            self.ack(t // 5 + 1)
+        deliveries = []
+        class Consumer(BaseHTTPRequestHandler):
+            def do_POST(inner):
+                body = json.loads(inner.rfile.read(int(inner.headers["Content-Length"])))
+                deliveries.append((inner.headers["Idempotency-Key"], body))
+                inner.send_response(503 if len(deliveries) == 1 else 200)
+                inner.end_headers()
+                inner.wfile.write(b'{}')
+            def log_message(inner, *args):
+                pass
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Consumer)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            message = self.db.pending_messages("p4-http")[0]
+            url = f"http://127.0.0.1:{server.server_port}/assessment"
+            with self.assertRaises(HTTPError):
+                post_json(url, message["variables"], {"Idempotency-Key": message["messageId"]})
+            self.db.message_result(message["messageId"], "HTTP 503")
+            self.assertEqual(self.db.get("S")["qualityStatus"], "PENDING")
+            retry = self.db.pending_messages("p4-http")[0]
+            post_json(url, retry["variables"], {"Idempotency-Key": retry["messageId"]})
+            self.db.message_result(retry["messageId"])
+            self.assertEqual(deliveries[0], deliveries[1])
+            self.assertEqual(self.db.pending_messages("p4-http"), [])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+    def test_material_evidence_invalidates_old_release_and_escalates_once(self):
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S")
+            incident = self.db.assessment_hold(db, record, "delivery-risk", {"eventId": "delay", "occurredAt": self.at(0)})
+            self.db.save(db, record)
+        old_version = self.db.get("S")["evidenceVersion"]
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S")
+            self.db.assessment_hold(db, record, "combined-transport-risk", {"eventId": "hot-rise", "occurredAt": self.at(10)}, "urgent", "rise-1")
+            self.db.save(db, record)
+        self.assertEqual(self.db.get("S")["qualityIncidentId"], incident)
+        self.assertEqual(self.db.get("S")["assessmentPriority"], "urgent")
+        with self.assertRaises(Conflict):
+            self.disposition(version=old_version)
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S")
+            self.db.assessment_hold(db, record, "combined-transport-risk", {"eventId": "hot-rise-2", "occurredAt": self.at(15)}, "urgent", "rise-1")
+            self.db.save(db, record)
+        self.assertEqual(self.db.get("S")["evidenceVersion"], old_version + 1)
+
+    def test_snapshot_configuration_does_not_reinterpret_existing_shipments(self):
+        with patch.dict("os.environ", {"MONITORING_PROFILE_JSON": '{"thresholdC": 8}'}):
+            self.create("C", "V-02")
+        self.assertEqual(self.db.get("S")["monitoringProfile"]["thresholdC"], 5)
+        self.assertEqual(self.db.get("C")["monitoringProfile"]["thresholdC"], 8)
+        with self.assertRaises(ValueError):
+            profile("PRD-001", {"MONITORING_PROFILE_JSON": '{"sampleSeconds": 0}'})

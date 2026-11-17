@@ -10,7 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-from monitoring import profile
+from monitoring import profile, seconds
 from monitoring_registry import MonitoringRegistry
 
 
@@ -259,7 +259,12 @@ class Registry(MonitoringRegistry):
 
     def get(self, shipment_id):
         with self.transaction() as db:
-            return self.read(db, shipment_id)
+            record = self.read(db, shipment_id)
+            session = record.get("monitoring", {})
+            record["monitoringStatus"] = session.get("state", "configured-awaiting-loading" if "monitoringProfile" in record else "legacy/unmonitored")
+            last = session.get("lastValidAt")
+            record["containerReadingFresh"] = bool(last and 0 <= seconds(now()) - seconds(last) <= record["monitoringProfile"]["freshSeconds"])
+            return record
 
     def inventory(self):
         with self.transaction() as db:
@@ -612,7 +617,7 @@ class Registry(MonitoringRegistry):
             if data["status"] == "ACKNOWLEDGED":
                 return
             status = "PENDING" if error else (
-                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http", "p4-http") else "PUBLISHED"
+                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http", "p4-http", "container-siddhi") else "PUBLISHED"
             )
             data.update(status=status, lastError=error)
             db.execute(
@@ -865,15 +870,19 @@ class Registry(MonitoringRegistry):
             self.enqueue(db, eta_event["eventId"], "TelemetryUpdate", shipment_id,
                          {"event": eta_event}, destination="siddhi-http")
             previous_eta = record.get("etaAssessment", {})
+            if previous_eta.get("eventId") == eta_event["eventId"]:
+                self.save(db, record)
+                return record
             late = eta is not None and epoch_milliseconds(eta) > epoch_milliseconds(record["deliveryDeadline"])
             consecutive = previous_eta.get("times", []) if previous_eta.get("revision") == revision and previous_eta.get("late") else []
+            observed_at = eta_event["occurredAt"]
             current_ms = epoch_milliseconds(observed_at)
             consecutive = [t for t in consecutive if 0 <= current_ms - t <= 180000] if late else []
             if late:
                 consecutive = (consecutive + [current_ms])[-3:]
             record["etaAssessment"] = {"revision": revision, "late": late, "observedAt": observed_at,
                                        "times": consecutive, "qualified": len(consecutive) == 3,
-                                       "eta": eta, "inputMode": eta_source}
+                                       "eta": eta, "inputMode": eta_source, "eventId": eta_event["eventId"]}
             self.save(db, record)
             return record
 
@@ -1039,6 +1048,7 @@ class Registry(MonitoringRegistry):
                     routeId=decision_event["routeId"], routeIndex=0,
                     routeCoordinates=route_coordinates,
                     routeRevision=record.get("routeRevision", 0) + 1,
+                    etaAssessment={"qualified": False},
                     eta=eta, etaSource=eta_source,
                 )
             record.pop("pendingDeliveryRisk", None)
