@@ -128,8 +128,8 @@ class Preparation(unittest.TestCase):
             if event["eventType"] == "ShipmentDispatched"
         )
         self.db.start_transport("S-test", 999, dispatch)
-        points = service.transport_integrations.route("route-01")
-        eta, source = service.transport_integrations.eta("route-01", points[0], 0)
+        points = service.transport_integrations.route("route-01", "C-01")
+        eta, source = service.transport_integrations.eta(points, "route-01", 0)
         self.db.start_journey("S-test", 999, points[0], eta, source, points)
 
     def test_dispatch_requires_processed_loading(self):
@@ -501,12 +501,12 @@ class Preparation(unittest.TestCase):
 
     def test_simulated_route_records_siddhi_telemetry_and_queues_arrival(self):
         self.start_p2_transport()
-        points = service.transport_integrations.route("route-01")
+        points = service.transport_integrations.route("route-01", "C-01")
         for index in range(1, len(points)):
-            eta, source = service.transport_integrations.eta("route-01", points[index], index)
+            eta, source = service.transport_integrations.eta(points[index:], "route-01", index)
             record = self.db.advance_telemetry("S-test", points[index], index, eta, source)
         self.assertEqual(record["currentPosition"], points[-1])
-        self.assertEqual(record["etaSource"], "local-demo-estimate")
+        self.assertEqual(record["etaSource"], "at-destination")
         self.assertEqual(
             len(self.db.pending_messages(destination="siddhi-http")), 2 * (len(points) - 1)
         )
@@ -519,6 +519,16 @@ class Preparation(unittest.TestCase):
         self.assertEqual(accepted["event"]["inputMode"], "simulated")
         self.assertEqual(accepted["event"]["journeyId"], "J-test")
         self.assertEqual(accepted["event"]["shipmentId"], "S-test")
+
+    def test_unavailable_eta_is_recorded_without_deadline_comparison(self):
+        self.start_p2_transport()
+        points = service.transport_integrations.route("route-01", "C-01")
+        record = self.db.advance_telemetry("S-test", points[1], 1, None, "tomtom-unavailable")
+        self.assertIsNone(record["eta"])
+        self.assertEqual(record["etaSource"], "tomtom-unavailable")
+        eta_event = next(e for e in self.db.events("S-test") if e["eventType"] == "ETAUpdated")
+        self.assertIsNone(eta_event["payload"]["etaMillis"])
+        self.assertEqual(eta_event["payload"]["etaSource"], "tomtom-unavailable")
 
     def test_risk_decision_is_deduplicated_and_route_waits_for_ack(self):
         self.start_p2_transport()
@@ -554,8 +564,9 @@ class Preparation(unittest.TestCase):
         with self.assertRaises(Conflict):
             self.db.apply_dispatcher_decision("S-test", 999, accepted,
                                                {"commandId": "decision-1", "simulatorAcknowledged": False})
-        points = service.transport_integrations.route("route-03")
-        eta, source = service.transport_integrations.eta("route-03", self.db.get("S-test")["currentPosition"], 0)
+        points = service.transport_integrations.route(
+            "route-03", "C-01", start=self.db.get("S-test")["currentPosition"])
+        eta, source = service.transport_integrations.eta(points, "route-03", 0)
         ack = service.transport_integrations.route_command({"commandId": "decision-1"})
         record = self.db.apply_dispatcher_decision("S-test", 999, accepted, ack, points, eta, source)
         self.assertEqual(record["routeId"], "route-03")
@@ -567,7 +578,7 @@ class Preparation(unittest.TestCase):
         self.assertIsNone(record.get("pendingDeliveryRisk"))
         next_position = record["routeCoordinates"][1]
         next_eta, next_source = service.transport_integrations.eta(
-            "route-03", next_position, 1
+            record["routeCoordinates"][1:], "route-03", 1
         )
         self.db.advance_telemetry("S-test", next_position, 1, next_eta, next_source)
         self.assertTrue(
@@ -577,6 +588,162 @@ class Preparation(unittest.TestCase):
             self.db.get("S-test")["currentPosition"], next_position
         )
         self.assertEqual(self.http.post("/shipments/S-test/dispatcher-decision", json=decision).status_code, 202)
+
+    def risk_at_index(self, index, event_id="SIDDHI:RISK:late-1"):
+        """Move the scripted vehicle to `index`, then accept a Siddhi delivery risk."""
+        record = self.db.get("S-test")
+        points = record["routeCoordinates"]
+        for i in range(record.get("routeIndex", 0) + 1, index + 1):
+            eta, source = service.transport_integrations.eta(points[i:], record["routeId"], i)
+            self.db.advance_telemetry("S-test", points[i], i, eta, source)
+        response = self.http.post("/integrations/siddhi/delivery-risk", json={
+            "shipmentId": "S-test", "eventId": event_id,
+            "occurredAt": "2026-12-01T10:20:00Z", "eta": "2026-12-01T12:00:00Z",
+            "deliveryDeadline": "2026-12-01T11:00:00Z", "reason": "late",
+        })
+        self.assertEqual(response.status_code, 202, response.json)
+        risk = next(item for item in self.db.pending_messages(destination="zeebe")
+                    if item["name"] == "DeliveryRiskDetected"
+                    and item["variables"]["deliveryRiskEvent"]["eventId"] == event_id)
+        self.db.record_delivery_risk("S-test", 999, risk["variables"]["deliveryRiskEvent"])
+        return response.json
+
+    def decide(self, event_id, decision, route_id=None):
+        body = {"eventId": event_id, "decision": decision}
+        if route_id:
+            body["routeId"] = route_id
+        response = self.http.post("/shipments/S-test/dispatcher-decision", json=body)
+        self.assertEqual(response.status_code, 202, response.json)
+        return next(item for item in self.db.pending_messages(destination="zeebe")
+                    if item["name"] == "DispatcherDecisionRecorded"
+                    and item["variables"]["dispatcherDecision"]["eventId"] == event_id
+                    )["variables"]["dispatcherDecision"]
+
+    def test_route_change_preserves_destination_and_arrival_happens_there(self):
+        import asyncio
+        from types import SimpleNamespace
+        from transport_integrations import DESTINATIONS
+
+        self.start_p2_transport()
+        destination = self.db.get("S-test")["routeCoordinates"][-1]
+        self.assertEqual(destination, DESTINATIONS["C-01"])
+        self.risk_at_index(3)
+        decision = self.decide("change-1", "APPROVE_ALTERNATIVE_ROUTE", "route-02")
+        # The real worker plans from the current position, applies after the
+        # acknowledgement and returns the updated route variables to Camunda.
+        result = asyncio.run(service.apply_dispatcher_decision(
+            "S-test", decision, SimpleNamespace(process_instance_key=999)))
+        self.assertEqual(result, {"simulatorAcknowledged": True,
+                                  "routeId": "route-02", "routeRevision": 1})
+        record = self.db.get("S-test")
+        self.assertEqual(record["routeId"], "route-02")
+        self.assertEqual(record["routeCoordinates"][0], record["currentPosition"])
+        self.assertEqual(record["routeCoordinates"][-1], destination)
+        points = record["routeCoordinates"]
+        for i in range(1, len(points)):
+            eta, source = service.transport_integrations.eta(points[i:], "route-02", i)
+            record = self.db.advance_telemetry("S-test", points[i], i, eta, source)
+        self.assertEqual(record["currentPosition"], destination)
+        self.assertEqual(record["etaSource"], "at-destination")
+        arrival = self.db.queue_transport_event(
+            "S-test", "ShipmentArrived", "SIM:J-test:ShipmentArrived",
+            record["lastGpsEventOccurredAt"],
+            {"recipientId": "C-01", "latitude": record["currentPosition"][0],
+             "longitude": record["currentPosition"][1]},
+            source="p2-simulator", input_mode="simulated")
+        payload = arrival["event"]["payload"]
+        self.assertEqual([payload["latitude"], payload["longitude"]], destination)
+
+    def test_incompatible_routes_are_rejected(self):
+        self.start_p2_transport()
+        self.risk_at_index(2)
+        unknown = self.http.post("/shipments/S-test/dispatcher-decision", json={
+            "eventId": "bad-1", "decision": "APPROVE_ALTERNATIVE_ROUTE", "routeId": "route-09"})
+        self.assertEqual(unknown.status_code, 400, unknown.json)
+        # A stored route ending somewhere other than the recipient (e.g. a legacy
+        # journey) must refuse any change that would end elsewhere.
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record["routeCoordinates"] = [*record["routeCoordinates"][:-1], [48.80, 2.20]]
+            self.db.save(db, record)
+        moved = self.http.post("/shipments/S-test/dispatcher-decision", json={
+            "eventId": "bad-2", "decision": "APPROVE_ALTERNATIVE_ROUTE", "routeId": "route-02"})
+        self.assertEqual(moved.status_code, 409, moved.json)
+        self.assertIn("destination", moved.json["error"])
+        command = self.http.post("/integrations/simulator/route-command", json={"event": {
+            "commandId": "bad-3", "shipmentId": "S-test", "journeyId": "J-test",
+            "riskEventId": "SIDDHI:RISK:late-1", "command": "ChangeRoute", "routeId": "route-02"}})
+        self.assertEqual(command.status_code, 409, command.json)
+
+    def test_delivery_risk_holds_quality_until_current_incident_release(self):
+        self.start_p2_transport()
+        self.risk_at_index(2)
+        record = self.db.get("S-test")
+        incident = record["qualityIncidentId"]
+        self.assertEqual(record["qualityStatus"], "PENDING")
+        self.assertEqual(incident, "DELAY:SIDDHI:RISK:late-1")
+        hold = [e for e in self.db.events("S-test") if e["eventType"] == "QualityHoldEstablished"]
+        self.assertEqual(len(hold), 1)
+        self.assertEqual(hold[0]["process"], "P4")
+        handoffs = self.db.pending_messages(destination="p4-http")
+        self.assertEqual(len(handoffs), 1)  # durable: stays pending while P4 is absent
+        self.assertEqual(handoffs[0]["variables"]["event"]["incidentId"], incident)
+        # A later alert joins the active incident instead of opening a new one.
+        decision = self.decide("delay-1", "ACCEPT_DELAY")
+        self.db.apply_dispatcher_decision(
+            "S-test", 999, decision, {"commandId": "delay-1", "simulatorAcknowledged": True})
+        self.risk_at_index(3, "SIDDHI:RISK:late-2")
+        self.assertEqual(self.db.get("S-test")["qualityIncidentId"], incident)
+        self.assertEqual(len(self.db.pending_messages(destination="p4-http")), 2)
+        # P3 admission is held while the incident is open.
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record.update(p3ProcessInstanceKey="777", inspectionStatus="PASSED",
+                          p3Status="AWAITING_ADMISSION")
+            self.db.save(db, record)
+        self.assertEqual(self.db.admit_p3_stock("S-test", 777), {"admissionOutcome": "HELD"})
+        # A release for any other incident cannot clear the hold...
+        with self.assertRaises(Conflict):
+            self.db.accept_quality_status("S-test", "release-old", "2026-12-01T11:00:00Z",
+                                          "RELEASED", "DELAY:older-incident")
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        # ...only releasing the current incident lets the stock in.
+        self.db.accept_quality_status("S-test", "release-1", "2026-12-01T11:00:00Z",
+                                      "RELEASED", incident)
+        self.assertEqual(self.db.admit_p3_stock("S-test", 777), {"admissionOutcome": "ADMITTED"})
+
+    def test_delivery_risk_preserves_terminal_quality_rejection(self):
+        self.start_p2_transport()
+        self.risk_at_index(2)
+        incident = self.db.get("S-test")["qualityIncidentId"]
+        self.db.accept_quality_status("S-test", "reject-1", "2026-12-01T11:00:00Z",
+                                      "REJECTED", incident)
+        decision = self.decide("delay-1", "ACCEPT_DELAY")
+        self.db.apply_dispatcher_decision(
+            "S-test", 999, decision, {"commandId": "delay-1", "simulatorAcknowledged": True})
+        self.risk_at_index(3, "SIDDHI:RISK:late-2")
+        record = self.db.get("S-test")
+        self.assertEqual(record["qualityStatus"], "REJECTED")
+        self.assertEqual(record["qualityIncidentId"], incident)
+        handoff = self.db.pending_messages(destination="p4-http")[-1]["variables"]["event"]
+        self.assertEqual(handoff["qualityStatus"], "REJECTED")
+        self.assertEqual(handoff["incidentId"], incident)
+        self.assertFalse(handoff["incidentOpened"])
+        self.assertEqual(len([e for e in self.db.events("S-test")
+                              if e["eventType"] == "QualityHoldEstablished"]), 1)
+        with self.assertRaises(Conflict):
+            self.db.accept_quality_status("S-test", "release-1", "2026-12-01T11:01:00Z",
+                                          "RELEASED", incident)
+        # Transport decisions remain possible after terminal quality rejection.
+        decision = self.decide("delay-2", "ACCEPT_DELAY")
+        self.db.apply_dispatcher_decision(
+            "S-test", 999, decision, {"commandId": "delay-2", "simulatorAcknowledged": True})
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S-test")
+            record.update(p3ProcessInstanceKey="777", inspectionStatus="PASSED",
+                          p3Status="AWAITING_ADMISSION")
+            self.db.save(db, record)
+        self.assertEqual(self.db.admit_p3_stock("S-test", 777), {"admissionOutcome": "REJECTED"})
 
     def test_simulator_accepts_siddhi_accept_delay_without_route(self):
         """Siddhi's JSON sink sends a null routeId as the string "undefined"."""
@@ -1181,6 +1348,29 @@ class P3Receiving(unittest.TestCase):
         self.assertEqual(len(starts), 1)
         self.assertEqual(starts[0]["correlationKey"], "S-test")
 
+    def manual_receipt(self):
+        return self.http.post("/shipments/S-test/acknowledge-receipt", json={
+            "eventId": "manual-receipt-1", "occurredAt": "2026-12-01T10:30:00Z",
+            "recipientId": "C-01", "quantityReceived": 3,
+        })
+
+    def test_manual_p2_receipt_refused_while_p3_receiving_is_enabled(self):
+        with patch.dict(os.environ, {"P3_ARRIVAL_URL": "http://communication:5001/integrations/p3/arrival"}):
+            response = self.manual_receipt()
+        self.assertEqual(response.status_code, 409, response.json)
+        self.assertIn("receiving/receipt", response.json["error"])
+        self.assertFalse(any(m["name"] == "ReceiptAcknowledged" for m in self.db.pending_messages()))
+
+    def test_manual_p2_receipt_refused_once_p3_owns_the_shipment(self):
+        self.assertEqual(self.start_p3().status_code, 202)
+        service.ready.set()
+        self.addCleanup(service.ready.clear)
+        with patch.dict(os.environ, {"P3_ARRIVAL_URL": ""}):
+            response = self.manual_receipt()
+        self.assertEqual(response.status_code, 409, response.json)
+        self.assertIn("through P3", response.json["error"])
+        self.assertFalse(self.db.get("S-test")["vehicleReleased"])
+
     def start_p3(self):
         return self.http.post(
             "/integrations/p3/arrival",
@@ -1374,6 +1564,64 @@ class P3Receiving(unittest.TestCase):
         with self.assertRaises(Conflict):
             self.db.admit_p3_stock("S-test", self.p3_key)
         self.assertEqual(self.http.get("/receiving-stock").json["available"], 0)
+
+
+class TomTomAdapter(unittest.TestCase):
+    KEY = "test-key-should-never-be-logged"
+
+    def adapter(self, directory):
+        from transport_integrations import TransportIntegrations
+
+        return TransportIntegrations({
+            "TOMTOM_API_KEY": self.KEY,
+            "REGISTRY_PATH": str(Path(directory) / "registry.sqlite"),
+        })
+
+    def log_text(self, directory):
+        return (Path(directory) / "tomtom-responses.jsonl").read_text(encoding="utf-8")
+
+    def test_live_response_sets_traffic_eta_and_logs_without_key(self):
+        import io
+
+        class Response(io.BytesIO):
+            status = 200
+
+        body = json.dumps({"routes": [{"summary": {
+            "lengthInMeters": 6186, "travelTimeInSeconds": 1246,
+            "noTrafficTravelTimeInSeconds": 1093, "trafficDelayInSeconds": 123}}]}).encode()
+        with tempfile.TemporaryDirectory() as directory, patch(
+            "transport_integrations.urllib.request.urlopen", return_value=Response(body)
+        ) as urlopen:
+            integrations = self.adapter(directory)
+            eta, source = integrations.eta(integrations.route("route-01", "C-01"), "route-01", 0)
+            self.assertEqual(source, "tomtom-traffic")
+            self.assertTrue(eta.endswith("Z"))
+            self.assertIn("traffic=true", urlopen.call_args.args[0])
+            entry = json.loads(self.log_text(directory).splitlines()[-1])
+            self.assertEqual(entry["result"], "ok")
+            self.assertEqual(entry["summary"]["travelTimeInSeconds"], 1246)
+            self.assertNotIn(self.KEY, self.log_text(directory))
+
+    def test_failure_or_bad_data_is_unavailable_not_estimated(self):
+        from urllib.error import HTTPError
+
+        url = f"https://api.tomtom.com/routing?key={self.KEY}"
+        failures = [
+            HTTPError(url, 403, f"Forbidden for {url}", {}, None),
+            TimeoutError("timed out"),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            integrations = self.adapter(directory)
+            for failure in failures:
+                with patch("transport_integrations.urllib.request.urlopen", side_effect=failure):
+                    self.assertEqual(
+                        integrations.eta(integrations.route("route-01", "C-01"), "route-01", 0),
+                        (None, "tomtom-unavailable"),
+                    )
+            text = self.log_text(directory)
+            self.assertEqual(text.count('"result": "unavailable"'), 2)
+            self.assertIn('"httpStatus": 403', text)
+            self.assertNotIn(self.KEY, text)
 
 
 class P2Compliance(unittest.TestCase):

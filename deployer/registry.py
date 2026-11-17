@@ -16,6 +16,8 @@ def now():
 
 
 def epoch_milliseconds(value):
+    if value is None:  # unavailable ETA: Siddhi ignores events without etaMillis
+        return None
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     return int(parsed.timestamp() * 1000)
 
@@ -601,7 +603,7 @@ class Registry:
             if data["status"] == "ACKNOWLEDGED":
                 return
             status = "PENDING" if error else (
-                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http") else "PUBLISHED"
+                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http", "p4-http") else "PUBLISHED"
             )
             data.update(status=status, lastError=error)
             db.execute(
@@ -705,6 +707,10 @@ class Registry:
 
             if not record.get("p2ProcessInstanceKey"):
                 raise Conflict("transport process has not registered this shipment")
+            if event_type == "ReceiptAcknowledged" and record.get("p3ArrivalDeliveryId"):
+                raise Conflict(
+                    "P3 is receiving this shipment; receipt must be recorded through P3"
+                )
             if record.get("transportState") != expected[event_type]:
                 raise Conflict(
                     f"{event_type} requires {expected[event_type]}, "
@@ -831,10 +837,13 @@ class Registry:
             record["lastGpsEventOccurredAt"] = gps_event["occurredAt"]
             self.enqueue(db, gps_event["eventId"], "TelemetryUpdate", shipment_id,
                          {"event": gps_event}, destination="siddhi-http")
+            observed_at = now()
             eta_event = self.event(
                 db, record, "ETAUpdated", process="P2",
                 event_id=f"P2:{shipment_id}:ETAUpdated:{revision}:{route_index}",
+                occurred_at=observed_at,
                 payload={
+                    "observedAtMillis": epoch_milliseconds(observed_at),
                     "eta": eta,
                     "etaSource": eta_source,
                     "etaMillis": epoch_milliseconds(eta),
@@ -873,11 +882,45 @@ class Registry:
             message_id = f"P2:{shipment_id}:DeliveryRiskDetected:{event_id}"
             accepted = {"messageId": message_id, "event": event}
             record["pendingDeliveryRisk"] = event_id
+            accepted["incidentId"] = self.establish_delivery_risk_hold(db, record, event)
             self.enqueue(db, message_id, "DeliveryRiskDetected", shipment_id,
                          {"shipmentId": shipment_id, "deliveryRiskEvent": event})
             db.execute("INSERT INTO results VALUES (?,?)", (identity, json.dumps(accepted)))
             self.save(db, record)
             return accepted
+
+    def establish_delivery_risk_hold(self, db, record, risk_event):
+        """Persist the quality hold before handing the delay to P4 (same transaction).
+
+        The agreement requires a delivery risk to establish quality assessment and
+        hold admission. A new incident is opened unless one is already active, in
+        which case the alert is added to it as evidence. The P4 handoff is a durable
+        outbox entry: if P4 is unavailable it stays PENDING and the hold remains.
+        Only P4 releasing this incident (RELEASED) lets P3 admit the stock.
+        """
+        shipment_id = record["shipmentId"]
+        if record.get("qualityStatus") in ("PENDING", "REJECTED") and record.get("qualityIncidentId"):
+            incident_id, opened = record["qualityIncidentId"], False
+        else:
+            incident_id, opened = f"DELAY:{risk_event['eventId']}", True
+            record.update(qualityStatus="PENDING", qualityIncidentId=incident_id)
+            self.event(
+                db, record, "QualityHoldEstablished", process="P4",
+                event_id=f"P4:{shipment_id}:QualityHoldEstablished:{incident_id}",
+                source="delivery-risk-integration", input_mode="system",
+                occurred_at=risk_event["occurredAt"],
+                payload={"incidentId": incident_id, "qualityStatus": "PENDING",
+                         "reason": "delivery risk", "riskEventId": risk_event["eventId"]},
+            )
+        handoff_id = f"P4:DeliveryRiskIncident:{shipment_id}:{risk_event['eventId']}"
+        self.enqueue(db, handoff_id, "DeliveryRiskIncident", shipment_id, {"event": {
+            "deliveryId": handoff_id, "eventType": "DeliveryRiskDetected",
+            "shipmentId": shipment_id, "journeyId": record["journeyId"],
+            "incidentId": incident_id, "incidentOpened": opened,
+            "qualityStatus": record["qualityStatus"], "riskEvent": risk_event,
+            "productId": record["productId"], "batchId": record["batchId"],
+        }}, needs_ack=True, destination="p4-http")
+        return incident_id
 
     def record_delivery_risk(self, shipment_id, key, risk_event):
         with self.transaction() as db:

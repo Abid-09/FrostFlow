@@ -8,8 +8,12 @@
  * Telemetry arrives from the durable P2 outbox as {"event": { ... }}.
  * GPSPositionUpdated events carry no ETA fields, so the mapper must accept
  * missing attributes (they become null) instead of dropping the event.
- * ETAUpdated events past the deadline produce one alert per
- * shipment/journey/route revision.
+ * Delivery-risk rule (agreed persistence rule, see docs/RUNNING.md):
+ *   per shipment and route revision, THREE DISTINCT CONSECUTIVE ETAUpdated readings that
+ *   are each late (ETA after the deadline) and fresh (computed at most 30 s
+ *   before Siddhi evaluates it), all within 180 s, raise one alert. An on-time,
+ *   unavailable (no ETA) or stale reading in between breaks the sequence.
+ *   At most one alert per shipment/journey/route revision is forwarded.
  *
  * Dispatcher commands are handled synchronously so P2 only applies a route
  * after the scripted simulator receiver has acknowledged the same commandId.
@@ -31,7 +35,8 @@
             etaMillis='$.event.payload.etaMillis',
             deliveryDeadlineMillis='$.event.payload.deliveryDeadlineMillis',
             routeId='$.event.payload.routeId',
-            routeRevision='$.event.payload.routeRevision'
+            routeRevision='$.event.payload.routeRevision',
+            observedAtMillis='$.event.payload.observedAtMillis'
         )))
 define stream TransportTelemetryStream (
     eventId string,
@@ -44,7 +49,34 @@ define stream TransportTelemetryStream (
     etaMillis long,
     deliveryDeadlineMillis long,
     routeId string,
-    routeRevision int
+    routeRevision int,
+    observedAtMillis long
+);
+
+-- Every ETA reading for a shipment, classified as late-and-fresh or not.
+define stream EtaReadingStream (
+    eventId string,
+    shipmentId string,
+    journeyId string,
+    occurredAt string,
+    eta string,
+    deliveryDeadline string,
+    etaMillis long,
+    deliveryDeadlineMillis long,
+    routeRevision int,
+    lateAndFresh bool
+);
+
+-- Third reading of a qualifying run; deduplicated per route revision below.
+define stream RiskCandidateStream (
+    shipmentId string,
+    journeyId string,
+    routeRevision int,
+    eventId string,
+    occurredAt string,
+    eta string,
+    deliveryDeadline string,
+    estimatedDelaySeconds long
 );
 
 @sink(type='log', prefix='COLD-CHAIN-TELEMETRY')
@@ -158,18 +190,44 @@ from TransportTelemetryStream
 select eventId, eventType, shipmentId, journeyId, occurredAt, eta, routeId
 insert into TransportLogStream;
 
-@info(name='detect-late-eta')
-from TransportTelemetryStream[eventType == 'ETAUpdated'
-                              and not (etaMillis is null)
-                              and not (deliveryDeadlineMillis is null)
-                              and etaMillis > deliveryDeadlineMillis]#window.unique:first(shipmentId, journeyId, routeRevision)
+@info(name='classify-eta')
+from TransportTelemetryStream[eventType == 'ETAUpdated']
+     #window.unique:first(shipmentId, journeyId, eventId)
+select eventId, shipmentId, journeyId, occurredAt, eta, deliveryDeadline,
+       etaMillis, deliveryDeadlineMillis, routeRevision,
+       ifThenElse(not (etaMillis is null) and not (deliveryDeadlineMillis is null)
+                  and not (observedAtMillis is null)
+                  and etaMillis > deliveryDeadlineMillis
+                  and (currentTimeMillis() - observedAtMillis) <= 30000,
+                  true, false) as lateAndFresh
+insert current events into EtaReadingStream;
+
+-- Partitioning by shipment keeps other shipments' readings from interleaving;
+-- the sequence (",") requires the three readings to be consecutive.
+partition with (shipmentId of EtaReadingStream)
+begin
+    @info(name='three-consecutive-fresh-late-etas')
+    from every e1=EtaReadingStream[lateAndFresh == true],
+               e2=EtaReadingStream[lateAndFresh == true and routeRevision == e1.routeRevision],
+               e3=EtaReadingStream[lateAndFresh == true and routeRevision == e1.routeRevision]
+         within 180 sec
+    select e3.shipmentId as shipmentId, e3.journeyId as journeyId,
+           e3.routeRevision as routeRevision, e3.eventId as eventId,
+           e3.occurredAt as occurredAt, e3.eta as eta,
+           e3.deliveryDeadline as deliveryDeadline,
+           math:round((e3.etaMillis - e3.deliveryDeadlineMillis) / 1000.0) as estimatedDelaySeconds
+    insert into RiskCandidateStream;
+end;
+
+@info(name='one-alert-per-route-revision')
+from RiskCandidateStream#window.unique:first(shipmentId, journeyId, routeRevision)
 select shipmentId,
        str:concat('SIDDHI:RISK:', eventId) as eventId,
        occurredAt,
        eta,
        deliveryDeadline,
-       'ETA exceeds delivery deadline' as reason,
-       math:round((etaMillis - deliveryDeadlineMillis) / 1000.0) as estimatedDelaySeconds
+       'Three consecutive fresh ETAs exceed the delivery deadline' as reason,
+       estimatedDelaySeconds
 insert current events into DeliveryRiskStream;
 
 @info(name='forward-risk')

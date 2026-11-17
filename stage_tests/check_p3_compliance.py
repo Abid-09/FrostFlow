@@ -75,6 +75,15 @@ def run_case(base, run_id, scenario, product_id, vehicle_id, hold_outcome=None, 
     }
     record = require(http(base, "/shipments", data), 202, "create shipment")
     url = f"/shipments/{shipment_id}"
+    wait_for(
+        f"{shipment_id} AWAITING_LOADING with no pending command before verify-loading",
+        lambda: (
+            current
+            if (current := http(base, url)[1]).get("state") == "AWAITING_LOADING"
+            and not current.get("pendingCommand")
+            else None
+        ),
+    )
     require(
         http(base, url + "/verify-loading", {
             "actor": "p3-compliance-check",

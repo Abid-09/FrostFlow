@@ -120,6 +120,7 @@ def health():
             "siddhiTelemetry": "enabled" if os.getenv("SIDDIHI_TELEMETRY_URL") else "not-configured",
             "siddhiCommands": "enabled" if os.getenv("SIDDIHI_COMMAND_URL") else "local-demo-acknowledgement",
             "p3ArrivalNotification": "enabled" if os.getenv("P3_ARRIVAL_URL") else "queued-awaiting-endpoint",
+            "p4IncidentHandoff": "enabled" if os.getenv("P4_INCIDENT_URL") else "queued-awaiting-p4",
         },
     ), 200 if ready.is_set() else 503
 
@@ -479,7 +480,18 @@ def simulator_route_command():
     }
     if command["routeId"] is not None and not isinstance(command["routeId"], str):
         raise ValueError("routeId must be a string")
+    if command["command"] == "ChangeRoute" and command["routeId"]:
+        check_route_keeps_destination(command["shipmentId"], command["routeId"])
     return jsonify(registry.acknowledge_simulator_command(command)), 200
+
+
+def check_route_keeps_destination(shipment_id, route_id):
+    """Reject a route that is unknown or would not end at the shipment's destination."""
+    record = registry.get(shipment_id)
+    planned = transport_integrations.route(route_id, record["recipientId"])
+    current = record.get("routeCoordinates")
+    if current and planned[-1] != current[-1]:
+        raise Conflict("route would change the delivery destination")
 
 
 @app.post("/shipments/<shipment_id>/dispatcher-decision")
@@ -489,6 +501,8 @@ def dispatcher_decision(shipment_id):
     route_id = data.get("routeId")
     if route_id is not None and not isinstance(route_id, str):
         raise ValueError("routeId must be a string")
+    if route_id is not None:
+        check_route_keeps_destination(shipment_id, route_id)
     accepted = registry.queue_dispatcher_decision(
         shipment_id, text_field(data, "eventId"), text_field(data, "decision"), route_id
     )
@@ -499,7 +513,16 @@ def dispatcher_decision(shipment_id):
 
 @app.post("/shipments/<shipment_id>/acknowledge-receipt")
 def manual_receipt_acknowledgement(shipment_id):
-    """Manual/test P2 input for the receipt acknowledgement normally sent by P3."""
+    """Manual/test P2 input for the receipt acknowledgement normally sent by P3.
+
+    Only for P2-only runs (P3_ARRIVAL_URL unset). With P3 receiving enabled,
+    P2 completes solely from P3's ReceiptAcknowledged after P3 records receipt.
+    """
+    if os.getenv("P3_ARRIVAL_URL"):
+        raise Conflict(
+            "P3 receiving is enabled: record receipt with "
+            "POST /shipments/<id>/receiving/receipt; P2 completes from P3's acknowledgement"
+        )
     data = body()
     event_id = text_field(data, "eventId")
     occurred_at = utc_timestamp(data, "occurredAt")
@@ -603,8 +626,10 @@ async def start_transport(shipmentId, dispatchEvent, job: Job):
 
 async def start_journey(shipmentId, job: Job):
     record = registry.get(shipmentId)
-    points = transport_integrations.route(record["routeId"])
-    eta, source = transport_integrations.eta(record["routeId"], points[0], 0)
+    points = transport_integrations.route(record["routeId"], record["recipientId"])
+    eta, source = await asyncio.to_thread(
+        transport_integrations.eta, points, record["routeId"], 0
+    )
     registry.start_journey(
         shipmentId, job.process_instance_key, points[0], eta, source, points
     )
@@ -659,8 +684,16 @@ async def apply_dispatcher_decision(shipmentId, dispatcherDecision, job: Job):
     route_id = dispatcherDecision.get("routeId")
     if route_id:
         record = registry.get(shipmentId)
-        points = transport_integrations.route(route_id)
-        eta, eta_source = transport_integrations.eta(route_id, record["currentPosition"], 0)
+        # The alternative starts where the vehicle is now and must end where the
+        # current route ends: a route change never changes the delivery destination.
+        points = transport_integrations.route(
+            route_id, record["recipientId"], start=record["currentPosition"]
+        )
+        if record.get("routeCoordinates") and points[-1] != record["routeCoordinates"][-1]:
+            raise Conflict("alternative route does not end at the shipment's destination")
+        eta, eta_source = await asyncio.to_thread(
+            transport_integrations.eta, points, route_id, 0
+        )
     else:
         points, eta, eta_source = None, None, None
     acknowledgement = await asyncio.to_thread(
@@ -669,11 +702,16 @@ async def apply_dispatcher_decision(shipmentId, dispatcherDecision, job: Job):
          "journeyId": dispatcherDecision["journeyId"], "riskEventId": dispatcherDecision["riskEventId"],
          "command": "ChangeRoute" if route_id else "AcceptDelay", "routeId": route_id},
     )
-    registry.apply_dispatcher_decision(
+    updated = registry.apply_dispatcher_decision(
         shipmentId, job.process_instance_key, dispatcherDecision,
         acknowledgement, points, eta, eta_source,
     )
-    return {"simulatorAcknowledged": True}
+    # Keep Camunda's process variables in step with the registry after a change.
+    return {
+        "simulatorAcknowledged": True,
+        "routeId": updated["routeId"],
+        "routeRevision": updated.get("routeRevision", 0),
+    }
 
 
 async def advance_simulated_journeys():
@@ -681,10 +719,15 @@ async def advance_simulated_journeys():
     while True:
         for record in registry.in_transit_shipments():
             try:
-                points = record.get("routeCoordinates") or transport_integrations.route(record["routeId"])
+                points = record.get("routeCoordinates") or transport_integrations.route(
+                    record["routeId"], record["recipientId"]
+                )
                 index = min(record.get("routeIndex", 0) + 1, len(points) - 1)
                 position = points[index]
-                eta, source = transport_integrations.eta(record["routeId"], position, index)
+                # Off the event loop: a slow TomTom call must not stall Zeebe workers.
+                eta, source = await asyncio.to_thread(
+                    transport_integrations.eta, points[index:], record["routeId"], index
+                )
                 updated = registry.advance_telemetry(record["shipmentId"], position, index, eta, source)
                 if index == len(points) - 1 and updated.get("transportState") == "IN_TRANSIT":
                     arrived = updated.get("lastGpsEventOccurredAt") or updated["telemetryUpdatedAt"]
@@ -728,6 +771,8 @@ async def deliver_messages():
         destinations = {
             "p3-http": os.getenv("P3_ARRIVAL_URL"),
             "siddhi-http": os.getenv("SIDDIHI_TELEMETRY_URL"),
+            # Durable P4 investigation handoff; stays PENDING until P4 exists.
+            "p4-http": os.getenv("P4_INCIDENT_URL"),
         }
         for destination, url in destinations.items():
             if not url:

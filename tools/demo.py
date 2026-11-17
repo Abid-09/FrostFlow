@@ -87,6 +87,12 @@ def show(record):
             print("Next P3 action: choose 15 to inspect the goods.")
         elif receiving_status == "ON_HOLD":
             print("P3 is waiting for a quality disposition before stock admission.")
+            print("Next action: choose 17 to release the current quality incident (P4 stand-in).")
+    if record.get("qualityStatus") and record.get("qualityStatus") != "CLEAR":
+        print(
+            f"Quality status: {record['qualityStatus']} | "
+            f"incident: {record.get('qualityIncidentId')}"
+        )
     if record.get("pendingCommand"):
         print("The accepted action is still being processed.")
     hint = TRANSPORT_LOCATIONS.get(record.get("transportState")) or LOCATIONS.get(
@@ -180,6 +186,42 @@ def wait_for_action(base, shipment_id, action, old_wait_key=None, target_route_i
     )
 
 
+def release_quality_hold(base, shipment_id):
+    """P4 stand-in: release the shipment's CURRENT quality incident.
+
+    P4 (the DCR investigation) is not implemented yet; this demo control plays
+    the quality officer's authorised RELEASE so P3 can admit held stock.
+    """
+    status, record = http(base, f"/shipments/{shipment_id}")
+    if status != 200:
+        print("Not available:", record.get("error"))
+        return
+    incident = record.get("qualityIncidentId")
+    if record.get("qualityStatus") != "PENDING" or not incident:
+        print(f"No quality hold to release (quality status: {record.get('qualityStatus')}).")
+        return
+    status, response = http(base, "/integrations/p4/quality-status", {
+        "shipmentId": shipment_id,
+        "eventId": f"demo-release-{incident}",
+        "occurredAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "qualityStatus": "RELEASED",
+        "incidentId": incident,
+    })
+    if status != 202:
+        print(f"\nAction rejected (HTTP {status}): {response.get('error', response)}")
+        return
+    print(f"Released incident {incident} (P4 stand-in). Waiting for P3...")
+    end = time.monotonic() + 45
+    while time.monotonic() < end:
+        record = http(base, f"/shipments/{shipment_id}")[1]
+        if record.get("p3Status") in ("ADMITTED", "REJECTED") or (
+            record.get("qualityStatus") == "RELEASED" and record.get("p3Status") != "ON_HOLD"
+        ):
+            break
+        time.sleep(0.5)
+    show(record)
+
+
 def choose_case():
     print("A = 15 crates / V-01 | B = 10 crates / V-02 | C = 10 crates / V-02")
     label = input("Shipment [A/B/C]: ").strip().upper()
@@ -230,6 +272,9 @@ def perform(base, choice, deadline_minutes=60):
         return
     shipment_id, vehicle, quantity = choose_case()
     path = f"/shipments/{shipment_id}"
+    if choice == "17":
+        release_quality_hold(base, shipment_id)
+        return
     if choice in ("2", "7"):
         status, record = http(base, path if choice == "2" else path + "/events")
         if status != 200:
@@ -382,6 +427,10 @@ def perform(base, choice, deadline_minutes=60):
     status, response = http(base, path, data)
     if status != 202:
         print(f"\nAction rejected (HTTP {status}): {response.get('error', response)}")
+        if choice == "10" and status == 409:
+            print(
+                "With P3 receiving enabled, P2 only completes after P3 records receipt: use 14."
+            )
         if choice == "4" and status == 409:
             print(
                 "This demonstrates the dispatch restriction: stock and loading steps must be complete."
@@ -438,11 +487,12 @@ def main():
             print("9 Force manual arrival 10 P2 test receipt (bypasses P3) 0 Exit")
             print("11 Simulate delivery risk 12 Accept delay 13 Approve route change")
             print("14 Confirm physical receipt 15 Inspect goods 16 Show receiving stock")
+            print("17 Release quality hold (P4 stand-in)")
             choice = input("Action: ").strip()
             if choice == "0":
                 return 0
-            if choice not in {str(value) for value in range(1, 17)}:
-                print("Choose an action from 0 to 16.")
+            if choice not in {str(value) for value in range(1, 18)}:
+                print("Choose an action from 0 to 17.")
                 continue
             try:
                 perform(base, choice, args.deadline_minutes)
