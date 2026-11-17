@@ -130,3 +130,11 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Completion:** after the user explicitly chose “Merge now; retain external check as pending”, Codex merged PR #4, updated PR #5 against main and inspected its remaining diff, merged PR #5, and smoke-tested merged main on the same stack. Added a reusable smoke helper and the compact merged-main verification report. Normal admission and hold/rejection reached exported P2/P3 end events with exact stock deltas. Existing reviews were retained and the three repaired defect threads resolved. Fresh ProcessDoctor checks remain pending.
 
 **Follow-up delivery:** at the user’s request, the reusable P1/P2/P3 smoke helper, final evidence and documentation were moved to `test/p1-p2-p3-integration-smoke` for a separate review PR. No follow-up commit was pushed directly to main.
+
+## 2026-11-17 — repository agent instructions
+
+**Tool:** OpenAI Codex. **Prompt summary:** inspect repository guidelines and requirements and create a root agent-context file for future contributors.
+
+**Output:** added `AGENTS.md`, covering source documents, implemented versus planned P1–P6 scope, architecture, business/message invariants, branch/PR workflow, verification levels, paired Docker/registry data, evidence provenance, secrets and recorded coursework deliverables. Read the README, implementation/integration/run guides, task board, existing AI record and relevant source/configuration/test entry points. Flagged historical ownership/status contradictions rather than asserting new assignments. The separately supplied course/contract PDFs were not inspected.
+
+**Validation:** checked relative links, concrete file/command paths, Markdown fences and whitespace, plus `git diff --check`. This documentation change does not alter application code or models and did not require restarting Docker or rerunning live suites. Prepared on `docs/project-agent-context` for PR review.
