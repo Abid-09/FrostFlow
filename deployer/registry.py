@@ -870,9 +870,10 @@ class Registry(MonitoringRegistry):
             self.enqueue(db, eta_event["eventId"], "TelemetryUpdate", shipment_id,
                          {"event": eta_event}, destination="siddhi-http")
             previous_eta = record.get("etaAssessment", {})
-            if previous_eta.get("eventId") == eta_event["eventId"]:
+            if eta_event["eventId"] in record.setdefault("seenEtaEventIds", []):
                 self.save(db, record)
                 return record
+            record["seenEtaEventIds"].append(eta_event["eventId"])
             late = eta is not None and epoch_milliseconds(eta) > epoch_milliseconds(record["deliveryDeadline"])
             consecutive = previous_eta.get("times", []) if previous_eta.get("revision") == revision and previous_eta.get("late") else []
             observed_at = eta_event["occurredAt"]

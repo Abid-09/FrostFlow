@@ -312,3 +312,25 @@ class MonitoringTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.sample(700)
         self.assertEqual(self.db.get("S")["monitoring"]["lastValidAt"], before)
+
+    def test_eta_duplicates_route_changes_and_unavailability_reset_qualification(self):
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S")
+            record.update(transportState="IN_TRANSIT", routeRevision=0)
+            self.db.save(db, record)
+        late = self.at(1000)
+        for index in (1, 2, 1):
+            self.db.advance_telemetry("S", [48.8566, 2.3522], index, late, "recorded-fixture")
+        self.assertFalse(self.db.get("S")["etaAssessment"]["qualified"])
+        self.db.advance_telemetry("S", [48.8566, 2.3522], 3, late, "recorded-fixture")
+        self.assertTrue(self.db.get("S")["etaAssessment"]["qualified"])
+        self.db.advance_telemetry("S", [48.8566, 2.3522], 4, None, "tomtom-unavailable")
+        self.assertFalse(self.db.get("S")["etaAssessment"]["qualified"])
+        self.db.advance_telemetry("S", [48.8566, 2.3522], 5, late, "recorded-fixture")
+        self.assertFalse(self.db.get("S")["etaAssessment"]["qualified"])
+        with self.db.transaction() as db:
+            record = self.db.read(db, "S")
+            record["routeRevision"] = 1
+            self.db.save(db, record)
+        self.db.advance_telemetry("S", [48.8566, 2.3522], 1, late, "recorded-fixture")
+        self.assertFalse(self.db.get("S")["etaAssessment"]["qualified"])
