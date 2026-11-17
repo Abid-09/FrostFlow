@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
     base = "http://localhost:5001"
     model = ROOT / "compliance/p1/rules.xml"
-    assert http(base + "/health")[1].get("stage") == 2, "Start the updated stack first"
+    assert http(base + "/health")[1].get("stage") == 3, "Start the updated stack first"
     stock = http(base + "/stock")[1]
     assert (
         stock.get("datasetVersion") == 3
@@ -160,10 +160,12 @@ def main():
             ),
         )
         wait(
-            "P2 waiting for arrival",
+            "P2 waiting for journey events",
+            # Since the risk branch, P2 waits at the event-based gateway; Zeebe
+            # activates the arrival catch only when ShipmentArrived triggers it.
             lambda: engine_records(
                 record["p2ProcessInstanceKey"],
-                "WaitForShipmentArrived",
+                "JourneyEvents",
                 "ELEMENT_ACTIVATED",
             ),
         )
@@ -251,6 +253,12 @@ def main():
             "quantityReceived": record["quantity"],
             "receiptReference": f"RCPT-{run}-{sid}",
         }
+        p3_receipt = {
+            **{k: v for k, v in receipt.items()},
+            "receiver": "regression-receiver",
+        }
+        # Before arrival, neither P3 nor the (P3-gated) manual P2 input accepts receipt.
+        assert http(url + "/receiving/receipt", p3_receipt)[0] == 409
         assert http(url + "/acknowledge-receipt", receipt)[0] == 409
         for _ in range(2):
             assert http(url + "/arrive", arrival)[0] == 202
@@ -281,13 +289,21 @@ def main():
             assert other_record["transportState"] == "IN_TRANSIT", other_record
             assert other_record["vehicleReleased"] is False, other_record
             wait(
-                "independent shipment remains at arrival catch",
+                "independent shipment still waits for journey events",
                 lambda: engine_records(
-                    other_key, "WaitForShipmentArrived", "ELEMENT_ACTIVATED"
+                    other_key, "JourneyEvents", "ELEMENT_ACTIVATED"
+                ) and not engine_records(
+                    other_key, "WaitForShipmentArrived", "ELEMENT_COMPLETED"
                 ),
             )
+        wait(
+            f"{sid} P3 started by arrival",
+            lambda: http(url)[1].get("p3Status") == "AWAITING_RECEIPT",
+        )
+        # P2's manual receipt is refused while P3 receives; P3's exact retry is safe.
+        assert http(url + "/acknowledge-receipt", receipt)[0] == 409
         for _ in range(2):
-            assert http(url + "/acknowledge-receipt", receipt)[0] == 202
+            assert http(url + "/receiving/receipt", p3_receipt)[0] == 202
         completed = wait(
             f"{sid} transport completion and vehicle release",
             lambda: (
@@ -491,7 +507,7 @@ def main():
     (args.output / "verification.json").write_text(json.dumps(report, indent=2) + "\n")
     p2_report = dict(
         observedAt=datetime.now(timezone.utc).isoformat(),
-        evidenceType="live Zeebe P2 execution using manual/test event endpoints",
+        evidenceType="live Zeebe P2 execution: manual/test arrival, receipt recorded through P3",
         datasetVersion=3,
         cases=p2_evidence,
         compliance="P2 DCR model/log verification is outstanding; this is execution evidence only.",

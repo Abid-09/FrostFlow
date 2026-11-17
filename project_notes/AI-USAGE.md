@@ -69,3 +69,50 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Ownership attribution:** at the user's explicit request, recorded Ashvanth as P1's responsible student in the task board, README/guide, BPMN documentation, model PDF and DCR title. Regenerated and inspected the attributed PDF, linted P1, preserved executable/logical semantics and recorded the attribution-only hash changes. Removed duplicate collaboration/review wording; P2–P6 remain unassigned and teammate review remains pending.
 
 **Publication preparation:** at the user's request, removed the student attribution from the P1 BPMN source/PDF, retained project ownership records and the DCR title, and regenerated the PDF. P1 BPMN source now exactly matches the engine-verified hash again. BPMN lint, 29 offline tests and Compose validation passed. Preserved the user's task-board edits and prepared the initial commit for the supplied FrostFlow GitHub remote.
+
+## 2026-11-14 — P2 Siddhi live verification and P2 DCR compliance
+
+**Tool:** Claude Code (Claude Opus 5.5).
+
+**Prompt summary (paraphrase):** Help implement the remaining P2 work in the `p2-updates` pull request: verify that the Siddhi app loads and that the live risk-alert and route-command flow completes, and deliver the outstanding P2 items.
+
+**Defects found and fixed:** (1) `ColdChainTelemetry.siddhi` never deployed. SiddhiQL requires all stream definitions before the first query, so the app was reordered. (2) The `http` and `http-service` sources cannot share port 8006, so route commands moved to 8007 (Compose updated). (3) GPS events lack ETA fields and were dropped by the JSON mapper; `fail.on.missing.attribute='false'` was added. (4) The `http-call-response` status regex `2\d+` is not unescaped by SiddhiQL and never matched, so it is now `200`. (5) Siddhi serialises a null `routeId` as `"undefined"`, which made the simulator reject `AcceptDelay`; the receiver now normalises it, with a regression test. (6) pyzeebe closed its gRPC channel after 10 failed calls while a fresh Zeebe was still starting; the client and worker now retry without that limit.
+
+**AI-produced output:** the fixes above; `stage_tests/check_p2_siddhi.py` (live two-shipment acceptance check); the P2 DCR graph, builder, real execution log, synthetic invalid traces and verification report under `compliance/p2/`; 5 new offline tests; documentation and task-board updates. Actual results: the live check passed on a fresh stack, both real traces were valid and accepting, all 4 invalid traces were rejected, and 40 offline tests passed under Python 3.12.16. ProcessDoctor, TomTom, the P3 receiver and an external simulator were **not** verified. Nothing was committed or pushed.
+
+**Human review pending:** Rahul to review the DCR rules against the intended P2 behaviour, rerun the live check, inspect the instances in Operate, and run the ProcessDoctor import.
+
+## 2026-11-15 — TomTom live verification
+
+**Tool:** Claude Code (Claude Opus 5.5).
+
+**Prompt summary (paraphrase):** Do the outstanding items that do not depend on teammates; Rahul supplied his personal TomTom developer key.
+
+**AI-produced output:** the TomTom adapter now reports failures or unusable responses as unavailable ETAs (`tomtom-unavailable`) instead of raising, runs TomTom calls off the async worker loop, labels the final route point `at-destination`, and logs each request, with the key removed, to `tomtom-responses.jsonl` beside the registry. There are 3 new offline tests (44 total, Python 3.12). Actual result: the live acceptance check passed with traffic-aware TomTom ETAs, with 15/15 HTTP 200 responses saved to `compliance/p2/tomtom-responses.jsonl`. The key was used only as a runtime environment variable and appears in no file. The demo routes still use Paris coordinates. A draft P3 integration proposal for Arunima Garg was written; nothing was sent.
+
+## 2026-11-15 — P2/P3 integration on `p2-updates`
+
+**Tool:** Claude Code (Claude Opus 5.5).
+
+**Prompt summary (paraphrase):** Merge Arunima's P3 branch into `p2-updates`, check whether that completes the integration, and finish it in the same PR (Rahul chose a single combined PR).
+
+**AI-produced output:** fast-forwarded `p2-updates` to `feat/p3-receiving-admission`, keeping Arunima Garg's commit and authorship. Merged the separately parked TomTom work, resolving 3 text/test conflicts by keeping both sides. Found that P2's manual receipt input still bypassed P3, and closed it: the endpoint refuses it while P3 receiving is enabled, and the registry refuses it for any shipment P3 has started. CLI option 10 now points to option 14. Both live checks now record receipt through P3 and assert that the manual path is refused. Added 2 offline tests (51 total, Python 3.12). Actual results: `check_p2_siddhi.py` passed on a fresh stack with P3 and TomTom enabled, `check_stage1.py` passed with the simulator off, and the new run's P2 log conforms to `compliance/p2/rules.xml`. Nothing was pushed.
+
+**Human review pending:** Arunima Garg should review the change to how her receipt endpoint is used.
+
+## 2026-11-16 — PR review fixes (a)–(e)
+
+**Tool:** Claude Code (Claude Opus 5.5).
+
+**Prompt summary (paraphrase):** Fix the five PR review comments (route destination, Camunda route variables, delivery-risk quality hold, Siddhi persistence rule, documentation reconciliation).
+
+**AI-produced output (commit `d613960` plus docs):**
+- **(a)** Routes are corridors to the recipient's location. A change is planned from the current position to the same destination, and incompatible routes are rejected.
+- **(b)** The decision worker returns `routeId`/`routeRevision`.
+- **(c)** Accepting a risk persists a `PENDING` hold and a durable P4 handoff in one transaction, and adds CLI option 17 as a P4 stand-in release.
+- **(d)** Siddhi alerts after three consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` was added.
+- **(e)** RUNNING/TASKS/README/agreement were reconciled, with an evidence table tied to the tested commit.
+
+**Actual results on `d613960`:** 54 offline tests OK, the Siddhi rule check passed, `check_p2_siddhi.py` passed (run `130506`, local demo ETAs), `check_stage1.py` passed, and the regenerated P2 log replays with 3 of 3 conforming.
+
+**Not done:** P4 consumption of the handoff (it depends on the P4 owner), a ProcessDoctor re-run for the new log, and a TomTom re-check (the key now returns HTTP 401). Nothing was pushed.

@@ -1,4 +1,4 @@
-"""Shipment preparation and the manual-input P2 transport workflow."""
+"""P1 shipment preparation, P2 transport, and P3 receiving workflows."""
 
 import asyncio
 import math
@@ -13,6 +13,7 @@ from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.errors import MessageAlreadyExistsError
 
 from registry import Conflict, Registry
+from transport_integrations import TransportIntegrations, post_json
 
 PROCESS_ID = "ShipmentPreparation"
 JOB_TYPES = [
@@ -26,9 +27,17 @@ JOB_TYPES = [
     "p2-start-journey",
     "p2-record-arrival",
     "p2-release-vehicle",
+    "p2-record-delivery-risk",
+    "p2-apply-dispatcher-decision",
+    "p3-record-arrival",
+    "p3-record-receipt",
+    "p3-record-inspection",
+    "p3-admit-stock",
+    "p3-record-quality-status",
 ]
 app = Flask(__name__)
 registry = Registry(os.getenv("REGISTRY_PATH", "runtime/registry.sqlite"))
+transport_integrations = TransportIntegrations()
 ready = threading.Event()
 client = None
 event_loop = None
@@ -41,11 +50,11 @@ def body():
     return data
 
 
-def text_field(data, field):
+def text_field(data, field, max_length=100):
     value = data.get(field)
-    if not isinstance(value, str) or not value.strip() or len(value) > 100:
+    if not isinstance(value, str) or not value.strip() or len(value) > max_length:
         raise ValueError(
-            f"{field} must be a non-empty string of at most 100 characters"
+            f"{field} must be a non-empty string of at most {max_length} characters"
         )
     return value.strip()
 
@@ -101,9 +110,18 @@ def missing(error):
 def health():
     return jsonify(
         status="ready" if ready.is_set() else "starting",
-        stage=2,
+        stage=3,
         processId=PROCESS_ID,
+        processIds=[PROCESS_ID, "ShipmentTransport", "ShipmentReceiving"],
         jobTypes=JOB_TYPES,
+        integrations={
+            "gps": "scripted-demo" if os.getenv("P2_SIMULATOR_ENABLED", "true").lower() == "true" else "disabled",
+            "tomtom": "enabled" if os.getenv("TOMTOM_API_KEY") else "local-demo-estimate",
+            "siddhiTelemetry": "enabled" if os.getenv("SIDDIHI_TELEMETRY_URL") else "not-configured",
+            "siddhiCommands": "enabled" if os.getenv("SIDDIHI_COMMAND_URL") else "local-demo-acknowledgement",
+            "p3ArrivalNotification": "enabled" if os.getenv("P3_ARRIVAL_URL") else "queued-awaiting-endpoint",
+            "p4IncidentHandoff": "enabled" if os.getenv("P4_INCIDENT_URL") else "queued-awaiting-p4",
+        },
     ), 200 if ready.is_set() else 503
 
 
@@ -120,6 +138,131 @@ def events(shipment_id):
 @app.get("/stock")
 def stock():
     return jsonify(registry.inventory())
+
+
+@app.get("/receiving-stock")
+def receiving_stock():
+    recipient_id = request.args.get("recipientId")
+    if recipient_id is not None and recipient_id not in ("C-01", "C-02", "C-03"):
+        raise ValueError("recipientId must be C-01, C-02 or C-03")
+    return jsonify(registry.receiving_inventory(recipient_id))
+
+
+@app.post("/integrations/p3/arrival")
+def p3_arrival():
+    """Receive the durable P2 arrival notification that starts P3."""
+    data = body()
+    notification = data.get("event")
+    if not isinstance(notification, dict):
+        raise ValueError("event must be a JSON object")
+    delivery_id = text_field(notification, "deliveryId", max_length=256)
+    if request.headers.get("Idempotency-Key") != delivery_id:
+        raise ValueError("Idempotency-Key must match event.deliveryId")
+    if notification.get("eventType") != "ShipmentArrivalNotification":
+        raise ValueError("eventType must be ShipmentArrivalNotification")
+    clean = {
+        "deliveryId": delivery_id,
+        "eventType": "ShipmentArrivalNotification",
+        "shipmentId": text_field(notification, "shipmentId"),
+        "journeyId": text_field(notification, "journeyId"),
+        "productId": text_field(notification, "productId"),
+        "batchId": text_field(notification, "batchId"),
+        "arrival": notification.get("arrival"),
+        "sourceEventId": text_field(notification, "sourceEventId", max_length=256),
+        "occurredAt": utc_timestamp(notification, "occurredAt"),
+        "recordedAt": utc_timestamp(notification, "recordedAt"),
+    }
+    if not isinstance(clean["arrival"], dict):
+        raise ValueError("arrival must be a JSON object")
+    clean["arrival"] = {
+        "recipientId": text_field(clean["arrival"], "recipientId"),
+    }
+    for field in ("originalShipmentId", "incidentId"):
+        if field in notification:
+            clean[field] = text_field(notification, field)
+    if ("originalShipmentId" in clean) != ("incidentId" in clean):
+        raise ValueError("replacement links require both originalShipmentId and incidentId")
+    accepted = registry.accept_p3_arrival(clean)
+    return jsonify(
+        status="accepted",
+        shipmentId=clean["shipmentId"],
+        deliveryId=delivery_id,
+        messageId=accepted["messageId"],
+    ), 202
+
+
+@app.post("/shipments/<shipment_id>/receiving/receipt")
+def receiving_receipt(shipment_id):
+    data = body()
+    event_id = text_field(data, "eventId")
+    occurred_at = utc_timestamp(data, "occurredAt")
+    payload = {
+        "recipientId": text_field(data, "recipientId"),
+        "quantityReceived": data.get("quantityReceived"),
+        "receiver": text_field(data, "receiver"),
+    }
+    if (
+        type(payload["quantityReceived"]) is not int
+        or payload["quantityReceived"] < 1
+    ):
+        raise ValueError("quantityReceived must be a positive integer number of crates")
+    if "receiptReference" in data:
+        payload["receiptReference"] = text_field(data, "receiptReference")
+    accepted = registry.queue_p3_input(
+        shipment_id, "GoodsReceived", event_id, occurred_at, payload
+    )
+    return jsonify(
+        status="accepted",
+        shipmentId=shipment_id,
+        eventId=event_id,
+        messageId=accepted["messageId"],
+    ), 202
+
+
+@app.post("/shipments/<shipment_id>/receiving/inspection")
+def receiving_inspection(shipment_id):
+    data = body()
+    passed = data.get("passed")
+    if type(passed) is not bool:
+        raise ValueError("passed must be a boolean")
+    payload = {
+        "inspector": text_field(data, "inspector"),
+        "passed": passed,
+    }
+    if "notes" in data:
+        payload["notes"] = text_field(data, "notes")
+    accepted = registry.queue_p3_input(
+        shipment_id,
+        "GoodsInspected",
+        text_field(data, "eventId"),
+        utc_timestamp(data, "occurredAt"),
+        payload,
+    )
+    return jsonify(
+        status="accepted",
+        shipmentId=shipment_id,
+        eventId=accepted["event"]["eventId"],
+        messageId=accepted["messageId"],
+    ), 202
+
+
+@app.post("/integrations/p4/quality-status")
+def p4_quality_status():
+    """Receive a P4 disposition; this internal demo endpoint is not authenticated."""
+    data = body()
+    accepted = registry.accept_quality_status(
+        text_field(data, "shipmentId"),
+        text_field(data, "eventId"),
+        utc_timestamp(data, "occurredAt"),
+        text_field(data, "qualityStatus"),
+        text_field(data, "incidentId"),
+    )
+    return jsonify(
+        status="accepted",
+        shipmentId=data["shipmentId"],
+        eventId=data["eventId"],
+        messageId=accepted["messageId"],
+    ), 202
 
 
 @app.post("/shipments")
@@ -289,9 +432,97 @@ def manual_arrival(shipment_id):
     ), 202
 
 
+@app.post("/integrations/siddhi/delivery-risk")
+def siddhi_delivery_risk():
+    """Receive a Siddhi alert, with eventId as the idempotency key."""
+    envelope = body()
+    data = envelope.get("event", envelope)
+    if not isinstance(data, dict):
+        raise ValueError("event must be an object")
+    shipment_id = text_field(data, "shipmentId")
+    event_id = text_field(data, "eventId")
+    occurred_at = utc_timestamp(data, "occurredAt")
+    payload = {
+        "eta": utc_timestamp(data, "eta"),
+        "deliveryDeadline": utc_timestamp(data, "deliveryDeadline"),
+        "reason": text_field(data, "reason"),
+        "occurredAt": occurred_at,
+    }
+    delay = data.get("estimatedDelaySeconds")
+    if delay is not None:
+        if type(delay) is not int or delay < 0:
+            raise ValueError("estimatedDelaySeconds must be a non-negative integer")
+        payload["estimatedDelaySeconds"] = delay
+    accepted = registry.queue_delivery_risk(shipment_id, event_id, payload)
+    return jsonify(status="accepted", shipmentId=shipment_id, eventId=event_id,
+                   messageId=accepted["messageId"]), 202
+
+
+@app.post("/integrations/simulator/route-command")
+def simulator_route_command():
+    """Local scripted simulator receiver used by Siddhi's command bridge."""
+    envelope = body()
+    data = envelope.get("event", envelope)
+    if not isinstance(data, dict):
+        raise ValueError("event must be an object")
+    route_id = data.get("routeId")
+    # Siddhi's JSON sink serialises a null string attribute as "undefined";
+    # AcceptDelay carries no route, so treat that (and "") as absent.
+    if route_id in ("undefined", ""):
+        route_id = None
+    command = {
+        "commandId": text_field(data, "commandId"),
+        "shipmentId": text_field(data, "shipmentId"),
+        "journeyId": text_field(data, "journeyId"),
+        "riskEventId": text_field(data, "riskEventId"),
+        "command": text_field(data, "command"),
+        "routeId": route_id,
+    }
+    if command["routeId"] is not None and not isinstance(command["routeId"], str):
+        raise ValueError("routeId must be a string")
+    if command["command"] == "ChangeRoute" and command["routeId"]:
+        check_route_keeps_destination(command["shipmentId"], command["routeId"])
+    return jsonify(registry.acknowledge_simulator_command(command)), 200
+
+
+def check_route_keeps_destination(shipment_id, route_id):
+    """Reject a route that is unknown or would not end at the shipment's destination."""
+    record = registry.get(shipment_id)
+    planned = transport_integrations.route(route_id, record["recipientId"])
+    current = record.get("routeCoordinates")
+    if current and planned[-1] != current[-1]:
+        raise Conflict("route would change the delivery destination")
+
+
+@app.post("/shipments/<shipment_id>/dispatcher-decision")
+def dispatcher_decision(shipment_id):
+    """Accept a human decision for the currently unresolved delivery-risk alert."""
+    data = body()
+    route_id = data.get("routeId")
+    if route_id is not None and not isinstance(route_id, str):
+        raise ValueError("routeId must be a string")
+    if route_id is not None:
+        check_route_keeps_destination(shipment_id, route_id)
+    accepted = registry.queue_dispatcher_decision(
+        shipment_id, text_field(data, "eventId"), text_field(data, "decision"), route_id
+    )
+    return jsonify(status="accepted", shipmentId=shipment_id,
+                   eventId=accepted["event"]["eventId"],
+                   messageId=accepted["messageId"]), 202
+
+
 @app.post("/shipments/<shipment_id>/acknowledge-receipt")
 def manual_receipt_acknowledgement(shipment_id):
-    """Manual/test P2 input for the receipt acknowledgement normally sent by P3."""
+    """Manual/test P2 input for the receipt acknowledgement normally sent by P3.
+
+    Only for P2-only runs (P3_ARRIVAL_URL unset). With P3 receiving enabled,
+    P2 completes solely from P3's ReceiptAcknowledged after P3 records receipt.
+    """
+    if os.getenv("P3_ARRIVAL_URL"):
+        raise Conflict(
+            "P3 receiving is enabled: record receipt with "
+            "POST /shipments/<id>/receiving/receipt; P2 completes from P3's acknowledgement"
+        )
     data = body()
     event_id = text_field(data, "eventId")
     occurred_at = utc_timestamp(data, "occurredAt")
@@ -394,7 +625,14 @@ async def start_transport(shipmentId, dispatchEvent, job: Job):
 
 
 async def start_journey(shipmentId, job: Job):
-    registry.start_journey(shipmentId, job.process_instance_key)
+    record = registry.get(shipmentId)
+    points = transport_integrations.route(record["routeId"], record["recipientId"])
+    eta, source = await asyncio.to_thread(
+        transport_integrations.eta, points, record["routeId"], 0
+    )
+    registry.start_journey(
+        shipmentId, job.process_instance_key, points[0], eta, source, points
+    )
     return {}
 
 
@@ -408,10 +646,108 @@ async def release_vehicle(shipmentId, receiptEvent, job: Job):
     return {}
 
 
-async def deliver_messages():
-    """Retry unsent durable commands; successful dispatch is acknowledged by P2's worker."""
+async def p3_record_arrival(shipmentId, arrivalNotification, job: Job):
+    registry.record_p3_arrival(
+        shipmentId, job.process_instance_key, arrivalNotification
+    )
+    return {}
+
+
+async def p3_record_receipt(shipmentId, receiptEvent, job: Job):
+    registry.record_p3_receipt(shipmentId, job.process_instance_key, receiptEvent)
+    return {}
+
+
+async def p3_record_inspection(shipmentId, inspectionEvent, job: Job):
+    return registry.record_p3_inspection(
+        shipmentId, job.process_instance_key, inspectionEvent
+    )
+
+
+async def p3_admit_stock(shipmentId, job: Job):
+    return registry.admit_p3_stock(shipmentId, job.process_instance_key)
+
+
+async def p3_record_quality_status(shipmentId, qualityStatusEvent, job: Job):
+    registry.record_p3_quality_status(
+        shipmentId, job.process_instance_key, qualityStatusEvent
+    )
+    return {}
+
+
+async def record_delivery_risk(shipmentId, deliveryRiskEvent, job: Job):
+    registry.record_delivery_risk(shipmentId, job.process_instance_key, deliveryRiskEvent)
+    return {}
+
+
+async def apply_dispatcher_decision(shipmentId, dispatcherDecision, job: Job):
+    route_id = dispatcherDecision.get("routeId")
+    if route_id:
+        record = registry.get(shipmentId)
+        # The alternative starts where the vehicle is now and must end where the
+        # current route ends: a route change never changes the delivery destination.
+        points = transport_integrations.route(
+            route_id, record["recipientId"], start=record["currentPosition"]
+        )
+        if record.get("routeCoordinates") and points[-1] != record["routeCoordinates"][-1]:
+            raise Conflict("alternative route does not end at the shipment's destination")
+        eta, eta_source = await asyncio.to_thread(
+            transport_integrations.eta, points, route_id, 0
+        )
+    else:
+        points, eta, eta_source = None, None, None
+    acknowledgement = await asyncio.to_thread(
+        transport_integrations.route_command,
+        {"commandId": dispatcherDecision["eventId"], "shipmentId": shipmentId,
+         "journeyId": dispatcherDecision["journeyId"], "riskEventId": dispatcherDecision["riskEventId"],
+         "command": "ChangeRoute" if route_id else "AcceptDelay", "routeId": route_id},
+    )
+    updated = registry.apply_dispatcher_decision(
+        shipmentId, job.process_instance_key, dispatcherDecision,
+        acknowledgement, points, eta, eta_source,
+    )
+    # Keep Camunda's process variables in step with the registry after a change.
+    return {
+        "simulatorAcknowledged": True,
+        "routeId": updated["routeId"],
+        "routeRevision": updated.get("routeRevision", 0),
+    }
+
+
+async def advance_simulated_journeys():
+    """Move scripted demo routes forward; arrival still enters P2 through its message catch."""
     while True:
-        for message in registry.pending_messages():
+        for record in registry.in_transit_shipments():
+            try:
+                points = record.get("routeCoordinates") or transport_integrations.route(
+                    record["routeId"], record["recipientId"]
+                )
+                index = min(record.get("routeIndex", 0) + 1, len(points) - 1)
+                position = points[index]
+                # Off the event loop: a slow TomTom call must not stall Zeebe workers.
+                eta, source = await asyncio.to_thread(
+                    transport_integrations.eta, points[index:], record["routeId"], index
+                )
+                updated = registry.advance_telemetry(record["shipmentId"], position, index, eta, source)
+                if index == len(points) - 1 and updated.get("transportState") == "IN_TRANSIT":
+                    arrived = updated.get("lastGpsEventOccurredAt") or updated["telemetryUpdatedAt"]
+                    registry.queue_transport_event(
+                        record["shipmentId"], "ShipmentArrived",
+                        f"SIM:{record['journeyId']}:ShipmentArrived", arrived,
+                        {"recipientId": record["recipientId"], "latitude": position[0], "longitude": position[1]},
+                        source="p2-simulator", input_mode="simulated",
+                    )
+            except Conflict as error:
+                app.logger.info("Simulator skipped %s: %s", record["shipmentId"], error)
+            except Exception:
+                app.logger.exception("Simulator tick failed for %s", record["shipmentId"])
+        await asyncio.sleep(max(0.1, float(os.getenv("GPS_TICK_SECONDS", "5"))))
+
+
+async def deliver_messages():
+    """Deliver durable Zeebe messages and optional HTTP integrations."""
+    while True:
+        for message in registry.pending_messages(destination="zeebe"):
             try:
                 await asyncio.wait_for(
                     client.publish_message(
@@ -432,6 +768,27 @@ async def deliver_messages():
                 )
             else:
                 registry.message_result(message["messageId"])
+        destinations = {
+            "p3-http": os.getenv("P3_ARRIVAL_URL"),
+            "siddhi-http": os.getenv("SIDDIHI_TELEMETRY_URL"),
+            # Durable P4 investigation handoff; stays PENDING until P4 exists.
+            "p4-http": os.getenv("P4_INCIDENT_URL"),
+        }
+        for destination, url in destinations.items():
+            if not url:
+                continue
+            for message in registry.pending_messages(destination=destination):
+                try:
+                    await asyncio.to_thread(
+                        post_json, url, message["variables"],
+                        {"Idempotency-Key": message["messageId"]},
+                    )
+                except Exception as error:
+                    registry.message_result(message["messageId"], str(error))
+                    app.logger.warning("%s delivery %s pending: %s", destination,
+                                       message["messageId"], error)
+                else:
+                    registry.message_result(message["messageId"])
         await asyncio.sleep(1)
 
 
@@ -439,8 +796,11 @@ async def main():
     global client, event_loop
     event_loop = asyncio.get_running_loop()
     channel = grpc.aio.insecure_channel(os.getenv("ZEEBE_ADDRESS", "localhost:26501"))
-    client = ZeebeClient(grpc_channel=channel)
-    worker = ZeebeWorker(grpc_channel=channel)
+    # pyzeebe closes the shared channel after 10 failed calls by default. A fresh
+    # Zeebe broker can take over 30 s to start, so keep retrying; the deploy loop
+    # below still bounds startup.
+    client = ZeebeClient(grpc_channel=channel, max_connection_retries=-1)
+    worker = ZeebeWorker(grpc_channel=channel, max_connection_retries=-1)
     handlers = (
         check_stock,
         allocate_stock,
@@ -452,11 +812,24 @@ async def main():
         start_journey,
         record_arrival,
         release_vehicle,
+        record_delivery_risk,
+        apply_dispatcher_decision,
+        p3_record_arrival,
+        p3_record_receipt,
+        p3_record_inspection,
+        p3_admit_stock,
+        p3_record_quality_status,
     )
     variables_by_job = {
         "p2-start-transport": ["shipmentId", "dispatchEvent"],
         "p2-record-arrival": ["shipmentId", "arrivalEvent"],
         "p2-release-vehicle": ["shipmentId", "receiptEvent"],
+        "p2-record-delivery-risk": ["shipmentId", "deliveryRiskEvent"],
+        "p2-apply-dispatcher-decision": ["shipmentId", "dispatcherDecision"],
+        "p3-record-arrival": ["shipmentId", "arrivalNotification"],
+        "p3-record-receipt": ["shipmentId", "receiptEvent"],
+        "p3-record-inspection": ["shipmentId", "inspectionEvent"],
+        "p3-record-quality-status": ["shipmentId", "qualityStatusEvent"],
     }
     for job_type, handler in zip(JOB_TYPES, handlers):
         variables = variables_by_job.get(job_type, ["shipmentId"])
@@ -470,6 +843,7 @@ async def main():
                 await client.deploy_resource(
                     os.getenv("BPMN_FILE", "bpmn/shipment_preparation.bpmn"),
                     os.getenv("P2_BPMN_FILE", "bpmn/transport.bpmn"),
+                    os.getenv("P3_BPMN_FILE", "bpmn/receiving.bpmn"),
                 )
                 break
             except Exception as error:
@@ -483,6 +857,8 @@ async def main():
         ready.set()
         async with asyncio.TaskGroup() as tasks:
             tasks.create_task(deliver_messages())
+            if os.getenv("P2_SIMULATOR_ENABLED", "true").lower() == "true":
+                tasks.create_task(advance_simulated_journeys())
             tasks.create_task(worker.work())
     finally:
         ready.clear()
