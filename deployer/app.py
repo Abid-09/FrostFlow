@@ -289,7 +289,12 @@ def temperature_scenario(shipment_id):
 @app.post("/integrations/siddhi/container-assessment")
 def container_assessment():
     data = body()
-    return jsonify(registry.acknowledge_container(data.get("event", data))), 202
+    acknowledgement = data.get("event", data)
+    if not isinstance(acknowledgement, dict):
+        raise ValueError("container acknowledgement must be an object")
+    for field in ("shipmentId", "journeyId", "eventId"):
+        text_field(acknowledgement, field, max_length=1000 if field == "eventId" else 100)
+    return jsonify(registry.acknowledge_container(acknowledgement)), 202
 
 
 @app.post("/shipments")

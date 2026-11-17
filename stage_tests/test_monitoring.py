@@ -342,3 +342,12 @@ class MonitoringTests(unittest.TestCase):
         self.disposition()
         self.ack(1, 40)
         self.assertEqual(self.db.get("S")["qualityStatus"], "RELEASED")
+
+    def test_container_callback_validates_api_body_and_stored_identity(self):
+        import app as service
+        with patch.object(service, "registry", self.db):
+            http = service.app.test_client()
+            self.assertEqual(http.post("/integrations/siddhi/container-assessment", json={"event": []}).status_code, 400)
+            self.assertEqual(http.post("/integrations/siddhi/container-assessment", json={"shipmentId": []}).status_code, 400)
+            self.assertEqual(http.post("/shipments/S/simulation/temperature", json={
+                "commandId": "api-command", "actor": "test", "scenario": "normal"}).status_code, 202)
