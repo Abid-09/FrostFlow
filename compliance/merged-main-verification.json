@@ -1,0 +1,67 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-17T13:26:31.862Z",
+  "testedCommit": "ad47a3c4cf252b7758915b2ad8eb7c4a5b068ece",
+  "command": ".venv/bin/python stage_tests/check_integration_smoke.py",
+  "project": "frostflow-repair",
+  "dataset": "Existing P3 dataset runtime/repair/p3; delta checks, not a repeated fresh-data suite",
+  "scriptSha256": "db08acce1e3a54920711789ad0e253e9dfdfaa7f50d73658c1a2e7f33f504d56",
+  "scriptNote": "The smoke helper was added in the evidence-recording commit after execution; this hash identifies the exact script executed. Application and model files match merged main.",
+  "cases": [
+    {
+      "scenario": "admission",
+      "shipmentId": "p3comp-smoke-cf4a1361-admission",
+      "p1ProcessInstanceKey": "2251799813687122",
+      "p2ProcessInstanceKey": "2251799813687191",
+      "p3ProcessInstanceKey": "2251799813687269",
+      "expectedFinalStatus": "ADMITTED"
+    },
+    {
+      "scenario": "quality-rejection",
+      "shipmentId": "p3comp-smoke-cf4a1361-quality-rejection",
+      "p1ProcessInstanceKey": "2251799813687390",
+      "p2ProcessInstanceKey": "2251799813687451",
+      "p3ProcessInstanceKey": "2251799813687538",
+      "expectedFinalStatus": "REJECTED"
+    }
+  ],
+  "warehouseDelta": -2,
+  "receivingDelta": 1,
+  "assertions": [
+    "prepare, loading verification, dispatch, automatic transport arrival, P3 physical receipt, inspection and admission or hold/rejection",
+    "P2 TransportCompleted and P3 StockAdmitted/GoodsRejected end events exported by Zeebe",
+    "Two warehouse crates dispatched; one receiving crate admitted; rejected goods add zero",
+    "Running /app/{app,registry,transport_integrations}.py hashes equal merged source"
+  ],
+  "merges": [
+    {
+      "pr": 4,
+      "url": "https://github.com/ash-01xor/FrostFlow/pull/4",
+      "commit": "e36b0acbd9bc62d8ea91ef2be4dc28c1bbf99374"
+    },
+    {
+      "pr": 5,
+      "url": "https://github.com/ash-01xor/FrostFlow/pull/5",
+      "commit": "ad47a3c4cf252b7758915b2ad8eb7c4a5b068ece"
+    }
+  ],
+  "reviewHandling": "Three new defect threads resolved after passing regressions; prior reviews retained; merges used --match-head-commit, no admin/bypass flags; main has no branch protection/rulesets.",
+  "externalConformance": {
+    "status": "pending",
+    "reason": "Browser access host unavailable",
+    "userDecision": "Merge now; retain external check as pending",
+    "scope": "Current regenerated P2 and P3 logs still require fresh ProcessDoctor checks"
+  },
+  "remainingScope": "Real P4 DCR investigation and P5\u2013P6 remain unimplemented",
+  "sha256": {
+    "deployer/app.py": "bb77768e34ba44b414e788abb4e786a8620732d9545ba3baa3093df9a7fac3aa",
+    "deployer/registry.py": "2a836429f05bdd1ffa2ed4954099858eab08a9430ac74b9ececafc168fc8248c",
+    "deployer/transport_integrations.py": "c570fd4f361051e3b5fabdb77c2b1abdf7c1d45042ada900346f179ac3237617",
+    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
+    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
+    "bpmn/receiving.bpmn": "6ed0fce6177be4be30771e0bcf9ca5377b2bbeb2b535dfda782be0fde6015ac4",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "compliance/p2/execution-log.xes": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445",
+    "compliance/p3/execution-log.xes": "7654763fc3c0600dc86099bb8d64a466fd9bf79e58de9b0169bc5ce401cc7f2f"
+  }
+}

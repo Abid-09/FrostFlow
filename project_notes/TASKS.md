@@ -22,7 +22,7 @@
 - [x] P1 regression, three P2 live acceptance journeys and four P3 live scenarios pass. New P2/P3 logs pass local DCR replay; forbidden admission is rejected. Exact warehouse/receiving stock and all four receipt/inspection retries verified (see reports, tested checkout `89dfd26`).
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
-- [ ] Merge #4, update #5 against main, inspect remaining changes, merge #5 and smoke-test merged main after the verification gate is satisfied. Existing review records must remain intact.
+- [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
 - [ ] P4 owner (unassigned): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
 
 The sections below retain earlier checkpoints and original P1–P6 work. Current commands and measured results are in [RUNNING.md](../docs/RUNNING.md) and the P2/P3 verification reports.
