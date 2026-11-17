@@ -1,0 +1,7 @@
+# Each fresh suite gets a matching registry directory and two engine volumes.
+# Keep VERIFY_DATASET unchanged when resuming an existing suite.
+volumes:
+  zeebe-data:
+    name: ${COMPOSE_PROJECT_NAME}-${VERIFY_DATASET:?Set a fresh dataset name}-zeebe
+  elasticsearch-data:
+    name: ${COMPOSE_PROJECT_NAME}-${VERIFY_DATASET:?Set a fresh dataset name}-elasticsearch

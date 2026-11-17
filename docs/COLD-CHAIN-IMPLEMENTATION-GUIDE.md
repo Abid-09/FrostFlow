@@ -8,7 +8,9 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2–P6 remain to be assigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4–P6 unassigned
+
+**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
 
 ## 1. What problem are we solving?
 
@@ -144,7 +146,7 @@ The [shared integration agreement](COLD-CHAIN-INTEGRATION-AGREEMENT.md) defines 
 
 - **Identifiers:** use the same shipment and journey IDs across messages. Give each investigation its own incident ID. Link replacement goods to the original shipment.
 - **Messages:** agree names, required fields, and who sends/receives each message. Every recorded business activity needs its identity, time, actor, and outcome.
-- **Quality status:** P3 and P4 share one recorded hold status. If investigation creation fails, the hold stays active. A later incident can impose a new hold after an earlier release.
+- **Quality status:** P3 and P4 share one recorded hold status. If investigation creation fails, the hold stays active. A later incident can impose a new hold after an earlier release. Rejection is terminal: later risk evidence retains the rejected incident and cannot restore admission permission.
 - **Repeated events:** a repeated reading, alert, or user action must not create duplicate incidents or replacement shipments.
 - **Input labels:** identify live API data, recorded API responses, simulated telemetry, and human decisions in the logs.
 
