@@ -8,7 +8,7 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4–P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 awaiting team confirmation; P5–P6 unassigned
 
 **Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
 
@@ -28,7 +28,7 @@ The original manual process is an assumed coursework scenario, not findings from
 
 ## 2. What will we build?
 
-We will use two vehicles, three cafeterias, five chilled products, and one shipment per vehicle journey. Each shipment contains one product and one batch. The team's 1 November 2026 dataset decision replaces the earlier single-product assumption: milk, yoghurt, fresh cheese, chicken breast and prepared salad, initially 20 crates each. See [the dataset reference](RUNNING.md#demonstration-dataset) and [catalogue](../deployer/catalog.json) for exact units and batch IDs. Routes are predefined, with one alternative route available for an approved change.
+We will use two vehicles, three cafeterias, five chilled products, and one shipment per vehicle journey. Each shipment contains one product and one batch. The team's 1 November 2026 dataset decision replaces the earlier single-product assumption: milk, yoghurt, fresh cheese, chicken breast and prepared salad, initially 20 crates each. See [the dataset reference](RUNNING.md#demonstration-dataset) and [catalogue](../deployer/catalog.json) for exact units and batch IDs. Three route corridors are implemented; an approved alternative is planned from the current position to the same recipient destination.
 
 | Part | How we will implement it |
 | --- | --- |
@@ -49,6 +49,8 @@ We will not build route optimisation, physical sensors, detailed refrigeration p
 
 ## 3. How the system will work
 
+This is the target P1–P6 design. The implemented checkpoint above distinguishes current P1–P3 delivery-risk behavior from future temperature, real DCR investigation and corrective/claim workflows.
+
 1. The warehouse prepares a shipment and confirms loading before dispatch.
 2. During transport, simulated GPS and temperature data enter Siddhi alongside weather and ETA updates.
 3. Siddhi detects a sustained temperature problem or persistent delivery risk.
@@ -62,7 +64,7 @@ This demonstrates communication in both directions: **events affect processes, a
 
 ## 4. Who will do what?
 
-Ashvanth is responsible for P1. Assign one student to each remaining process. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
+P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4 ownership and assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
 
 ### Ashvanth — P1: Shipment preparation · Camunda
 
@@ -77,7 +79,7 @@ Ashvanth is responsible for P1. Assign one student to each remaining process. Ev
 
 **Hand over to P2:** shipment ID, product and batch IDs, crate quantity, vehicle, destination, journey, route, and delivery deadline.
 
-### Person B — P2: Transport and delivery · Camunda
+### Rahul Shanbhag — P2: Transport and delivery · Camunda
 
 **Build:** dispatched shipment → monitor journey → handle delay/route decision if needed → arrive → receive acknowledgement → complete transport.
 
@@ -90,7 +92,7 @@ Ashvanth is responsible for P1. Assign one student to each remaining process. Ev
 
 **Hand over to P3:** arrival and receipt events. Send delivery-risk alerts to P4 through the shared integration.
 
-### Person C — P3: Receiving and stock admission · Camunda
+### Arunima Garg — P3: Receiving and stock admission · Camunda
 
 **Build:** arrival → acknowledge receipt → inspect goods → check quality status → admit, hold, or reject.
 
@@ -103,7 +105,9 @@ Ashvanth is responsible for P1. Assign one student to each remaining process. Ev
 
 **Coordinate with P4:** read the same recorded quality status, so the receiving process cannot overlook an investigation.
 
-### Abid — P4: Quality incident investigation · DCR
+### Owner to be confirmed — P4: Quality incident investigation · DCR
+
+An earlier draft named Abid, while the task board recorded P4 as unassigned. Team confirmation is still required; this guide does not assign or remove responsibility.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 
@@ -117,7 +121,7 @@ Ashvanth is responsible for P1. Assign one student to each remaining process. Ev
 
 A delay alone does not prove damaged goods. The officer assesses the evidence. Closing the investigation does not mean a replacement or claim has also finished.
 
-### Person E — P5: Corrective fulfilment · Camunda
+### Unassigned — P5: Corrective fulfilment · Camunda
 
 **Build:** authorised replacement/return → arrange goods or collection → confirm dispatch/booking → confirm delivery/collection → complete.
 
@@ -125,11 +129,11 @@ A delay alone does not prove damaged goods. The officer assesses the evidence. C
 - For replacement, create a new shipment linked to the original and reuse P1–P3.
 - For return, record collection arrangements and acknowledgement.
 - Track the original goods' disposition separately from replacement delivery.
-- Coordinate Siddhi's three detection patterns, the Open-Meteo adapter, and cooling-command forwarding. B and D help connect these to the simulator and investigation.
+- Coordinate Siddhi's three detection patterns, the Open-Meteo adapter, and cooling-command forwarding. The P2 and P4 owners help connect these to the simulator and investigation.
 
 **Must prove:** replacement/return follows authorisation and requires completion acknowledgement.
 
-### Person F — P6: Supplier claim resolution · Camunda
+### Unassigned — P6: Supplier claim resolution · Camunda
 
 **Build:** record claimable loss → assemble evidence → submit claim → receive settlement/rejection → close.
 

@@ -138,3 +138,11 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Output:** added `AGENTS.md`, covering source documents, implemented versus planned P1–P6 scope, architecture, business/message invariants, branch/PR workflow, verification levels, paired Docker/registry data, evidence provenance, secrets and recorded coursework deliverables. Read the README, implementation/integration/run guides, task board, existing AI record and relevant source/configuration/test entry points. Flagged historical ownership/status contradictions rather than asserting new assignments. The separately supplied course/contract PDFs were not inspected.
 
 **Validation:** checked relative links, concrete file/command paths, Markdown fences and whitespace, plus `git diff --check`. This documentation change does not alter application code or models and did not require restarting Docker or rerunning live suites. Prepared on `docs/project-agent-context` for PR review.
+
+## 2026-11-17 — documentation reconciliation and completion rule
+
+**Tool:** OpenAI Codex. **Prompt summary:** fix the audited stale documentation and explicitly require agents to update documentation when major changes, features or milestones are completed.
+
+**Output:** corrected the README, run guide, integration agreement, implementation guide and task board against current code and committed reports. Replaced the default-flow P2 receipt shortcut with P3 receipt/inspection, aligned demo actions and fresh-data prerequisites, separated verified local integration from pending external checks, updated current log references and split partially completed shared tasks. P4 ownership is explicitly awaiting confirmation because the earlier Abid attribution conflicts with the task board; no new owner was assigned. Added a mandatory cross-file documentation review and PR impact note to `AGENTS.md`. Preserved historical AI-use entries, model/log artifacts and verification results.
+
+**Validation:** relative links/anchors, documented scripts, curl endpoint/payload shapes, Markdown fences and whitespace checked against repository files; `git diff --check` passed. Documentation only: no application/model edits or live-stack mutation. Extended documentation PR #7 with these corrections.

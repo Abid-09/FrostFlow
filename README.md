@@ -8,7 +8,7 @@ Developed for **02268 — Process-oriented and Event-driven Software Systems**, 
 
 The system follows refrigerated shipments from warehouse preparation to cafeteria receiving and any subsequent quality investigation, corrective fulfilment or supplier claim. The scenario covers two vehicles, three campus cafeterias and five chilled products: milk, yoghurt, fresh cheese, chicken breast and prepared salad.
 
-Temperature and delivery-risk events will support workflow decisions through complex event processing. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated; weather and traffic information are planned external inputs.
+Delivery-risk events already support workflow decisions through the local Siddhi app; temperature-excursion and recovery patterns remain planned. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated. Optional TomTom traffic ETAs are implemented; weather integration remains planned.
 
 ## Demonstration dataset
 
@@ -46,7 +46,7 @@ The current implementation contains:
 
 Prerequisites: Docker Desktop with Compose, Python 3.12 for the checks, and Camunda Modeler for editing diagrams. BPMN lint commands also use Node.js/npm. The current checkpoint needs no external API keys or `.env` file.
 
-Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8081, 9200, 9601 and 26501 must be available.
+Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
 
 ```bash
 docker compose up --build -d --wait --wait-timeout 180
@@ -83,15 +83,15 @@ python3.12 -m venv .venv
 .venv/bin/python -m unittest discover -s stage_tests -p 'test_*.py' -v
 ```
 
-With the stack running and both vehicles available, run the engine integration check:
+For the P1 engine regression, use fresh paired version-3 registry/engine data (all 100 crates, no shipments, free vehicles) and disable the simulator. Follow the [sequential verification setup](docs/RUNNING.md#automated-verification) before running:
 
 ```bash
 .venv/bin/python stage_tests/check_stage1.py
 ```
 
-The live integration check exercises P1 stock wait/cancellation/replenishment and completes two independent P2 journeys through manual arrival and receipt. It confirms early receipt is rejected, exact retries do not duplicate activities, both Zeebe instances reach the `TransportCompleted` end event, and a released vehicle can be reused. It leaves no dispatched shipment waiting for arrival; see the [run guide](docs/RUNNING.md) before repeating it.
+The live integration check exercises P1 stock wait/cancellation/replenishment and completes two independent P2 journeys through manual arrival and physical receipt recorded by P3. It confirms early receipt is rejected, exact retries do not duplicate activities, both transports reach the `TransportCompleted` end event, and a released vehicle can be reused. For an existing dataset with sufficient stock, use `stage_tests/check_integration_smoke.py` instead of repeating the fresh-data suite; see the run guide for prerequisites.
 
-The offline suite covers P1/P2 behavior and P3 arrival deduplication, receipt acknowledgement, inspection, stock admission and quality holds. Four live P3 Zeebe scenarios, local DCR replay, forbidden-admission check, and ProcessDoctor conformance results (4/4 trace variants conform at 100% coverage) are recorded under `compliance/p3/`. P1 compliance evidence is stored under `compliance/p1/`; that XES contains P1 activities only. A live run writes P2 execution evidence to `runtime/verification-results/p2-completion.json`, not a P2 DCR conformance result. The committed P1 report and ProcessDoctor screenshots document P1 conformance only.
+The offline suite covers P1/P2 behavior and P3 arrival deduplication, receipt acknowledgement, inspection, stock admission and quality holds. P2's three live journeys and P3's four live scenarios pass local DCR replay; the P3 forbidden-admission check is rejected as required. Evidence is under `compliance/p2/` and `compliance/p3/`. Fresh ProcessDoctor checks for the current P2/P3 logs remain pending; historical portal results apply only to their original logs. P1 evidence is under `compliance/p1/` and its XES contains P1 activities only. `runtime/verification-results/p2-completion.json` records live P2 execution, not DCR conformance. The [merged-main report](compliance/merged-main-verification.json) records the successful P1–P3 smoke test.
 
 ## Repository structure
 
@@ -101,7 +101,8 @@ deployer/            HTTP integration, Zeebe workers and shipment registry
 event_streams/       Scenario inputs
 stage_tests/         Offline tests and engine integration checks
 tools/               Interactive demonstration controls
-compliance/          P1 DCR rules, log checker and reviewed execution evidence
+compliance/          P1/P2/P3 DCR rules, replay tools and reviewed evidence
+siddhi-apps/         Local telemetry risk rule and route-command bridge
 docs/                Implementation guide, integration agreement and run instructions
 project_notes/       Team task board and AI-use declaration record
 docker-compose.yml   Local application and workflow infrastructure
@@ -111,18 +112,19 @@ Directories for additional components will be introduced with their implementati
 
 ### DCR models and compliance rules
 
-`compliance/p1/rules.xml` uses DCR to check P1's recorded execution; Camunda runs P1. Each process will have its own compliance rules under `compliance/`.
+`compliance/p1/`, `compliance/p2/` and `compliance/p3/` contain DCR rules that check recorded execution; Camunda runs these three processes. P4–P6 will need their own compliance deliverables as they are implemented.
 
 P4 will use DCR to **execute** the quality investigation. Its model will belong in `dcr/` when that process is implemented, with its API integration in the shared Python service.
 
-## Continuing with P2 and P3
+## Current P2/P3 integration and remaining work
 
-P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits or holds goods. The receiving inventory is separate from P1 warehouse inventory. Siddhi behaviour is live-verified by `stage_tests/check_p2_siddhi.py`, and P2 has local DCR compliance evidence; the new P3 business effects have offline regression coverage and need a live Zeebe rehearsal. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
+P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** P4–P6 and external simulator/CEP owners remain to be assigned. P2 and P3 are integrated: arrival starts P3, and P2 releases the vehicle only after P3 records the physical receipt. P2's manual receipt shortcut is refused while P3 receiving is enabled. TomTom ETAs and P2's ProcessDoctor check are verified; the external simulator remains a team decision.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** P4 ownership awaits team confirmation; P5/P6 and shared external integration owners remain unassigned. P4's real investigation/consumer, fresh P2/P3 ProcessDoctor checks, a current live TomTom recheck, temperature/weather integration and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 
+- [Agent instructions](AGENTS.md) — repository context, invariants, workflow and required documentation updates when features or milestones change.
 - [Implementation guide](docs/COLD-CHAIN-IMPLEMENTATION-GUIDE.md) — scenario, process scope and responsibilities.
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — identifiers, messages, quality states and shared rules.
 - [Run guide](docs/RUNNING.md) — beginner walkthrough, BPMN/DCR explanation and verification.

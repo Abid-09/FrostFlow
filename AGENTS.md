@@ -27,7 +27,7 @@ Some guide sections retain older checkpoints or describe the target architecture
 - **P2 — transport:** scripted GPS/ETA, optional TomTom traffic ETAs, local Siddhi risk detection, dispatcher decisions, automatic arrival and receipt-gated vehicle release. Owner: Rahul Shanbhag.
 - **P3 — receiving:** durable arrival handoff, physical receipt, inspection, separate receiving inventory and quality hold/release/rejection. Owner: Arunima Garg.
 - **P4 — investigation:** the quality-status endpoint, persisted hold and durable investigation handoff exist. The real executable DCR investigation and handoff consumer are still to be implemented. Test-harness dispositions and CLI releases are stand-ins, not P4 execution.
-- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. Confirm ownership on the task board before assigning those tasks; older documents disagree.
+- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. P4 ownership awaits team confirmation (an earlier draft named Abid); P5/P6 and shared integration owners remain unassigned.
 
 Preserve the full P1–P6 plan without expanding an unrelated repair into those features. Mixed-product crates, partial fulfilment, new-batch procurement, route optimisation and detailed refrigeration physics are outside the current increment.
 
@@ -79,6 +79,21 @@ When changing a shared message, update its producer, consumer, workers/model map
 - BPMN task types, worker registration, fetched variables, correlation keys and returned variables must agree. Preserve explicit gateway merges/defaults and diagram coordinates. Models deploy at service startup; existing instances remain on their original deployed version.
 - Use the existing local `.venv` for offline work. Check the environment before reinstalling dependencies or creating another environment. Do not start Docker just to edit documentation.
 - Update the task board and relevant guides when scope/status/contracts change. Append a concise, accurate AI-use entry describing actual assistance, checks and limits. Do not fabricate human review or test outcomes.
+
+## Documentation is part of completion
+
+**Every major change, feature implementation, integration, or completed milestone must include a documentation review and the necessary updates in the same PR. Do not declare the work complete while affected documentation describes the previous behavior.** For small fixes, update any affected commands, contracts or status claims as well.
+
+Before requesting review or reporting completion:
+
+1. Check `README.md` for implemented/planned status, ownership, entry points and verification claims.
+2. Check `docs/RUNNING.md` for runnable commands, prerequisites, ports, endpoints, expected outcomes, retry/readiness waits and dataset requirements. Examples must use the current default integration path.
+3. Check the integration agreement for changed messages, producers/consumers, states, guards and handoffs; check the implementation guide for scope, ownership and progress. Preserve the full P1–P6 target while marking which parts actually exist.
+4. Update `project_notes/TASKS.md`: completed items, remaining dependencies, confirmed owners and PR/evidence links. Split mixed tasks when only part is implemented. Resolve contradictory current statements across files, rather than appending another summary that leaves them in place. Leave unconfirmed ownership explicitly unconfirmed.
+5. Update affected verification reports after relevant checks, recording the exact tested revision, input modes and outcomes. Regenerate execution logs/PDFs only when their source or evidence changes. Keep live execution, local replay and external conformance separate; older results must identify the original log/revision. Preserve dated AI-use history and append the assistance actually provided.
+6. Check `AGENTS.md` itself for changes to architecture, invariants, workflow or commands. Search other current documentation for superseded claims such as "not implemented", "needs verification", "unassigned" and obsolete endpoints/run IDs. Verify links and paths and run `git diff --check`.
+
+Include a short documentation-impact note in the PR: list updated guides, or explain why no documentation changes are needed. A passing test suite alone does not satisfy this completion requirement. Do not manufacture evidence or mark pending external checks complete to make the documents agree.
 
 ## Verification: choose the appropriate level
 
