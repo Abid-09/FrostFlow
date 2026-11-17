@@ -1,0 +1,34 @@
+[
+  {
+    "shipmentId": "p3comp-53e0ffb2-normal-receipt-admission",
+    "p3EndElement": "StockAdmitted",
+    "p3ProcessInstanceKey": "2251799813685483",
+    "p2ProcessInstanceKey": "2251799813685395",
+    "p3EndConfirmed": true,
+    "p2EndConfirmed": true
+  },
+  {
+    "shipmentId": "p3comp-53e0ffb2-quality-hold-release",
+    "p3EndElement": "StockAdmitted",
+    "p3ProcessInstanceKey": "2251799813685754",
+    "p2ProcessInstanceKey": "2251799813685667",
+    "p3EndConfirmed": true,
+    "p2EndConfirmed": true
+  },
+  {
+    "shipmentId": "p3comp-53e0ffb2-inspection-rejection",
+    "p3EndElement": "GoodsRejected",
+    "p3ProcessInstanceKey": "2251799813686057",
+    "p2ProcessInstanceKey": "2251799813685977",
+    "p3EndConfirmed": true,
+    "p2EndConfirmed": true
+  },
+  {
+    "shipmentId": "p3comp-53e0ffb2-quality-rejection",
+    "p3EndElement": "GoodsRejected",
+    "p3ProcessInstanceKey": "2251799813686321",
+    "p2ProcessInstanceKey": "2251799813686235",
+    "p3EndConfirmed": true,
+    "p2EndConfirmed": true
+  }
+]

@@ -457,22 +457,24 @@ It dispatches two shipments at once. A has a one-minute deadline:
 
 ### Evidence: what was verified and where
 
-Each result below is tied to the code it ran against. Runtime output stays under the ignored `runtime/` folder; reviewed copies are committed in `compliance/p2/`.
+Foundation results are recorded with exact revisions, source/model/log hashes, image identities and input modes in [foundation verification](../compliance/foundation-verification.json). The current P2/P3 reports reference the refreshed logs. Original repair artifacts are preserved under each process's `history/552945d/`; the original merged-main smoke remains historical evidence in `merged-main-verification.json`.
 
-| Evidence | Kind | Tested code | Artefact and result |
+| Evidence | Kind | Tested code | Result |
 | --- | --- | --- | --- |
-| Offline suite | unit/regression tests | `89dfd26` | 57 tests OK, local Python 3.12.13; terminal rejection and P3 readiness regressions included |
-| `check_siddhi_risk_rule.py` | isolated live Siddhi rule | `eaaaf6b` | PASS: duplicate identity, isolated, stale and gap-broken observations do not alert; three distinct fresh late observations alert once per revision |
-| `check_stage1.py` | live P1 regression; simulator off | `1e4d141` | PASS: independent transports, receipt gate, retries, vehicle reuse and local replay |
-| `check_p2_siddhi.py` | live P2 acceptance; local demo ETAs | `89dfd26` (application image `1e4d141`, identical implementation) | PASS: run `131337`, three completed P2/P3 journeys; current [P2 report](../compliance/p2/verification.json) |
-| `check_p3_compliance.py --base http://localhost:5001` | live P3 scenarios; fresh data | `89dfd26` | PASS: run `9d1cd66e`, normal admission, hold/release, inspection rejection, quality rejection; exact inventory and retry checks in [P3 report](../compliance/p3/verification.json) |
-| `compliance/check.py` on P2 log | local DCR replay | log from run `131337` | 3 valid, accepting cases; 6 synthetic violations rejected by offline tests |
-| `build_p3_evidence.py verify` on P3 log | local DCR replay | log from run `9d1cd66e` | 4 valid, accepting cases; forbidden admission rejected |
-| Pinned BPMN lint | model validation | `89dfd26` | All three models: zero errors, zero warnings |
-| ProcessDoctor | external conformance | current P2/P3 logs | **Pending:** browser tool returned “The browser access host is unavailable”. Previous results remain historical in each report; no fresh portal result is claimed |
-| TomTom | historical live provider check | earlier code/log | Preserved in P2 report and `tomtom-responses.jsonl`; current deterministic checks use local demo ETAs |
+| Offline suite | SQLite/API/provider regressions with substituted engine calls | See foundation report | 79 passing tests |
+| P1 regression | Fresh paired data, simulator off | See foundation report | Stock waits/cancellation, independent transports, retries, vehicle reuse and local replay |
+| P2 acceptance | Fresh paired data, simulator on, local demo ETAs | `fb06a44` | Run `151259`: three completed journeys, acknowledged route revision, arrival/receipt gates and incident/version release |
+| Four standard P3 scenarios | Fresh paired data, simulator on | `83ec452` | Run `53e0ffb2`: admission, hold/release, inspection rejection, quality rejection; new MonitoringFinalized activity |
+| Four container scenarios | Real engine and local Siddhi | `7be2210` | Normal, isolated spike, sustained excursion and missing telemetry; exact inventory and exported end states |
+| Container weather comparison | Real local Siddhi; recorded ETA/weather, temporary SQLite | `7be2210` | Six cases distinguish urgent hot-weather assessment from cool/unavailable weather and normal-priority standalone excursion |
+| Evaluation outage/restart | Real engine; retained matched data | `1b40a93` | Closing-evaluation hold after 20 s; P2 vehicle release precedes finalization; 21-second service restart retains profile/session and detects silence |
+| Integration smoke | Branch smoke, real engine end states and exact stock deltas | `1b40a93` application bytes | Passing admission and quality rejection; this is pre-merge verification |
+| Local DCR replay | Actual business logs, raw samples excluded | Current rules/log hashes in reports | P2: three traces; P3: four; foundation: six; forbidden admission without finalization/during hold rejected separately |
+| Pinned receiving BPMN lint/PDF | Structural/layout validation | Current receiving model | Zero errors/warnings; PDF regenerated and rendered diagram inspected |
+| Open-Meteo and TomTom | Separate actual provider calls | Source/response hashes in foundation report | Usable model-based current weather; TomTom HTTP 200 traffic ETA |
+| ProcessDoctor | External conformance of changed logs/model | Current foundation evidence | Pending: browser access host unavailable; historical results apply only to archived artifacts |
 
-Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. PR #4 merged first (`e36b0ac`); PR #5 was updated against main, its remaining diff inspected, then merged (`ad47a3c`). The user explicitly approved merging while fresh ProcessDoctor checks remain pending. Merged-main smoke passed normal admission and hold/rejection, both process end events and exact inventory deltas; see [merged-main verification](../compliance/merged-main-verification.json).
+No merge or post-merge smoke is claimed for the foundation branch. Review and explicit merge authorization remain required; repeat the smoke against merged main after an authorised merge. The flat DCR checker does not implement timed/data/hierarchical semantics or a real P4 investigation.
 
 **Not implemented:** P4's DCR investigation. The delivery-risk hold and the durable P4 handoff exist, and admission stays blocked until the current incident is released, but the release is a stand-in until P4 consumes the handoff (tracked on the task board).
 
@@ -565,3 +567,7 @@ P3 receipt releases the vehicle independently of assessment. Admission waits for
 ```
 
 These checks distinguish live Siddhi/engine behavior from recorded ETA/weather inputs. Actual Open-Meteo and TomTom checks are recorded separately in [foundation verification](../compliance/foundation-verification.json). The schema fixture and sanitized captured Open-Meteo response in `stage_tests/fixtures/` are labelled separately. New external ProcessDoctor conformance remains pending for changed evidence; historical screenshots do not validate the foundation model/log.
+
+For a live service-restart watchdog check on the named verification stack (one free vehicle and one salad crate), run `.venv/bin/python stage_tests/check_monitoring_restart.py --communication-container frostflow-foundation-communication-1`. It deliberately stops only communication for 21 seconds and starts that same container with its original matched data. It proves the restored session/profile survives, the silence hold precedes resumed sampling, and P3 receipt releases the vehicle during the hold.
+
+To test closing evaluation failure, recreate **only communication** with the original project/registry/overlay variables and `SIDDIHI_CONTAINER_URL=http://127.0.0.1:9/container`, then run `.venv/bin/python stage_tests/check_monitoring_outage.py`. The runner expects a 20-second closure hold and verifies vehicle release precedes finalization. Restore the normal container URL using the same variables afterward. Late unavailable acknowledgements belong to that closing-sequence assessment; they cannot silently clear its hold or reopen the same released uncertainty episode. The endpoint remains a labelled test disposition, not an investigation.

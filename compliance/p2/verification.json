@@ -1,208 +1,63 @@
 {
-  "verifiedAt": "2026-11-17T13:20:23.821196+00:00",
-  "testedCommit": "89dfd26cf20548c9c2d9e30a4bbd9fe74ad332e7",
-  "implementationCommit": "1e4d141",
-  "environment": {
-    "python": "3.12.13",
-    "host": "macOS arm64",
-    "engine": "Zeebe/Operate 8.8.0",
-    "elasticsearch": "8.16.0",
-    "siddhi": "siddhiio/siddhi-runner-alpine:latest (amd64 emulation)",
-    "project": "frostflow-repair",
-    "data": "fresh paired version-3 SQLite registry and named engine volumes for each suite; one running stack",
-    "eta": "local-demo-estimate; TOMTOM_API_KEY blank",
-    "P4": "test disposition endpoint only; DCR investigation not implemented"
-  },
-  "sha256": {
-    "deployer/registry.py": "2a836429f05bdd1ffa2ed4954099858eab08a9430ac74b9ececafc168fc8248c",
-    "deployer/app.py": "bb77768e34ba44b414e788abb4e786a8620732d9545ba3baa3093df9a7fac3aa",
+  "status": "passed",
+  "testedCommit": "fb06a44299d8342cb78fd9b01db312a10232f050",
+  "command": ".venv/bin/python stage_tests/check_p2_siddhi.py",
+  "runId": "151259",
+  "inputModes": [
+    "simulated-gps",
+    "simulated-container",
+    "live-siddhi",
+    "local-demo-estimate",
+    "live-open-meteo",
+    "test-disposition"
+  ],
+  "sourceSha256": {
+    "deployer/app.py": "825ffc82c7b7d14828c3a7037308a63e6b2f6d0bb7027b28f06af539725a60d5",
+    "deployer/registry.py": "1029225f8621f766c7bc24ed45140c3d9ea7db3820a121a28fb4dad897a0b4aa",
+    "deployer/monitoring.py": "c8e9f8cc8ae53738700ecf8050863aab4d7ca5de37161a90273503e315edf2a5",
+    "deployer/monitoring_registry.py": "7a2325fc4b6aaeaccf0744e6b683fc663f60f2c964ffac42721bb901baa4a57b",
+    "deployer/weather.py": "c8e2eda1cb89310ced9f19636b766443ca76ce0b5c6b4991101275ed23c19042",
     "deployer/transport_integrations.py": "c570fd4f361051e3b5fabdb77c2b1abdf7c1d45042ada900346f179ac3237617",
-    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
-    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
-    "bpmn/receiving.bpmn": "6ed0fce6177be4be30771e0bcf9ca5377b2bbeb2b535dfda782be0fde6015ac4",
+    "siddhi-apps/ContainerAssessment.siddhi": "25c8a86035751d4be184c27a92ee37806a6016606f135912ec979af27993784e",
     "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
-    "stage_tests/check_p2_siddhi.py": "3203e721de3e58bfe47b606d3dded2f3bed2215aaccc29abede3375dcbec13e8",
-    "stage_tests/check_siddhi_risk_rule.py": "2c14816f78dcb2996d7663296d91a4c569fc535fe680fe6f29889db7a9d772eb",
-    "stage_tests/check_p3_compliance.py": "d4f31e65814ad59870f66c90634207fe81756ce246e9beb44ba209442d33be54",
-    "stage_tests/test_stage1.py": "2941106ce8d5ed0f6a92c9bccb7bc562bdf1270511fb737b74f6f03c6d27dde2",
-    "stage_tests/test_p3_runner.py": "54eefc3f6962f23edb679757f0e9931cbc4f9310c8961b6108c6565546c83b1c",
-    "docker-compose.yml": "45087f49934082f0a2331d899a2df0b3a6239687360e8dc15762ba1b028825e5",
-    "stage_tests/verification.compose.yml": "c95b968835d94582e1ae2dd2573cd8c7c19c3421c4fd7da73d8e28b5c809b986",
-    "compliance/p2/rules.xml": "f1f3409df5c628d8457d4e77ca4c73422727b429eb2877e1b2a25b38fe9f666e",
-    "compliance/p2/execution-log.xes": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445",
-    "compliance/p2/invalid-traces.json": "61c6a8dd366205d117701bc3cd86ff52939b539f1557b9e01352e99cbe2e8c5d"
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "docker-compose.yml": "34f91706a60d7bd84cc148869fc94e3704c7f916c80108efb0ad883d64fa41b7"
   },
-  "process": "P2 Transport and delivery",
-  "owner": "Rahul Shanbhag",
-  "liveAcceptance": {
-    "command": ".venv/bin/python stage_tests/check_p2_siddhi.py",
-    "result": "PASS",
-    "checkedAt": "2026-11-17T13:16:49.829481Z",
-    "GPS_TICK_SECONDS": 10,
-    "dataset": "runtime/repair/p2; frostflow-repair-p2-{zeebe,elasticsearch}",
-    "riskRule": {
-      "triggerEtaIndex": 3,
-      "lateEtasBeforeAlert": 3
+  "modelSha256": "f1f3409df5c628d8457d4e77ca4c73422727b429eb2877e1b2a25b38fe9f666e",
+  "executionLogSha256": "75db9e6c50ec1f4a975793fd534f36f87f86f383beaad50aa5a4301dee987890",
+  "sourceEvidence": {
+    "path": "runtime/foundation/p2-02-evidence/p2-siddhi.json",
+    "sha256": "c861cbb0f0be996de02fb7d389390771f05e7e2d3f2cceef024a227b1b51506e"
+  },
+  "localReplay": {
+    "S-SID-A-151259": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
     },
-    "routeChange": {
-      "from": "route-01",
-      "to": "route-02",
-      "acknowledgement": {
-        "commandId": "check-decision-SIDDHI:RISK:P2:S-SID-A-131337:ETAUpdated:0:3",
-        "messageId": "09003e01-e186-4242-873b-a3937cf89f12",
-        "simulatorAcknowledged": true
-      }
+    "S-SID-B-151259": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
     },
-    "destinationPreserved": [
-      48.8698,
-      2.2947
-    ],
-    "operateRouteVariables": {
-      "routeId": "route-02",
-      "routeRevision": 1
-    },
-    "qualityReleases": {
-      "S-SID-A-131337": "DELAY:SIDDHI:RISK:P2:S-SID-A-131337:ETAUpdated:0:3",
-      "S-SID-C-131337": "DELAY:SIDDHI:RISK:P2:S-SID-C-131337:ETAUpdated:0:3"
-    },
-    "admissionBeforeRelease": {
-      "S-SID-A-131337": "ON_HOLD",
-      "S-SID-B-131337": "ADMITTED",
-      "S-SID-C-131337": "ON_HOLD"
-    },
-    "shipments": {
-      "S-SID-A-131337": {
-        "transportState": "COMPLETED",
-        "p3Status": "ADMITTED",
-        "qualityStatus": "RELEASED",
-        "vehicleReleased": true,
-        "p2ProcessInstanceKey": "2251799813685388",
-        "p3ProcessInstanceKey": "2251799813685814"
-      },
-      "S-SID-B-131337": {
-        "transportState": "COMPLETED",
-        "p3Status": "ADMITTED",
-        "qualityStatus": "CLEAR",
-        "vehicleReleased": true,
-        "p2ProcessInstanceKey": "2251799813685487",
-        "p3ProcessInstanceKey": "2251799813685733"
-      },
-      "S-SID-C-131337": {
-        "transportState": "COMPLETED",
-        "p3Status": "ADMITTED",
-        "qualityStatus": "RELEASED",
-        "vehicleReleased": true,
-        "p2ProcessInstanceKey": "2251799813685948",
-        "p3ProcessInstanceKey": "2251799813686148"
-      }
+    "S-SID-C-151259": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
     }
   },
-  "offlineTests": {
-    "command": ".venv/bin/python -m unittest discover -s stage_tests -p 'test_*.py' -q",
-    "result": "57 tests OK",
-    "regressions": [
-      "REJECTED status and original incident survive a second delivery risk; durable handoff retains rejection, incidentOpened false; transport decisions remain possible; release and admission forbidden",
-      "P3 readiness waits through wrong state and pending command; timeout identifies gate"
-    ]
-  },
-  "siddhiRuleCheck": {
-    "command": ".venv/bin/python stage_tests/check_siddhi_risk_rule.py",
-    "testedCommit": "eaaaf6b",
-    "result": "PASS: repeated identity produces no alert; three distinct fresh late readings produce one; isolated, stale, unavailable-gap, on-time, interleaved-shipment and route-revision checks pass"
-  },
-  "p1Regression": {
-    "command": ".venv/bin/python stage_tests/check_stage1.py",
-    "testedCommit": "1e4d141",
-    "result": "PASS: stock waiting/replenishment/cancellation, local replay, independent transports, receipt gate, retries and vehicle reuse",
-    "dataset": "runtime/repair/p1; frostflow-repair-p1-{zeebe,elasticsearch}",
-    "P2_SIMULATOR_ENABLED": false,
-    "observedAt": "2026-11-17T13:13:00.573663+00:00"
-  },
-  "localCompliance": {
-    "command": ".venv/bin/python compliance/check.py compliance/p2/execution-log.xes --model compliance/p2/rules.xml",
-    "result": {
-      "S-SID-A-131337": {
-        "valid": true,
-        "accepting": true,
-        "pending": []
-      },
-      "S-SID-B-131337": {
-        "valid": true,
-        "accepting": true,
-        "pending": []
-      },
-      "S-SID-C-131337": {
-        "valid": true,
-        "accepting": true,
-        "pending": []
-      }
-    },
-    "invalidTraces": "6 synthetic violations rejected by offline suite"
-  },
-  "bpmnLint": {
-    "command": "npx --yes @camunda8/cli@4.6.1 bpmn lint <model>",
-    "models": [
-      "bpmn/shipment_preparation.bpmn",
-      "bpmn/transport.bpmn",
-      "bpmn/receiving.bpmn"
-    ],
-    "result": "zero errors and zero warnings for all three"
-  },
+  "checks": [
+    "persistent distinct ETA risk",
+    "acknowledged destination-preserving route change",
+    "engine route variables",
+    "independent journeys",
+    "automatic arrival closes pending decision",
+    "receipt-gated vehicle release",
+    "current-incident/version release"
+  ],
   "processDoctor": {
     "status": "pending",
-    "reason": "Attempt to open https://processdoctor.compute.dtu.dk/ via the browser tool failed: The browser access host is unavailable. No current portal result is claimed.",
-    "logSha256": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445",
-    "mergeDecision": "User explicitly approved merging with this external check pending."
+    "reason": "New log; browser tool returned The browser access host is unavailable"
   },
-  "historicalProcessDoctor": {
-    "testedCommit": "d613960",
-    "result": "PENDING - re-run for the log regenerated from run 130506 (tested commit d613960) and record the result here",
-    "previousLogResult": "Run 100628 log: Checked 2026-11-15 at processdoctor.compute.dtu.dk: Conformance > Open DCR Solution XML (compliance/p2/rules.xml), Upload Log (compliance/p2/execution-log.xes, 3 traces from the P3-integrated run), threshold 100. Result: 3 Conforming, 0 Partially Violating, 0 Violating, 0 structural violations. Screenshot: compliance/p2/processdoctor-conforming.png",
-    "note": "Applies only to earlier logs; screenshot retained as historical evidence."
-  },
-  "historicalTomTom": {
-    "checkedAt": "2026-11-15T08:58:19.744175Z",
-    "keyOwner": "Rahul Shanbhag's personal TomTom developer key (team key not yet provided); supplied only via TOMTOM_API_KEY at runtime, never stored",
-    "command": "TOMTOM_API_KEY=<key> docker compose ... up; python stage_tests/check_p2_siddhi.py",
-    "result": "PASS - live acceptance check with traffic-aware TomTom ETAs",
-    "requests": 15,
-    "httpStatus": [
-      200
-    ],
-    "etaSources": "11 ETAUpdated from tomtom-traffic, 3 at-destination (final route point, nothing left to route)",
-    "responses": "compliance/p2/tomtom-responses.jsonl (summaries only, key removed)",
-    "failureHandling": "TomTom errors or unusable data give etaSource tomtom-unavailable with no ETA; Siddhi ignores them (offline tests)",
-    "note": "Scripted demo routes use Paris coordinates, so these are Paris traffic ETAs",
-    "offlineTests": "44 tests OK (Python 3.12)",
-    "sha256": {
-      "deployer/transport_integrations.py": "5641072490a27d9b2e166e3d87d228c735da2f3ba7275656422f24994fd97353",
-      "deployer/app.py": "ddfd61416a5dbe6fff8b9910caa06c54924ff7b47ff4c2550168746a8fe94b02",
-      "deployer/registry.py": "40c6eea58439c79d035aa5c3cf7ccb72f66eb50fde682a09e37a805fa7fb6f8f",
-      "compliance/p2/tomtom-responses.jsonl": "c9729996842b8920f03eb2a07e7679fb7d27df7e015f089d7bc22da716d95a31"
-    }
-  },
-  "notVerified": [
-    "External ProcessDoctor refresh for this log",
-    "Real P4 investigation consumer and authorised disposition workflow",
-    "Live TomTom on the current commit",
-    "External physical simulator"
-  ],
-  "dockerManagement": {
-    "removedObsoleteContainers": 15,
-    "projects": [
-      "frostflow-p2-fixes-1d8edbf",
-      "frostflow-p3-fixes-3c45468",
-      "frostflow-p2p3-tomtom"
-    ],
-    "preserved": "named volumes, existing registries, images; old logs and mount inventory archived under runtime/repair/",
-    "missingBeforeCleanup": "frostflow-p2p3-tomtom registry.sqlite was absent from its bind mount before cleanup",
-    "activeStack": "frostflow-repair, P3 dataset; P1 and P2 paired data retained",
-    "overlay": "stage_tests/verification.compose.yml; P1/P2 used equivalent runtime/repair/compose.yml volume names"
-  },
-  "mergedMainSmoke": {
-    "status": "passed",
-    "testedCommit": "ad47a3c4cf252b7758915b2ad8eb7c4a5b068ece",
-    "report": "compliance/merged-main-verification.json",
-    "command": ".venv/bin/python stage_tests/check_integration_smoke.py"
-  }
+  "historicalEvidence": "history/552945d/verification.json"
 }

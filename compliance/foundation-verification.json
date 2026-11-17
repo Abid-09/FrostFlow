@@ -1,0 +1,476 @@
+{
+  "status": "implemented-and-locally-verified; external conformance and review pending",
+  "recordedAt": "2026-11-17T15:30:48.166985+00:00",
+  "branch": "feat/pre-p4-foundation",
+  "baseCommit": "552945d0727bc8c42428875dec7adea142cff2c8",
+  "applicationSourceRevision": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+  "reviewHeadAtEvidenceRecording": "113b93fbf9acf2e3a94c2f9250e5af50540659ae",
+  "sourceSha256": {
+    "deployer/app.py": "32689c0e153852b70adbbf176042ddf04210666f19fa3cd0cb2b39e37ae53b34",
+    "deployer/registry.py": "154ed12caf63aebe68113574a3542188473b68e5c5cb5d88aca65a17bc770251",
+    "deployer/monitoring.py": "c8e9f8cc8ae53738700ecf8050863aab4d7ca5de37161a90273503e315edf2a5",
+    "deployer/monitoring_registry.py": "22378e200627701fc90e3882d4222883551b4f77064325992ba7fe7f31b8efa9",
+    "deployer/weather.py": "b4687b1b70f5937c62523fa7df91852a2831b546a8fa32d77f4d3e98f1fd61a5",
+    "deployer/transport_integrations.py": "8c60e20a3f97bf5610ed18ccb548d0c514ba278c794f6321ae91926f78abeee8",
+    "deployer/catalog.json": "805f082c60f4c54551c506bc5e5ee5864ddc0001de0a822169dd970571714860",
+    "deployer/requirements.txt": "700b7496391e5f60825686724f9d9088504b075e3d51db6de2a8279df518ae29",
+    "docker-compose.yml": "34f91706a60d7bd84cc148869fc94e3704c7f916c80108efb0ad883d64fa41b7",
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "bpmn/receiving.pdf": "0b1085525d9caa8cbb01bc0f50b988b83c826f20c46cbc1b4c238dfecbe90706",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "siddhi-apps/ContainerAssessment.siddhi": "25c8a86035751d4be184c27a92ee37806a6016606f135912ec979af27993784e"
+  },
+  "environment": {
+    "python": "3.12.13",
+    "host": "Darwin arm64",
+    "services": [
+      {
+        "service": "communication",
+        "image": "frostflow-foundation-communication",
+        "imageId": "sha256:1abd3dc9d271bfb3a9156e88233b2302ae09553ee811a8c0f5792ba076ed858d",
+        "mounts": [
+          {
+            "type": "bind",
+            "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/bpmn",
+            "destination": "/bpmn"
+          },
+          {
+            "type": "bind",
+            "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/runtime/foundation/p1-02",
+            "destination": "/data"
+          }
+        ]
+      },
+      {
+        "service": "zeebe",
+        "image": "camunda/zeebe:8.8.0",
+        "imageId": "sha256:f2a4737e0bbaacc0ed9ba31efc32262e81746988f9d5210cc2f5f9c66cdd9815",
+        "mounts": [
+          {
+            "type": "volume",
+            "source": "7ee902085e5b05e31499a349893753dbffc8da533493f3fad63688d8239b6951",
+            "destination": "/tmp"
+          },
+          {
+            "type": "volume",
+            "source": "frostflow-foundation-p1-02-zeebe",
+            "destination": "/usr/local/zeebe/data"
+          },
+          {
+            "type": "volume",
+            "source": "dda3a2f2d7f78655302496582494d08b328bc938a078b25d45e12ff1ccea52ad",
+            "destination": "/usr/local/zeebe/logs"
+          }
+        ]
+      },
+      {
+        "service": "elasticsearch",
+        "image": "docker.elastic.co/elasticsearch/elasticsearch:8.16.0",
+        "imageId": "sha256:93a9a7e1908f0c59ffce42ff494791bd785c36de40189759fc2a0ed7d6006c9d",
+        "mounts": [
+          {
+            "type": "volume",
+            "source": "frostflow-foundation-p1-02-elasticsearch",
+            "destination": "/usr/share/elasticsearch/data"
+          }
+        ]
+      },
+      {
+        "service": "operate",
+        "image": "camunda/operate:8.8.0",
+        "imageId": "sha256:3ef9717192aedbccb66b767577bdf29937ba816d35edba2423adce19aafdaa91",
+        "mounts": [
+          {
+            "type": "volume",
+            "source": "aa2af27ac2f167705a81bb5d880111823ce0c7c7507ba972336a3ac82de5b7bd",
+            "destination": "/tmp"
+          },
+          {
+            "type": "volume",
+            "source": "ac84b68622ca1ae3aa0fec9c69ccb17052623523cf0c5ab620f65c6d3edf2c41",
+            "destination": "/usr/local/operate/logs"
+          }
+        ]
+      },
+      {
+        "service": "siddhi",
+        "image": "siddhiio/siddhi-runner-alpine:latest",
+        "imageId": "sha256:17dd32e19116d5219d6211a864693db4bf8d6eebaa13f18f50a1d5df5e3c43ad",
+        "mounts": [
+          {
+            "type": "bind",
+            "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/siddhi-apps",
+            "destination": "/apps"
+          }
+        ]
+      }
+    ],
+    "oneStackAtATime": true,
+    "datasets": {
+      "P1-final": "frostflow-foundation/p1-02 + runtime/foundation/p1-02",
+      "P2": "frostflow-foundation/p2-02 + runtime/foundation/p2-02",
+      "P3-and-foundation": "frostflow-foundation/p3-01 + runtime/foundation/p3-01"
+    },
+    "tomtomInDeterministicSuites": "TOMTOM_API_KEY empty; local-demo-estimate",
+    "profile": "approved default CHILLED-DEMO-v1",
+    "preservation": "Original frostflow-repair stack stopped; all registries and named volumes retained. No prune/down -v.",
+    "handoverDataset": {
+      "project": "frostflow-foundation",
+      "VERIFY_DATASET": "p3-01",
+      "REGISTRY_DIR": "./runtime/foundation/p3-01",
+      "GPS_TICK_SECONDS": 2,
+      "P2_SIMULATOR_ENABLED": true,
+      "TOMTOM_API_KEY": "empty; deterministic local estimates"
+    },
+    "handoverHealth": {
+      "integrations": {
+        "containerEvaluation": "siddhi",
+        "containerMonitoring": "simulated-independent",
+        "gps": "scripted-demo",
+        "p3ArrivalNotification": "enabled",
+        "p4IncidentHandoff": "queued-awaiting-p4",
+        "siddhiCommands": "enabled",
+        "siddhiTelemetry": "enabled",
+        "tomtom": "local-demo-estimate",
+        "weather": "open-meteo-current-model"
+      },
+      "jobTypes": [
+        "p1-check-stock",
+        "p1-allocate-stock",
+        "p1-assign-transport",
+        "p1-record-loading",
+        "p1-dispatch",
+        "p1-cancel",
+        "p2-start-transport",
+        "p2-start-journey",
+        "p2-record-arrival",
+        "p2-release-vehicle",
+        "p2-record-delivery-risk",
+        "p2-apply-dispatcher-decision",
+        "p3-record-arrival",
+        "p3-record-receipt",
+        "p3-record-inspection",
+        "p3-admit-stock",
+        "p3-record-quality-status",
+        "p3-finalize-monitoring"
+      ],
+      "processId": "ShipmentPreparation",
+      "processIds": [
+        "ShipmentPreparation",
+        "ShipmentTransport",
+        "ShipmentReceiving"
+      ],
+      "stage": 3,
+      "status": "ready"
+    }
+  },
+  "offline": {
+    "status": "passed",
+    "tests": 79,
+    "testedCommit": "113b93fbf9acf2e3a94c2f9250e5af50540659ae",
+    "command": ".venv/bin/python -m unittest discover -s stage_tests -p 'test_*.py' -v",
+    "artifact": "foundation/offline-tests.txt"
+  },
+  "liveChecks": [
+    {
+      "name": "P1 final regression",
+      "status": "passed",
+      "testedCommit": "113b93fbf9acf2e3a94c2f9250e5af50540659ae",
+      "applicationSourceRevision": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+      "artifact": "foundation/p1-verification.json"
+    },
+    {
+      "name": "P2 acceptance",
+      "status": "passed",
+      "testedCommit": "fb06a44299d8342cb78fd9b01db312a10232f050",
+      "artifact": "p2/verification.json"
+    },
+    {
+      "name": "P3 four standard scenarios",
+      "status": "passed",
+      "testedCommit": "83ec452bf273ac53da9b24492f51bc5225a3450a",
+      "artifact": "p3/verification.json"
+    },
+    {
+      "name": "four container scenarios",
+      "status": "passed",
+      "testedCommit": "7be22107d09e7f2225f3ca1146a02697d2f3c120",
+      "command": ".venv/bin/python stage_tests/check_foundation.py",
+      "cases": [
+        {
+          "shipmentId": "p3comp-foundation-d551ca3c-normal",
+          "journeyId": "journey-p3comp-foundation-d551ca3c-normal",
+          "p2ProcessInstanceKey": "2251799813686599",
+          "p3ProcessInstanceKey": "2251799813686687",
+          "p3Status": "ADMITTED",
+          "qualityStatus": "CLEAR",
+          "qualityIncidentId": null,
+          "assessmentReasons": null,
+          "assessmentPriority": null,
+          "evidenceVersion": null,
+          "vehicleReleased": true,
+          "monitoring": {
+            "sessionId": "CONTAINER:p3comp-foundation-d551ca3c-normal:journey-p3comp-foundation-d551ca3c-normal",
+            "state": "CLOSED",
+            "sequence": 4,
+            "evaluatedThrough": 4,
+            "closingSequence": 4,
+            "closedAt": "2026-11-17T15:19:32.732021Z",
+            "finalization": "FINALIZED"
+          }
+        },
+        {
+          "shipmentId": "p3comp-foundation-d551ca3c-isolated-spike",
+          "journeyId": "journey-p3comp-foundation-d551ca3c-isolated-spike",
+          "p2ProcessInstanceKey": "2251799813686877",
+          "p3ProcessInstanceKey": "2251799813686960",
+          "p3Status": "ADMITTED",
+          "qualityStatus": "CLEAR",
+          "qualityIncidentId": null,
+          "assessmentReasons": null,
+          "assessmentPriority": null,
+          "evidenceVersion": null,
+          "vehicleReleased": true,
+          "monitoring": {
+            "sessionId": "CONTAINER:p3comp-foundation-d551ca3c-isolated-spike:journey-p3comp-foundation-d551ca3c-isolated-spike",
+            "state": "CLOSED",
+            "sequence": 4,
+            "evaluatedThrough": 4,
+            "closingSequence": 4,
+            "closedAt": "2026-11-17T15:19:57.240676Z",
+            "finalization": "FINALIZED"
+          }
+        },
+        {
+          "shipmentId": "p3comp-foundation-d551ca3c-sustained-excursion",
+          "journeyId": "journey-p3comp-foundation-d551ca3c-sustained-excursion",
+          "p2ProcessInstanceKey": "2251799813687150",
+          "p3ProcessInstanceKey": "2251799813687237",
+          "p3Status": "ADMITTED",
+          "qualityStatus": "RELEASED",
+          "qualityIncidentId": "ASSESS:p3comp-foundation-d551ca3c-sustained-excursion:CONTAINER:p3comp-foundation-d551ca3c-sustained-excursion:journey-p3comp-foundation-d551ca3c-sustained-excursion:7",
+          "assessmentReasons": [
+            "temperature-excursion"
+          ],
+          "assessmentPriority": "normal",
+          "evidenceVersion": 1,
+          "vehicleReleased": true,
+          "monitoring": {
+            "sessionId": "CONTAINER:p3comp-foundation-d551ca3c-sustained-excursion:journey-p3comp-foundation-d551ca3c-sustained-excursion",
+            "state": "CLOSED",
+            "sequence": 7,
+            "evaluatedThrough": 7,
+            "closingSequence": 7,
+            "closedAt": "2026-11-17T15:20:37.065965Z",
+            "finalization": "FINALIZED"
+          }
+        },
+        {
+          "shipmentId": "p3comp-foundation-d551ca3c-missing-telemetry",
+          "journeyId": "journey-p3comp-foundation-d551ca3c-missing-telemetry",
+          "p2ProcessInstanceKey": "2251799813687481",
+          "p3ProcessInstanceKey": "2251799813687568",
+          "p3Status": "REJECTED",
+          "qualityStatus": "REJECTED",
+          "qualityIncidentId": "ASSESS:p3comp-foundation-d551ca3c-missing-telemetry:silence:1",
+          "assessmentReasons": [
+            "container-telemetry-unavailable"
+          ],
+          "assessmentPriority": "normal",
+          "evidenceVersion": 1,
+          "vehicleReleased": true,
+          "monitoring": {
+            "sessionId": "CONTAINER:p3comp-foundation-d551ca3c-missing-telemetry:journey-p3comp-foundation-d551ca3c-missing-telemetry",
+            "state": "CLOSED",
+            "sequence": 1,
+            "evaluatedThrough": 1,
+            "closingSequence": 1,
+            "closedAt": "2026-11-17T15:21:06.807749Z",
+            "finalization": "FINALIZED"
+          }
+        }
+      ],
+      "inputModes": [
+        "simulated-container",
+        "live-siddhi",
+        "local-demo-estimate",
+        "live-open-meteo",
+        "test-disposition"
+      ],
+      "warehouseDelta": -4,
+      "receivingDelta": 3
+    },
+    {
+      "name": "hot/cool/unavailable weather priority comparison",
+      "status": "passed",
+      "testedCommit": "7be22107d09e7f2225f3ca1146a02697d2f3c120",
+      "command": ".venv/bin/python stage_tests/check_container_assessment.py",
+      "artifact": "foundation/siddhi-assessment.json",
+      "note": "Actual local Siddhi, recorded ETA/weather and temporary SQLite; separate from live providers."
+    },
+    {
+      "name": "closing evaluation outage",
+      "status": "passed",
+      "applicationSourceRevision": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+      "runnerSha256": "c0c6de9ed2c9019529d82f7006f6d0ec9d51092e6427fb5a2ffc8c7a4b2a508e",
+      "command": ".venv/bin/python stage_tests/check_monitoring_outage.py",
+      "case": {
+        "shipmentId": "p3comp-outage-d051f466-evaluation-unavailable",
+        "journeyId": "journey-p3comp-outage-d051f466-evaluation-unavailable",
+        "p2ProcessInstanceKey": "2251799813687943",
+        "p3ProcessInstanceKey": "2251799813688033",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "RELEASED",
+        "qualityIncidentId": "ASSESS:p3comp-outage-d051f466-evaluation-unavailable:close:4",
+        "assessmentReasons": [
+          "monitoring-evaluation-unavailable"
+        ],
+        "assessmentPriority": "normal",
+        "evidenceVersion": 1,
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:p3comp-outage-d051f466-evaluation-unavailable:journey-p3comp-outage-d051f466-evaluation-unavailable",
+          "state": "CLOSED",
+          "sequence": 4,
+          "evaluatedThrough": 0,
+          "closingSequence": 4,
+          "closedAt": "2026-11-17T15:22:45.355842Z",
+          "finalization": "HELD"
+        }
+      },
+      "closureWaitSeconds": 20.854923963546753,
+      "vehicleReleasedBeforeFinalization": true,
+      "lateUnavailableAckAfterRestore": "same released closure episode, no reopened hold"
+    },
+    {
+      "name": "restart watchdog",
+      "status": "passed",
+      "applicationSourceRevision": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+      "runnerSha256": "a18103bf362a30ae5dd51d7e4c60aaf8c241f1f98a552a9670c5517de00b25f3",
+      "command": ".venv/bin/python stage_tests/check_monitoring_restart.py --communication-container frostflow-foundation-communication-1",
+      "stoppedSeconds": 21,
+      "sessionAndProfileRetained": true,
+      "case": {
+        "shipmentId": "restart-89f95e61",
+        "journeyId": "J-restart-89f95e61",
+        "p2ProcessInstanceKey": "2251799813688476",
+        "p3ProcessInstanceKey": "2251799813688553",
+        "p3Status": "REJECTED",
+        "qualityStatus": "REJECTED",
+        "qualityIncidentId": "ASSESS:restart-89f95e61:silence:1",
+        "assessmentReasons": [
+          "container-telemetry-unavailable"
+        ],
+        "assessmentPriority": "normal",
+        "evidenceVersion": 1,
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:restart-89f95e61:J-restart-89f95e61",
+          "state": "CLOSED",
+          "sequence": 5,
+          "evaluatedThrough": 5,
+          "closingSequence": 5,
+          "closedAt": "2026-11-17T15:25:13.716855Z",
+          "finalization": "FINALIZED"
+        }
+      }
+    },
+    {
+      "name": "branch integration smoke",
+      "status": "passed",
+      "testedCommit": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+      "command": ".venv/bin/python stage_tests/check_integration_smoke.py",
+      "warehouseDelta": -2,
+      "receivingDelta": 1,
+      "note": "Pre-merge branch check; not a merged-main result."
+    }
+  ],
+  "actualProviderCalls": {
+    "openMeteo": {
+      "status": "usable current model conditions",
+      "sourceRevision": "1e1093a2c9c0eb9f7720fc3ba4884e5b1562d19e",
+      "artifact": "foundation/open-meteo-responses.jsonl"
+    },
+    "tomtom": {
+      "status": "HTTP 200; tomtom-traffic",
+      "sourceRevision": "1e1093a2c9c0eb9f7720fc3ba4884e5b1562d19e",
+      "artifact": "foundation/tomtom-responses.jsonl"
+    },
+    "limitations": "Single actual calls verify adapters/access; deterministic risk triggering uses labelled fixtures/local ETA, not live weather/traffic reproducibility."
+  },
+  "bpmn": {
+    "command": "npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/receiving.bpmn",
+    "errors": 0,
+    "warnings": 0,
+    "pdf": "bpmn/receiving.pdf",
+    "export": "bpmn-to-image@0.10.0",
+    "visualInspection": "Regenerated PDF rendered with sips and inspected; finalization task/flows readable."
+  },
+  "localDcrReplay": {
+    "status": "passed",
+    "p2Traces": 3,
+    "p3Traces": 4,
+    "foundationActualEngineTraces": 6,
+    "foundationLog": "foundation/execution-log.xes",
+    "foundationResults": "foundation/local-replay.json",
+    "rawTelemetryExcluded": true,
+    "forbiddenUnfinalizedAdmission": {
+      "valid": false,
+      "accepting": false,
+      "violationIndex": 4,
+      "event": "StockAdmitted",
+      "reason": "condition not met: MonitoringFinalized"
+    },
+    "note": "Synthetic negative traces remain separate from actual logs. Flat replay does not verify timed/data/hierarchical DCR."
+  },
+  "futureP4Contract": {
+    "mockConsumer": "HTTP 503 leaves hold/outbox pending; retry preserves delivery ID and payload; matching durable acknowledgement required",
+    "dispositions": "test stand-ins; current incident and expectedEvidenceVersion required for monitored shipments",
+    "realConsumer": "not implemented"
+  },
+  "pending": [
+    {
+      "check": "ProcessDoctor refresh for changed P2/P3/foundation evidence",
+      "reason": "Attempted browser access; The browser access host is unavailable"
+    },
+    {
+      "check": "Human review and authorized merge",
+      "reason": "No merge authorized in this task"
+    },
+    {
+      "check": "Merged-main smoke",
+      "reason": "Run after review and authorized merge; branch smoke already passed"
+    }
+  ],
+  "excluded": [
+    "P4 executable DCR investigation",
+    "investigator/authorized decision workflow",
+    "cooling/recovery workflow",
+    "incident closure",
+    "P5",
+    "P6"
+  ],
+  "rawEvidenceSha256": {
+    "runtime/foundation/p1-final-evidence/verification.json": "50439067aab310f12a57e0a88b26de7546d2fb57b79250679ff3f0df715583f8",
+    "runtime/foundation/p1-final-evidence/p2-completion.json": "f9b1106ba27cd35351f652e2a583ad97be1452e5ba4d90002cd0dd8731a9827e",
+    "runtime/foundation/p2-02-evidence/p2-siddhi.json": "c861cbb0f0be996de02fb7d389390771f05e7e2d3f2cceef024a227b1b51506e",
+    "runtime/foundation/p3-evidence.json": "b40874439b3364339821c98c4c278497f27253b18a099938389db620b2211f2d",
+    "runtime/foundation/container-live.json": "80e05be2c1fea0745d450ca8a0e2c4e5cd37bb24f8fc9c6a64660e890cd0cf33",
+    "runtime/foundation/siddhi-container.json": "f4a02068867dc9c7b93d388dd33cfdc59c8898d0bcdc3f0a9b1a08abffb31012",
+    "runtime/foundation/monitoring-outage.json": "c6dcc0c0e386d83369b1611ed35822373c2cda689d37fea1a409f22d61698395",
+    "runtime/foundation/outage-restored.json": "b4fc73dc466f1573dfbc591864700c57a1a3e24b5e724b45aa55284f8dc45259",
+    "runtime/foundation/restart-live.json": "9f3b90572b88f8c24d32a17bf077af9e05ecb34ddff5f7d871796c46b6ccea83",
+    "runtime/foundation/integration-smoke.json": "ae1b8d5199b67c833aed99f1062f23dc722c7dacad24fcea23192167d21c1d64"
+  },
+  "artifactSha256": {
+    "compliance/foundation/execution-log.xes": "052e917a133d18cf27b5823c52e687b73607c081baf8a75aba4e5cb523684a2e",
+    "compliance/foundation/local-replay.json": "83dce22bddf885f86c96e9a0eb53f1305422b94ec44a865eca071bb567f63f83",
+    "compliance/foundation/offline-tests.txt": "95f2abeab395d623bfeba62bfb049e9e2790b51ad88c7a3721cd105e30ce04c3",
+    "compliance/foundation/open-meteo-responses.jsonl": "4ccc7d74eb87378d60e703972c739d87a71db7070515aea69e77f21f46b0865a",
+    "compliance/foundation/p1-execution-log.xes": "199b14dd1823640de0c9429f26d1153878a2e956e33959e0e29c55552622dbb2",
+    "compliance/foundation/p1-verification.json": "0ad3093cc6867a5afc1156f4ab311e90f911753a875207e2c4c22095de3d8e41",
+    "compliance/foundation/siddhi-assessment.json": "f4a02068867dc9c7b93d388dd33cfdc59c8898d0bcdc3f0a9b1a08abffb31012",
+    "compliance/foundation/tomtom-responses.jsonl": "b599928c263531787258536fd7de5a6931b12c1621dabebe8aa78619b7fadf14",
+    "compliance/foundation/p3-engine-ends.json": "b4d19a60c4726e725fb27425acd883e6dfc49bec45b3375756bf396fe0dc7de5"
+  }
+}

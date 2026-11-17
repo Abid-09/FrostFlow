@@ -20,7 +20,8 @@
 - [x] Persist container sessions/scenarios through receipt, including after arrival; restart-safe silence watchdog.
 - [x] Ordered Siddhi evaluation, coalesced/versioned holds, urgent combined-risk priority and terminal rejection guards.
 - [x] Explicit P3 monitoring finalization before transactional admission; receipt acknowledgement remains independent.
-- [ ] Complete/review integrated foundation verification and refresh external ProcessDoctor for changed evidence. See [verification report](../compliance/foundation-verification.json).
+- [x] Complete integrated foundation verification and local replay; record exact revisions, input modes, images and artifact hashes in the [verification report](../compliance/foundation-verification.json).
+- [ ] Refresh external ProcessDoctor for the changed foundation evidence; browser access host remains unavailable.
 - [ ] Review integration PR, then merge only with explicit authorization; smoke-test merged main afterward.
 - [ ] Implement real P4 consumer/investigation only after foundation review and authorised merge. P5/P6 remain later work.
 
