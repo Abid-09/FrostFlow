@@ -1,5 +1,5 @@
 {
-  "source": "compliance\\p3\\execution-log.xes",
+  "source": "compliance/p3/execution-log.xes",
   "localReplay": {
     "status": "passed",
     "scenarios": {
@@ -67,23 +67,262 @@
     }
   },
   "processDoctor": {
+    "status": "pending",
+    "reason": "Browser access host unavailable; refresh required for the regenerated log.",
+    "logSha256": "7654763fc3c0600dc86099bb8d64a466fd9bf79e58de9b0169bc5ce401cc7f2f"
+  },
+  "verifiedAt": "2026-11-17T13:20:23.821196+00:00",
+  "testedCommit": "89dfd26cf20548c9c2d9e30a4bbd9fe74ad332e7",
+  "implementationCommit": "1e4d141",
+  "environment": {
+    "python": "3.12.13",
+    "host": "macOS arm64",
+    "engine": "Zeebe/Operate 8.8.0",
+    "elasticsearch": "8.16.0",
+    "siddhi": "siddhiio/siddhi-runner-alpine:latest (amd64 emulation)",
+    "project": "frostflow-repair",
+    "data": "fresh paired version-3 SQLite registry and named engine volumes for each suite; one running stack",
+    "eta": "local-demo-estimate; TOMTOM_API_KEY blank",
+    "P4": "test disposition endpoint only; DCR investigation not implemented"
+  },
+  "sha256": {
+    "deployer/registry.py": "2a836429f05bdd1ffa2ed4954099858eab08a9430ac74b9ececafc168fc8248c",
+    "deployer/app.py": "bb77768e34ba44b414e788abb4e786a8620732d9545ba3baa3093df9a7fac3aa",
+    "deployer/transport_integrations.py": "c570fd4f361051e3b5fabdb77c2b1abdf7c1d45042ada900346f179ac3237617",
+    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
+    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
+    "bpmn/receiving.bpmn": "6ed0fce6177be4be30771e0bcf9ca5377b2bbeb2b535dfda782be0fde6015ac4",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "stage_tests/check_p2_siddhi.py": "3203e721de3e58bfe47b606d3dded2f3bed2215aaccc29abede3375dcbec13e8",
+    "stage_tests/check_siddhi_risk_rule.py": "2c14816f78dcb2996d7663296d91a4c569fc535fe680fe6f29889db7a9d772eb",
+    "stage_tests/check_p3_compliance.py": "d4f31e65814ad59870f66c90634207fe81756ce246e9beb44ba209442d33be54",
+    "stage_tests/test_stage1.py": "2941106ce8d5ed0f6a92c9bccb7bc562bdf1270511fb737b74f6f03c6d27dde2",
+    "stage_tests/test_p3_runner.py": "54eefc3f6962f23edb679757f0e9931cbc4f9310c8961b6108c6565546c83b1c",
+    "docker-compose.yml": "45087f49934082f0a2331d899a2df0b3a6239687360e8dc15762ba1b028825e5",
+    "stage_tests/verification.compose.yml": "c95b968835d94582e1ae2dd2573cd8c7c19c3421c4fd7da73d8e28b5c809b986",
+    "compliance/p2/rules.xml": "f1f3409df5c628d8457d4e77ca4c73422727b429eb2877e1b2a25b38fe9f666e",
+    "compliance/p2/execution-log.xes": "997af2e68225bf9ddc1045513860352b4956ff3f8292b6cc0138ba697aa3b445",
+    "compliance/p2/invalid-traces.json": "61c6a8dd366205d117701bc3cd86ff52939b539f1557b9e01352e99cbe2e8c5d",
+    "compliance/p3/rules.xml": "8ea367e4387198baa77e4ed15c3c3f52fbcb176f95e380f69b61b8bab4e2bd66",
+    "compliance/p3/execution-log.xes": "7654763fc3c0600dc86099bb8d64a466fd9bf79e58de9b0169bc5ce401cc7f2f"
+  },
+  "owner": "Arunima Garg",
+  "liveExecution": {
+    "command": ".venv/bin/python stage_tests/check_p3_compliance.py --base http://localhost:5001",
+    "result": "PASS",
+    "runId": "9d1cd66e",
+    "GPS_TICK_SECONDS": 2,
+    "dataset": "runtime/repair/p3; frostflow-repair-p3-{zeebe,elasticsearch}",
+    "scenarios": [
+      {
+        "scenario": "normal-receipt-admission",
+        "shipmentId": "p3comp-9d1cd66e-normal-receipt-admission",
+        "p1ProcessInstanceKey": "2251799813685317",
+        "p2ProcessInstanceKey": "2251799813685389",
+        "p3ProcessInstanceKey": "2251799813685466",
+        "expectedFinalStatus": "ADMITTED"
+      },
+      {
+        "scenario": "quality-hold-release",
+        "shipmentId": "p3comp-9d1cd66e-quality-hold-release",
+        "p1ProcessInstanceKey": "2251799813685585",
+        "p2ProcessInstanceKey": "2251799813685647",
+        "p3ProcessInstanceKey": "2251799813685731",
+        "expectedFinalStatus": "ADMITTED"
+      },
+      {
+        "scenario": "inspection-rejection",
+        "shipmentId": "p3comp-9d1cd66e-inspection-rejection",
+        "p1ProcessInstanceKey": "2251799813685871",
+        "p2ProcessInstanceKey": "2251799813685932",
+        "p3ProcessInstanceKey": "2251799813686019",
+        "expectedFinalStatus": "REJECTED"
+      },
+      {
+        "scenario": "quality-rejection",
+        "shipmentId": "p3comp-9d1cd66e-quality-rejection",
+        "p1ProcessInstanceKey": "2251799813686124",
+        "p2ProcessInstanceKey": "2251799813686186",
+        "p3ProcessInstanceKey": "2251799813686272",
+        "expectedFinalStatus": "REJECTED"
+      }
+    ]
+  },
+  "inventoryAndRetries": {
     "status": "passed",
-    "model": "compliance/p3/rules.xml",
-    "eventLog": "compliance/p3/execution-log.xes",
-    "coverageThreshold": 100,
-    "totalTraceVariants": 4,
-    "conformingTraces": 4,
-    "partiallyViolatingTraces": 0,
-    "violatingTraces": 0,
-    "unlinkedTraces": 0,
-    "traceVariantOccurrences": {
-      "each": 1,
-      "percentageEach": 25
+    "warehouse": {
+      "available": 96,
+      "datasetVersion": 3,
+      "products": [
+        {
+          "available": 19,
+          "batchId": "DEMO-MILK-001",
+          "initialCrates": 20,
+          "packDescription": "1 litre carton",
+          "packsPerCrate": 12,
+          "productId": "PRD-001",
+          "productName": "Fresh milk",
+          "quantityUnit": "crate",
+          "temperatureProfileId": "CHILLED-DEMO"
+        },
+        {
+          "available": 19,
+          "batchId": "DEMO-YOGHURT-001",
+          "initialCrates": 20,
+          "packDescription": "500 gram tub",
+          "packsPerCrate": 12,
+          "productId": "PRD-002",
+          "productName": "Plain yoghurt",
+          "quantityUnit": "crate",
+          "temperatureProfileId": "CHILLED-DEMO"
+        },
+        {
+          "available": 19,
+          "batchId": "DEMO-CHEESE-001",
+          "initialCrates": 20,
+          "packDescription": "250 gram sealed pack",
+          "packsPerCrate": 12,
+          "productId": "PRD-003",
+          "productName": "Fresh cheese",
+          "quantityUnit": "crate",
+          "temperatureProfileId": "CHILLED-DEMO"
+        },
+        {
+          "available": 19,
+          "batchId": "DEMO-CHICKEN-001",
+          "initialCrates": 20,
+          "packDescription": "500 gram sealed pack",
+          "packsPerCrate": 12,
+          "productId": "PRD-004",
+          "productName": "Raw chicken breast",
+          "quantityUnit": "crate",
+          "temperatureProfileId": "CHILLED-DEMO"
+        },
+        {
+          "available": 20,
+          "batchId": "DEMO-SALAD-001",
+          "initialCrates": 20,
+          "packDescription": "250 gram sealed bag",
+          "packsPerCrate": 12,
+          "productId": "PRD-005",
+          "productName": "Prepared salad",
+          "quantityUnit": "crate",
+          "temperatureProfileId": "CHILLED-DEMO"
+        }
+      ],
+      "quantityUnit": "crate",
+      "shipmentCount": 4
     },
-    "observedConformance": {
-      "percentage": 100,
-      "conforming": 4,
-      "totalTraceVariants": 4
-    }
+    "receiving": {
+      "available": 2,
+      "items": [
+        {
+          "available": 1,
+          "batchId": "DEMO-MILK-001",
+          "packDescription": "1 litre carton",
+          "packsPerCrate": 12,
+          "productId": "PRD-001",
+          "productName": "Fresh milk",
+          "quantityUnit": "crate",
+          "recipientId": "C-01",
+          "temperatureProfileId": "CHILLED-DEMO"
+        },
+        {
+          "available": 1,
+          "batchId": "DEMO-YOGHURT-001",
+          "packDescription": "500 gram tub",
+          "packsPerCrate": 12,
+          "productId": "PRD-002",
+          "productName": "Plain yoghurt",
+          "quantityUnit": "crate",
+          "recipientId": "C-01",
+          "temperatureProfileId": "CHILLED-DEMO"
+        }
+      ],
+      "quantityUnit": "crate"
+    },
+    "retries": [
+      {
+        "shipmentId": "p3comp-9d1cd66e-normal-receipt-admission",
+        "receiptRetry": 202,
+        "inspectionRetry": 202,
+        "historyUnchanged": true
+      },
+      {
+        "shipmentId": "p3comp-9d1cd66e-quality-hold-release",
+        "receiptRetry": 202,
+        "inspectionRetry": 202,
+        "historyUnchanged": true
+      },
+      {
+        "shipmentId": "p3comp-9d1cd66e-inspection-rejection",
+        "receiptRetry": 202,
+        "inspectionRetry": 202,
+        "historyUnchanged": true
+      },
+      {
+        "shipmentId": "p3comp-9d1cd66e-quality-rejection",
+        "receiptRetry": 202,
+        "inspectionRetry": 202,
+        "historyUnchanged": true
+      }
+    ]
+  },
+  "historicalProcessDoctor": {
+    "testedCommit": "3c45468",
+    "result": {
+      "status": "passed",
+      "model": "compliance/p3/rules.xml",
+      "eventLog": "compliance/p3/execution-log.xes",
+      "coverageThreshold": 100,
+      "totalTraceVariants": 4,
+      "conformingTraces": 4,
+      "partiallyViolatingTraces": 0,
+      "violatingTraces": 0,
+      "unlinkedTraces": 0,
+      "traceVariantOccurrences": {
+        "each": 1,
+        "percentageEach": 25
+      },
+      "observedConformance": {
+        "percentage": 100,
+        "conforming": 4,
+        "totalTraceVariants": 4
+      }
+    },
+    "note": "Previous execution-log.xes only; does not apply to the regenerated log."
+  },
+  "commands": [
+    ".venv/bin/python compliance/p3/build_p3_evidence.py log runtime/p3-compliance/evidence.json",
+    ".venv/bin/python compliance/p3/build_p3_evidence.py verify compliance/p3/execution-log.xes"
+  ],
+  "offlineTests": "57 tests OK; bounded-readiness and timeout regressions included",
+  "bpmnLint": {
+    "command": "npx --yes @camunda8/cli@4.6.1 bpmn lint <model>",
+    "models": [
+      "bpmn/shipment_preparation.bpmn",
+      "bpmn/transport.bpmn",
+      "bpmn/receiving.bpmn"
+    ],
+    "result": "zero errors and zero warnings for all three"
+  },
+  "notVerified": [
+    "External ProcessDoctor refresh for this log",
+    "Real P4 investigation consumer and authorised disposition workflow",
+    "Live TomTom on the current commit",
+    "External physical simulator",
+    "Merged-main smoke test (merge awaits external verification gate)"
+  ],
+  "dockerManagement": {
+    "removedObsoleteContainers": 15,
+    "projects": [
+      "frostflow-p2-fixes-1d8edbf",
+      "frostflow-p3-fixes-3c45468",
+      "frostflow-p2p3-tomtom"
+    ],
+    "preserved": "named volumes, existing registries, images; old logs and mount inventory archived under runtime/repair/",
+    "missingBeforeCleanup": "frostflow-p2p3-tomtom registry.sqlite was absent from its bind mount before cleanup",
+    "activeStack": "frostflow-repair, P3 dataset; P1 and P2 paired data retained",
+    "overlay": "stage_tests/verification.compose.yml; P1/P2 used equivalent runtime/repair/compose.yml volume names"
   }
 }

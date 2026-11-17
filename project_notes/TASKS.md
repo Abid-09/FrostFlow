@@ -5,14 +5,27 @@
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; Siddhi loop, TomTom ETAs, P3 receipt gate and P2 DCR verified | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
-| P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2 (arrival starts P3, P3 receipt completes P2), live-verified 2026-11-15 | P2 arrival + P4 shared hold |
-
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); confirm Siddhi/P3 contracts and perform live acceptance |
+| P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Unassigned | TODO | DCR access + incident integration |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
+
+## Current repair checkpoint — 17 November 2026
+
+- [x] [P2 PR #4](https://github.com/ash-01xor/FrostFlow/pull/4), Rahul: preserve terminal rejection and its incident; later alerts remain evidence with `incidentOpened: false`. Regression proves transport decisions remain usable while release/admission stay forbidden.
+- [x] [P2 duplicate-ETA finding](https://github.com/ash-01xor/FrostFlow/pull/4#discussion_r4599556202), Rahul: deduplicate by shipment, journey and event identity before the Siddhi sequence. Isolated live Siddhi regression passes alongside the existing freshness and sequence checks.
+- [x] [P3 PR #5](https://github.com/ash-01xor/FrostFlow/pull/5), Arunima Garg: bounded loading-readiness wait; regression covers wrong state, pending command and useful timeout. Preserve the application guard, P3 BPMN corrections and all compliance deliverables.
+- [x] Reconcile P2 into P3, resolving shared documentation. Offline suite: 57 passing tests; all three BPMN models lint cleanly.
+- [x] P1 regression, three P2 live acceptance journeys and four P3 live scenarios pass. New P2/P3 logs pass local DCR replay; forbidden admission is rejected. Exact warehouse/receiving stock and all four receipt/inspection retries verified (see reports, tested checkout `89dfd26`).
+- [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
+- [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
+- [ ] Merge #4, update #5 against main, inspect remaining changes, merge #5 and smoke-test merged main after the verification gate is satisfied. Existing review records must remain intact.
+- [ ] P4 owner (unassigned): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
+
+The sections below retain earlier checkpoints and original P1–P6 work. Current commands and measured results are in [RUNNING.md](../docs/RUNNING.md) and the P2/P3 verification reports.
 
 ## Foundation and access
 
@@ -91,7 +104,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [ ] **P4 dependency (owner: P4, unassigned):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
 - [ ] Re-verify TomTom with a valid key (the 2026-11-15 key now returns HTTP 401).
 
-Current state (commit `d613960`):
+Historical state (commit `d613960`; superseded by the repair checkpoint above):
 - **Implemented and verified:** the Siddhi persistence rule (three consecutive fresh late ETAs), destination-preserving route changes, Camunda route variables, the P3 receipt gate, and the delivery-risk quality hold.
 - **P2 DCR:** rules and log are delivered; local replay passes. ProcessDoctor needs a re-run for the latest log.
 - **Outstanding:** the P4 consumer of the hold handoff, a TomTom re-check with a valid key, and the external simulator (team decision).

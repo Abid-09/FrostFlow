@@ -116,3 +116,13 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Actual results on `d613960`:** 54 offline tests OK, the Siddhi rule check passed, `check_p2_siddhi.py` passed (run `130506`, local demo ETAs), `check_stage1.py` passed, and the regenerated P2 log replays with 3 of 3 conforming.
 
 **Not done:** P4 consumption of the handoff (it depends on the P4 owner), a ProcessDoctor re-run for the new log, and a TomTom re-check (the key now returns HTTP 401). Nothing was pushed.
+
+## 2026-11-17 — P2/P3 repair and integration verification
+
+**Tool:** OpenAI Codex, local Python 3.12 environment, Docker Compose, GitHub CLI, pinned Camunda BPMN linter; Camunda BPMN skill used for model validation. No sub-agents were used.
+
+**Prompt summary:** implement the supplied plan to repair terminal rejection, duplicate ETA counting and P3 runner readiness; reconcile branches, verify offline and live, refresh evidence/documentation and merge in P2/P3 order subject to verification and repository review requirements.
+
+**Assistance:** inspected PR review findings and stopped-stack mounts/data; implemented the P2 rejection/evidence repair and Siddhi event-identity deduplication, added regressions and the P3 loading wait; reconciled README/task-board conflicts retaining both branches' work; ran offline, model and live checks; regenerated affected logs and updated verification reports and run instructions. Fresh registry/engine pairs were used sequentially in one verification stack. Existing registry/engine data was preserved. Exact outcomes and tested commits are recorded in `compliance/p2/verification.json` and `compliance/p3/verification.json`.
+
+**Limits:** ProcessDoctor browser access failed with “The browser access host is unavailable”; no fresh portal result or screenshot is claimed. P4 quality dispositions remain a labelled test stand-in; a real P4 DCR investigation and P5–P6 were not implemented. Team members must review and understand the changes and reproduce the checks.

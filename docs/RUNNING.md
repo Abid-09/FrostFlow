@@ -1,6 +1,6 @@
 # Running and testing P1, P2 and P3
 
-Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. External TomTom/simulator integrations still need team verification.
+Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. TomTom is optional; current deterministic verification uses local demo ETAs. The physical/external simulator and P4 investigation remain team integration work.
 
 ## Demonstration dataset
 
@@ -102,7 +102,7 @@ For the final **three-minute** project demo, reserve roughly 25 seconds for prep
 
 `compliance/p3/` contains the P3 DCR graph, an XES log captured from four live P1/P2/P3 runs, and the local replay/forbidden-admission result. The scenarios cover normal receipt/admission, quality hold → release, inspection failure/rejection and quality rejection. The hold traces include the accepted PENDING integration request and P3's `StockAdmissionHeld` event, plus neighbouring dispatch, arrival, receipt, inspection and disposition events. P4 dispositions were sent by the test harness to the P3 integration endpoint; this does not claim that a P4 DCR process is deployed or that cross-process P4 integration is complete.
 
-To reproduce the live scenarios without altering the usual demo stack, use a fresh registry and the alternate-port Compose overlay:
+Stop the active project first. To reproduce with the alternate-port overlay, use a new project name and fresh registry together; on subsequent runs change both `cold-chain-p3-compliance` and `p3-compliance-run-01`:
 
 ```powershell
 $env:REGISTRY_DIR = '.\runtime\p3-compliance-run-01'
@@ -113,7 +113,7 @@ python compliance\p3\build_p3_evidence.py verify compliance\p3\execution-log.xes
 docker compose -p cold-chain-p3-compliance -f docker-compose.yml -f stage_tests\p3-compliance.compose.yml down
 ```
 
-Choose a new, empty `REGISTRY_DIR` each time you repeat this run. The runner requires an empty version-3 registry and exercises the real engine and durable event registry. The DCR replay must accept all four actual traces and reject the synthetic attempt to admit stock while a quality hold is unresolved. `compliance/p3/verification.json` records the local replay, forbidden-admission check, and the reported ProcessDoctor result: all four trace variants conform at 100% coverage. Repeat the external check if the model or execution log changes.
+Choose a new project name and empty `REGISTRY_DIR` together each time you repeat this run; preserve the old registry with its matching engine volumes. The runner requires an empty version-3 registry and exercises the real engine and durable event registry. The DCR replay must accept all four actual traces and reject the synthetic attempt to admit stock while a quality hold is unresolved. `compliance/p3/verification.json` records the current local replay, forbidden-admission check and external-check status. Historical ProcessDoctor results apply only to their original logs; repeat the external check whenever the model or log changes. The runner waits for `AWAITING_LOADING` with no pending command before verification, using bounded polling.
 
 ## Manual walkthrough
 
@@ -256,7 +256,7 @@ $record | Format-List shipmentId,transportState,vehicleReleased
 
 In Operate, confirm `ReleaseVehicle` completes and the process reaches `TransportCompleted`.
 
-The `/arrive` and `/acknowledge-receipt` endpoints remain manual/test inputs; the simulator now publishes its own arrival event. Both correlate by `shipmentId`. On arrival, P2 writes a separate durable `ShipmentArrivalNotification` to its outbox; it is sent when `P3_ARRIVAL_URL` is configured; the Compose default points at the local P3 receiver. `/acknowledge-receipt` is refused while P3 receiving is enabled, or once P3 has started for that shipment, so P2 completes only from P3's receipt. Exact event retries reuse one message/activity; changed content and wrong-state requests return **409**. The committed live completion check still covers the manual receipt flow; run the route/risk checks separately and verify their Operate events. P2 DCR model/log verification remains outstanding. Damaged-packaging handling is outside this increment: all loading checks must be true for verification.
+The `/arrive` and `/acknowledge-receipt` endpoints remain manual/test inputs; the simulator now publishes its own arrival event. Both correlate by `shipmentId`. On arrival, P2 writes a separate durable `ShipmentArrivalNotification` to its outbox; it is sent when `P3_ARRIVAL_URL` is configured; the Compose default points at the local P3 receiver. `/acknowledge-receipt` is refused while P3 receiving is enabled, or once P3 has started for that shipment, so P2 completes only from P3's receipt. Exact event retries reuse one message/activity; changed content and wrong-state requests return **409**. The live completion check records receipt through P3; run the route/risk check separately for Siddhi decisions. P2 DCR rules and logs are delivered; consult the evidence table for current conformance status. Damaged-packaging handling is outside this increment: all loading checks must be true for verification.
 
 ## What the BPMN and Python each do
 
@@ -355,33 +355,48 @@ python3.12 -m venv .venv
 docker compose config --quiet
 npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/shipment_preparation.bpmn
 npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn
+npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/receiving.bpmn
 ```
 
-The offline suite defines **54 tests** (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
+The offline suite defines **57 tests** (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
 
-The Siddhi delivery-risk rule has its own check, which needs only Docker: `python stage_tests/check_siddhi_risk_rule.py`. It starts a throwaway Siddhi runner and proves that an isolated late ETA, stale late ETAs and a run broken by an unavailable ETA raise no alert, while three consecutive fresh late ETAs raise exactly one alert per route revision.
+The Siddhi delivery-risk rule has its own check, which needs only Docker: `python stage_tests/check_siddhi_risk_rule.py`. It starts a throwaway Siddhi runner and proves that repeated delivery of one ETA event, an isolated late ETA, stale late ETAs and a run broken by an unavailable ETA raise no alert, while three distinct consecutive fresh late ETAs raise exactly one alert per route revision.
 
-Against a fresh, healthy stack:
+Use one verification project at a time. Inspect `docker ps -a`, `docker inspect <container>` (mounts), the matching SQLite shipment count and engine volumes before selecting data. Existing test registries with shipments cannot satisfy fresh-data checks. Preserve their matching engine volumes and registry files. Stop any active project before starting this one.
+
+The following POSIX-shell commands reuse one stack and change **both** its registry and named engine volumes between fresh suites. Choose a new suffix (`p1-01`, `p2-01`, `p3-01`) on subsequent runs; reusing a consumed suffix is not a reset. `verification.compose.yml` only selects paired named volumes. All data remains available after `stop`; use the same variables to resume it.
 
 ```bash
+export COMPOSE_PROJECT_NAME=frostflow-repair
+export VERIFY_DATASET=p1-01 REGISTRY_DIR=./runtime/repair/p1-01
+export P2_SIMULATOR_ENABLED=false TOMTOM_API_KEY=
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up --build -d --wait --wait-timeout 240
 .venv/bin/python stage_tests/check_stage1.py
+# Stop before changing datasets. Do not remove volumes.
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml stop
+
+export VERIFY_DATASET=p2-01 REGISTRY_DIR=./runtime/repair/p2-01
+export P2_SIMULATOR_ENABLED=true GPS_TICK_SECONDS=10
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up -d --wait --wait-timeout 240
+.venv/bin/python stage_tests/check_p2_siddhi.py
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml stop
+
+export VERIFY_DATASET=p3-01 REGISTRY_DIR=./runtime/repair/p3-01 GPS_TICK_SECONDS=2
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up -d --wait --wait-timeout 240
+.venv/bin/python stage_tests/check_p3_compliance.py --base http://localhost:5001
+.venv/bin/python compliance/p3/build_p3_evidence.py log runtime/p3-compliance/evidence.json
+.venv/bin/python compliance/p3/build_p3_evidence.py verify compliance/p3/execution-log.xes
 ```
 
-This check drives arrival manually, so the scripted route must be off. Receipt goes through P3, as in the normal flow. On a fresh stack, disable the background route before running it, then restore the default afterward:
+Expected results: P1 verifies shortage/replenishment/cancellation, two independent P2 completions, exact retries and vehicle reuse; P2 verifies Siddhi persistence, route acknowledgement/destination, exported Camunda variables, arrival closing an undecided alert, receipt-gated release and current-incident quality release; P3 verifies admission, hold/release, inspection rejection and quality rejection. P1 requires all 100 initial crates. The other suites also require fresh registries. P2/P3 use local demo ETAs here (`TOMTOM_API_KEY=`); live TomTom evidence is identified separately.
 
-```powershell
-$env:P2_SIMULATOR_ENABLED = "false"
-docker compose up --build -d communication
-python stage_tests/check_stage1.py
-$env:P2_SIMULATOR_ENABLED = "true"
-docker compose up --build -d communication
-```
+P1 writes `runtime/verification-results/{execution-log.xes,verification.json,p2-completion.json}`. P2 writes `runtime/verification-results/p2-siddhi.json`. P3 writes `runtime/p3-compliance/evidence.json`. Copy reviewed evidence and regenerate logs only after successful execution. Raw histories stay under ignored `runtime/`.
 
-It runs the stock-wait/cancellation/replenishment P1 scenarios. It completes two independent P2 transports using manual arrival, with receipt recorded through P3. It verifies the P2 end events, exact retry counts, that the manual P2 receipt is refused, early-receipt rejection, and reuse of a released vehicle. It requires a fresh version-3 dataset with all 100 crates and both vehicles available. It writes P1 compliance artifacts to `runtime/verification-results/execution-log.xes` and `verification.json`; the XES contains P1 activities only. Separate P2 execution evidence is written to `runtime/verification-results/p2-completion.json`. That P2 report is execution evidence only. P2's DCR rules and its conformance log live in `compliance/p2/` (see [P2 DCR compliance](#p2-dcr-compliance) and [Evidence](#evidence-what-was-verified-and-where)). For a separate automatic-arrival demo, keep the default `P2_SIMULATOR_ENABLED=true` and watch `currentPosition`, `eta`, and the `WaitForShipmentArrived` catch in Operate before acknowledging receipt.
+Remove obsolete stopped **containers** only after inspecting mounts and preserving needed evidence. Use explicit container names or the identified project's `docker compose down` without `-v`; retain the paired registry and named volumes. Do not broadly prune or delete unverified volumes. Rebuild only communication when its Python code changes; BPMN and Siddhi sources are mounted. Ordinary resume uses `start`, and recreation uses `up` with the same project, dataset and registry variables.
 
 ### Live Siddhi risk and route-command walkthrough
 
-The local Siddhi app consumes the telemetry outbox and logs telemetry. It sends a `DeliveryRiskDetected` alert only after **three consecutive ETA readings for the same shipment and route revision are each late (after the deadline) and fresh (computed at most 30 s before Siddhi evaluates them), within 180 s**. An on-time, unavailable or stale reading breaks the run. At most one alert is sent per shipment/journey/route revision. Accepting an alert also places the shipment's quality status on hold (`PENDING`, with a `DELAY:` incident) and queues a durable handoff for P4. The service is not an external vehicle simulator: Siddhi forwards a decision command to the communication service's idempotent scripted-simulator endpoint, which acknowledges it before P2 changes route. The Compose defaults connect both telemetry and commands to the local Siddhi service. `/health` should report `siddhiTelemetry: "enabled"` and `siddhiCommands: "enabled"`.
+The local Siddhi app consumes the telemetry outbox and logs telemetry. It sends a `DeliveryRiskDetected` alert only after **three distinct consecutive ETA readings for the same shipment and route revision are each late (after the deadline) and fresh (computed at most 30 s before Siddhi evaluates them), within 180 s**. An on-time, unavailable or stale reading breaks the run. At most one alert is sent per shipment/journey/route revision. For terminally rejected goods, later alerts preserve rejection and its incident, and queue evidence with `incidentOpened: false`; transport decisions cannot grant quality release. Otherwise, accepting an alert places the shipment's quality status on hold (`PENDING`, with a `DELAY:` incident) and queues a durable handoff for P4. The service is not an external vehicle simulator: Siddhi forwards a decision command to the communication service's idempotent scripted-simulator endpoint, which acknowledges it before P2 changes route. The Compose defaults connect both telemetry and commands to the local Siddhi service. `/health` should report `siddhiTelemetry: "enabled"` and `siddhiCommands: "enabled"`.
 
 Use a fresh demo dataset for a clear run. Set a slower GPS tick before starting the stack, then create a shipment whose deadline is short enough for its route ETA to exceed it:
 
@@ -422,13 +437,18 @@ Each result below is tied to the code it ran against. Runtime output stays under
 
 | Evidence | Kind | Tested code | Artefact and result |
 | --- | --- | --- | --- |
-| Offline suite | unit/regression tests | `d613960` | 54 tests OK (Python 3.12, service image) |
-| `check_siddhi_risk_rule.py` | Siddhi rule, throwaway runner | `d613960` | PASS: no alert for isolated, stale or gap-broken late ETAs; one alert per revision for three consecutive fresh late ETAs |
-| `check_p2_siddhi.py` | **live execution**, fresh stack, local demo ETAs | `d613960` | PASS. Run `130506`, recorded in `compliance/p2/verification.json` (`liveAcceptance`) |
-| `check_stage1.py` | **live execution**, P1 regression, simulator off | `d613960` | PASS |
-| `compliance/check.py` on `compliance/p2/execution-log.xes` | **local DCR replay** of the log built from run `130506` | `d613960` | 3 traces valid and accepting; 6 synthetic violations rejected |
-| ProcessDoctor | **external conformance** | log from run `130506` | **Pending**: the previous log (run `100628`) was 3 conforming; re-run for this log |
-| TomTom | live provider | earlier commit (2026-11-15) | 15/15 HTTP 200, `compliance/p2/tomtom-responses.jsonl`; the key later returned 401, so run `130506` used local demo ETAs |
+| Offline suite | unit/regression tests | `89dfd26` | 57 tests OK, local Python 3.12.13; terminal rejection and P3 readiness regressions included |
+| `check_siddhi_risk_rule.py` | isolated live Siddhi rule | `eaaaf6b` | PASS: duplicate identity, isolated, stale and gap-broken observations do not alert; three distinct fresh late observations alert once per revision |
+| `check_stage1.py` | live P1 regression; simulator off | `1e4d141` | PASS: independent transports, receipt gate, retries, vehicle reuse and local replay |
+| `check_p2_siddhi.py` | live P2 acceptance; local demo ETAs | `89dfd26` (application image `1e4d141`, identical implementation) | PASS: run `131337`, three completed P2/P3 journeys; current [P2 report](../compliance/p2/verification.json) |
+| `check_p3_compliance.py --base http://localhost:5001` | live P3 scenarios; fresh data | `89dfd26` | PASS: run `9d1cd66e`, normal admission, hold/release, inspection rejection, quality rejection; exact inventory and retry checks in [P3 report](../compliance/p3/verification.json) |
+| `compliance/check.py` on P2 log | local DCR replay | log from run `131337` | 3 valid, accepting cases; 6 synthetic violations rejected by offline tests |
+| `build_p3_evidence.py verify` on P3 log | local DCR replay | log from run `9d1cd66e` | 4 valid, accepting cases; forbidden admission rejected |
+| Pinned BPMN lint | model validation | `89dfd26` | All three models: zero errors, zero warnings |
+| ProcessDoctor | external conformance | current P2/P3 logs | **Pending:** browser tool returned “The browser access host is unavailable”. Previous results remain historical in each report; no fresh portal result is claimed |
+| TomTom | historical live provider check | earlier code/log | Preserved in P2 report and `tomtom-responses.jsonl`; current deterministic checks use local demo ETAs |
+
+Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. Merging and merged-main smoke testing remain pending the external verification gate.
 
 **Not implemented:** P4's DCR investigation. The delivery-risk hold and the durable P4 handoff exist, and admission stays blocked until the current incident is released, but the release is a stand-in until P4 consumes the handoff (tracked on the task board).
 
@@ -488,4 +508,4 @@ For disposable data only, `docker compose down -v` removes that project's engine
 - **502 on creation:** engine-start outcome uncertain; inspect engine/logs before retrying. The registry entry is retained.
 - **A pending command/handoff does not advance:** check `docker compose logs communication` and Operate for publication/worker incidents. Published messages expire after 24 hours if unconsumed; recovery is manual.
 
-One communication instance is supported. Live P3 integration, authenticated users, stock procurement, the shared logger, P4 quality holds, and simulator/CEP/API integrations remain outside this increment. P1 external conformance checking is recorded above.
+One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and temperature/weather integration remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
