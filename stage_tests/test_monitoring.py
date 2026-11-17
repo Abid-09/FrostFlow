@@ -334,3 +334,11 @@ class MonitoringTests(unittest.TestCase):
             self.db.save(db, record)
         self.db.advance_telemetry("S", [48.8566, 2.3522], 1, late, "recorded-fixture")
         self.assertFalse(self.db.get("S")["etaAssessment"]["qualified"])
+
+    def test_timeout_disposition_covers_late_unavailable_evaluation_of_closing_sequence(self):
+        self.sample(0)
+        self.close(1)
+        self.db.tick_monitoring(self.at(21))
+        self.disposition()
+        self.ack(1, 40)
+        self.assertEqual(self.db.get("S")["qualityStatus"], "RELEASED")

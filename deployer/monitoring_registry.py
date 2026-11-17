@@ -232,7 +232,8 @@ class MonitoringRegistry:
                     (self.combined_candidate(item, record["monitoringProfile"], item["observation"]["occurredAt"], was_rising) and not ack["combined"])):
                     self.assessment_hold(db, record, "monitoring-evaluation-unavailable",
                                          {**evidence, "missingEvidence": ["fresh Siddhi evaluation"]},
-                                         episode=session.setdefault("evaluationEpisode", f"evaluation:{next_seq}"))
+                                         episode=(f"closure:{session['closingSequence']}" if session.get("finalization") == "HELD"
+                                                  else session.setdefault("evaluationEpisode", f"evaluation:{next_seq}")))
                 else:
                     session.pop("evaluationEpisode", None)
                 for flag, reason, priority, label in (("excursion", "temperature-excursion", "normal", "excursion"),
