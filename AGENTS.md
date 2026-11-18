@@ -146,7 +146,7 @@ Local replay of saved evidence can run without Docker:
 
 The flat checker implements conditions, responses, includes, excludes and milestones; it does not implement timed/data/hierarchical DCR or real P4 execution. Keep synthetic forbidden traces separate from actual execution logs. A synthetic invalid trace's failure is expected, not a suite failure.
 
-Keep **offline tests, live execution, local DCR replay and external ProcessDoctor conformance** distinct. Record actual commands, environment/input modes, tested commit, source/model/log hashes and outcomes. Current P2/P3 ProcessDoctor refreshes remain pending in the committed reports; historical portal results do not validate changed logs. Check those reports for later updates. If model/log evidence changes, refresh external results or mark them pending with the actual reason. Log/verification builders overwrite artifacts: do not run them casually or replace reviewed evidence with synthetic, partial or failed runs.
+Keep **offline tests, live execution, local DCR replay and external ProcessDoctor conformance** distinct. Record actual commands, environment/input modes, tested commit, source/model/log hashes and outcomes. Manual ProcessDoctor checks for the review-18 P1/P2/P3/container logs passed; screenshots, user-confirmed input identity and exact model/log hashes are in `compliance/foundation/review-18/processdoctor.json`. Earlier reports retain their original scope; their results do not validate changed logs. If model/log evidence changes, refresh external results or mark them pending with the actual reason. Log/verification builders overwrite artifacts: do not run them casually or replace reviewed evidence with synthetic, partial or failed runs.
 
 ## Docker, data and secrets
 

@@ -1,5 +1,5 @@
 {
-  "status": "local verification passed; foundation merge approval and merged-main smoke pending",
+  "status": "local and manual external conformance passed; foundation merge approval and merged-main smoke pending",
   "recordedAt": "2026-11-18T17:52:06.060337+00:00",
   "testedCommit": "8d13c3e9572c19afdf2cb56ec207df0496e0af89",
   "approvedRevertMerge": "f475904",
@@ -361,10 +361,6 @@
   },
   "pending": [
     {
-      "check": "ProcessDoctor refresh",
-      "reason": "18 November browser attempt: The browser access host is unavailable"
-    },
-    {
       "check": "Foundation PR #9 review and merge",
       "reason": "Separate explicit merge approval required"
     },
@@ -392,7 +388,12 @@
     "compliance/foundation/review-18/p2-local-replay.json": "e17a5fcd9c6c93de50abacdbe560cc10abe4576ef8bed1109b5c40b739656792",
     "compliance/foundation/review-18/p3-engine-and-inventory.json": "34c10795c6726450795a02ce202ca07bdab76f637ea7d7d8f95a49c69a92f90f",
     "compliance/foundation/review-18/p3-execution-log.xes": "059feba4531c4250a9bb5be8169e503371af2b9a8baeb20b4dbd8a4cdea570b4",
-    "compliance/foundation/review-18/p3-local-replay.json": "211836c2eed0831dfdacf72dceff2cd53e041557e805a22f5014aa6209142305",
+    "compliance/foundation/review-18/p3-local-replay.json": "f067838146bc0646dddd3adafb7e14a1b041875a8bd2908b669e5b9ed85e2187",
+    "compliance/foundation/review-18/processdoctor.json": "c63aff3428f7132638be8871c514ed1b88f7be2223cb64dc327500a7742a6b9f",
+    "compliance/foundation/review-18/screenshots/container-processdoctor.png": "ed2b1997f4dc2b9cabd5a6c556f6a6274a7061611ca0a14c47b7234b13dad20e",
+    "compliance/foundation/review-18/screenshots/p1-processdoctor.png": "5aab2a6e862d8ac582e1cfd4c1ad8653a84cb9aae56581bfcb2d00cc20710806",
+    "compliance/foundation/review-18/screenshots/p2-processdoctor.png": "18664387ae26adffc1a17c0a9adf6808e5b04092e33cd9549bcffc6107b8d6e6",
+    "compliance/foundation/review-18/screenshots/p3-processdoctor.png": "cf9ca97ba56c709d0773e912ef8d4ece66675620ffe0348aa2858f538e32c650",
     "compliance/foundation/review-18/siddhi-container.json": "cf4ed6ba5ee4cbeeeb970a6dd2871a335a579868a13095105ee183e1cebdcc92",
     "compliance/foundation/review-18/tomtom-check.json": "f508d50e94c0fc8e663d9899676029a0f5988227b5f1b8148c11aeb943135b6a",
     "compliance/foundation/review-18/tomtom-responses.jsonl": "97364a3e82970f55374af52cac55bef8aba75dd6d6d461b0119f0ab4908bc661",
@@ -429,5 +430,19 @@
     "stage_tests/fixtures/p4-contract/rejected-goods.json": "628beaf72dd62ce3224123f94d941e25b5ab24ae7c986e26f72644ae2203454a",
     "stage_tests/fixtures/p4-contract/uncertainty.json": "d6ed1b3b81abc59bb5cb434bad8ed64630c3a26b702b9c63447d6e87415c3e05",
     "stage_tests/fixtures/p4-contract/urgent-escalation.json": "aaf93517f0061ac64f42b9c0f22d7191fad950ac098adb4a98bbe9fb4d901d3e"
+  },
+  "processDoctor": {
+    "status": "passed",
+    "performedBy": "user; manual browser checks",
+    "evidence": "compliance/foundation/review-18/processdoctor.json",
+    "coverageThreshold": 100,
+    "conformingVariants": {
+      "P1": 3,
+      "P2": 3,
+      "P3": 4,
+      "container": 5
+    },
+    "violations": 0,
+    "note": "Agent browser access failed earlier; user supplied screenshots and confirmed the review-18 inputs."
   }
 }

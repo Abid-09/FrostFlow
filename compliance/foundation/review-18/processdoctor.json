@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "provider": "https://processdoctor.compute.dtu.dk/",
+  "recordedAt": "2026-11-18T18:49:09.990468+00:00",
+  "checkedDate": "2026-11-18",
+  "performedBy": "user; manual browser checks",
+  "recordedBy": "Codex from supplied screenshots and user confirmation",
+  "executionTestedCommit": "8d13c3e9572c19afdf2cb56ec207df0496e0af89",
+  "provenance": "User confirmed P2/P3 used review-18 logs despite generic execution-log.xes display names. P1 was rechecked with p1-execution-log.xes; its 2/1/1 occurrence counts match four traces. Container screenshot shows the matching filename and 2/1/1/1/1 counts.",
+  "limits": "Screenshots and file identity confirmed by the user; Codex did not operate the portal. Positive conformance checks only; no fresh external negative-trace check or P4 execution claimed.",
+  "checks": [
+    {
+      "check": "p1",
+      "model": "compliance/p1/rules.xml",
+      "modelSha256": "a7e9610eaae4a288cae629c84aa06abeec4d9a2eb37265228b48b37a85a6844f",
+      "log": "compliance/foundation/review-18/p1-execution-log.xes",
+      "logSha256": "1b6ca13779794b6c466b6d018a2be224b9b051821ecf43de6afeeb4928f8930e",
+      "traces": 4,
+      "variants": 3,
+      "variantOccurrences": [
+        2,
+        1,
+        1
+      ],
+      "conformingVariants": 3,
+      "partiallyViolatingVariants": 0,
+      "violatingVariants": 0,
+      "structuralViolations": 0,
+      "coverageThreshold": 100,
+      "screenshot": "compliance/foundation/review-18/screenshots/p1-processdoctor.png",
+      "screenshotSha256": "5aab2a6e862d8ac582e1cfd4c1ad8653a84cb9aae56581bfcb2d00cc20710806"
+    },
+    {
+      "check": "p2",
+      "model": "compliance/p2/rules.xml",
+      "modelSha256": "f1f3409df5c628d8457d4e77ca4c73422727b429eb2877e1b2a25b38fe9f666e",
+      "log": "compliance/foundation/review-18/p2-execution-log.xes",
+      "logSha256": "446d6bbe30a326b67f177ec9b277e93642ec36cd9d9a088c7d787e42c42f0d75",
+      "traces": 3,
+      "variants": 3,
+      "variantOccurrences": [
+        1,
+        1,
+        1
+      ],
+      "conformingVariants": 3,
+      "partiallyViolatingVariants": 0,
+      "violatingVariants": 0,
+      "structuralViolations": 0,
+      "coverageThreshold": 100,
+      "screenshot": "compliance/foundation/review-18/screenshots/p2-processdoctor.png",
+      "screenshotSha256": "18664387ae26adffc1a17c0a9adf6808e5b04092e33cd9549bcffc6107b8d6e6"
+    },
+    {
+      "check": "p3",
+      "model": "compliance/p3/rules.xml",
+      "modelSha256": "3709ac818f193f63fa0bc42c464c6900cbe7fbead7922b39324a2f531101c9da",
+      "log": "compliance/foundation/review-18/p3-execution-log.xes",
+      "logSha256": "059feba4531c4250a9bb5be8169e503371af2b9a8baeb20b4dbd8a4cdea570b4",
+      "traces": 4,
+      "variants": 4,
+      "variantOccurrences": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "conformingVariants": 4,
+      "partiallyViolatingVariants": 0,
+      "violatingVariants": 0,
+      "structuralViolations": 0,
+      "coverageThreshold": 100,
+      "screenshot": "compliance/foundation/review-18/screenshots/p3-processdoctor.png",
+      "screenshotSha256": "cf9ca97ba56c709d0773e912ef8d4ece66675620ffe0348aa2858f538e32c650"
+    },
+    {
+      "check": "container",
+      "model": "compliance/p3/rules.xml",
+      "modelSha256": "3709ac818f193f63fa0bc42c464c6900cbe7fbead7922b39324a2f531101c9da",
+      "log": "compliance/foundation/review-18/container-execution-log.xes",
+      "logSha256": "de6cbae7e4938dc56e732d8ba1051de0393fd1e7cbfaa466aa8e33369f237308",
+      "traces": 6,
+      "variants": 5,
+      "variantOccurrences": [
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "conformingVariants": 5,
+      "partiallyViolatingVariants": 0,
+      "violatingVariants": 0,
+      "structuralViolations": 0,
+      "coverageThreshold": 100,
+      "screenshot": "compliance/foundation/review-18/screenshots/container-processdoctor.png",
+      "screenshotSha256": "ed2b1997f4dc2b9cabd5a6c556f6a6274a7061611ca0a14c47b7234b13dad20e"
+    }
+  ]
+}

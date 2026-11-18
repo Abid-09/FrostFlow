@@ -71,7 +71,10 @@
     }
   },
   "processDoctor": {
-    "status": "pending",
-    "note": "Import rules.xml and execution-log.xes into ProcessDoctor and record the actual result before marking P3 compliance complete."
+    "status": "passed",
+    "performedBy": "user; manual browser check",
+    "evidence": "compliance/foundation/review-18/processdoctor.json",
+    "conformingVariants": 4,
+    "structuralViolations": 0
   }
 }

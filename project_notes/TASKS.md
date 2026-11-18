@@ -7,8 +7,8 @@
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks and real P4 consumer remain outstanding |
-| P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer adaptation remains outstanding |
+| P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED IN PR #10 / INTEGRATION DEFERRED | Merge and verify foundation #9, then adapt in a new PR |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
@@ -23,7 +23,7 @@
 - [x] [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) merged as `f475904` after explicit user approval; preserve removal commit `31ad23b`.
 - [x] Merge main into the shared foundation branch (`4b09482`), retaining history and Arunima's screenshots; add the [P4 handover](../docs/P4-FOUNDATION-HANDOVER.md) and eight producer-checked fixtures (`8d13c3e`). One empty-default P4 URL; temperature remains CLI 18.
 - [x] Fresh verification at `8d13c3e`: 82 offline regressions; sequential P1/P2/P3; four container scenarios; six local Siddhi weather comparisons; closing outage/restore; 21-second restart; exact inventory/end states and local replay. Three legacy P4 contract failures reproduced offline with substituted DCR. See [18 November report](../compliance/foundation-review-18.json).
-- [ ] ProcessDoctor refresh: attempted again 18 November; browser access host unavailable. Keep external conformance separate and pending.
+- [x] User completed manual ProcessDoctor checks for the review-18 logs: P1 3/3, P2 3/3, P3 4/4 and container 5/5 conforming variants; zero violations, coverage 100. [Screenshots and model/log hashes](../compliance/foundation/review-18/processdoctor.json) recorded.
 - [ ] Review PR #9; merge only after its own explicit approval. This checkpoint does not authorize that merge.
 - [ ] After approved foundation merge, rebuild merged main and record integrated smoke at its exact revision. Abid then adapts P4 in a replacement PR, preserving option 18 for temperature simulation and using option 19 for investigation.
 
@@ -37,7 +37,7 @@ P4’s original models, implementation and evidence remain accessible in [PR #10
 - [x] Ordered Siddhi evaluation, coalesced/versioned holds, urgent combined-risk priority and terminal rejection guards.
 - [x] Explicit P3 monitoring finalization before transactional admission; receipt acknowledgement remains independent.
 - [x] Complete integrated foundation verification and local replay; record exact revisions, input modes, images and artifact hashes in the [verification report](../compliance/foundation-verification.json).
-- [ ] Refresh external ProcessDoctor for the changed foundation evidence; browser access host remains unavailable.
+- [x] Review-18 foundation external conformance completed manually by the user; see the current checkpoint above. Earlier agent browser access failed.
 - [ ] Review integration PR, then merge only with explicit authorization; smoke-test merged main afterward.
 - [ ] Abid adapts his existing PR #10 consumer/investigation only after foundation review, authorised merge and merged-main smoke. P5/P6 remain later work.
 
