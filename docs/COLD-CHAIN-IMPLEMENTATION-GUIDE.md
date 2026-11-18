@@ -8,9 +8,9 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 awaiting team confirmation; P5–P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid Hasan (claimed with the P4 PR; team confirmation on the task board); P5–P6 unassigned
 
-**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
+**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. The P4 investigation consumes that handoff as a DCR case and applies the officer's decision for the current incident ([P4 guide](P4-QUALITY-INVESTIGATION.md)); its live stack run and dcrgraphs.net API run are pending. Temperature CEP, weather integration and P5–P6 remain planned. The P1–P3 live checks still use the labelled stand-in for dispositions. See [verification commands and evidence](RUNNING.md#automated-verification).
 
 ## 1. What problem are we solving?
 
@@ -105,9 +105,9 @@ P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4
 
 **Coordinate with P4:** read the same recorded quality status, so the receiving process cannot overlook an investigation.
 
-### Owner to be confirmed — P4: Quality incident investigation · DCR
+### Abid Hasan (team confirmation pending) — P4: Quality incident investigation · DCR
 
-An earlier draft named Abid, while the task board recorded P4 as unassigned. Team confirmation is still required; this guide does not assign or remove responsibility.
+**Status:** implemented — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests and the dcrgraphs.net simulation pass; the live stack run, a dcrgraphs.net API run and ProcessDoctor are pending. The Siddhi temperature/recovery inputs and the cooling-command bridge are shared CEP work; until then those inputs are manual or simulated.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 
