@@ -623,8 +623,64 @@
     "pr10TestedCommit": "f9a92eec773f54f43b4fa247f57a404eb74c13e7"
   },
   "dcrRepositoryApi": {
-    "status": "PENDING",
-    "reason": "Needs the team's dcrgraphs.net credentials in an untracked .env; the repository export/API was not available on our subscription."
+    "status": "PASS",
+    "command": "python3 stage_tests/check_dcr_repository.py",
+    "checkedAt": "2026-11-18T23:16:48.045468+00:00",
+    "graphId": "2015919",
+    "simulationId": "2109421",
+    "api": "https://repository.dcrgraphs.net/api",
+    "host": "owner's Mac (macOS arm64), owner's dcrgraphs.net account; credentials only in untracked .env",
+    "testedCommit": "9eebc566b4d557fb59c7b35b588def93a94d514c",
+    "result": "Release path (9 activities) executed in the dcrgraphs.net Active Repository; after every step the enabled and pending activities equal the local engine on dcr/p4_quality_investigation.xml; an early CloseInvestigation was refused (refused: DCR answered 400: Event `CloseInvestigation` is not executable); final marking accepting.",
+    "finding": "The repository also lists nesting groups (A19, A19.A18) as enabled events; fixed in 9eebc56 so repository mode reports only the 16 graph activities.",
+    "scope": "Direct API check of the graph. The full Docker stack has not been run with P4 in repository mode; the combined live run fd021988 used the local engine.",
+    "steps": [
+      {
+        "activity": "OpenIncident",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "ReviewWeatherData",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "RequestCoolingAdjustment",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "ReviewTemperatureLog",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "RecordCoolingAcknowledgement",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "RecordRecoveryEvidence",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "AssessEvidence",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "DecideRelease",
+        "how": "executed",
+        "matches": true
+      },
+      {
+        "activity": "CloseInvestigation",
+        "how": "executed",
+        "matches": true
+      }
+    ]
   },
   "processDoctor": {
     "status": "PENDING",

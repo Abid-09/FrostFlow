@@ -202,7 +202,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | --- | --- | --- |
 | ProcessDoctor refresh | Completed manually by the user for review-18 logs | P2 3/3 and P3 4/4 conforming variants; zero violations. See `compliance/foundation/review-18/processdoctor.json` |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
-| P4 dcrgraphs.net API run and ProcessDoctor (consumer and dispositions implemented in the replacement PR; combined live run `fd021988` passed) | Abid; team DCR account, portal access | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
+| P4 ProcessDoctor (consumer and dispositions implemented in the replacement PR; combined live run `fd021988` and dcrgraphs.net API check passed) | Abid; portal access | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
 | External physical simulator and cooling/recovery CEP | Shared owners to be assigned | Remain future work. The foundation implements simulated container assessment and Open-Meteo current conditions; see the contract below |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.

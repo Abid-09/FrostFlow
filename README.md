@@ -27,7 +27,7 @@ The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all product
 | P1 — Shipment preparation | Camunda / Zeebe | Stock wait/cancellation, dispatch handoff and local compliance verification implemented |
 | P2 — Transport and delivery | Camunda / Zeebe | Receipt-gated transport, scripted GPS/ETA, arrival and dispatcher decisions implemented |
 | P3 — Receiving and stock admission | Camunda / Zeebe | P2 arrival integration, physical receipt, inspection, separate receiving inventory and quality hold implemented; four live scenarios and local replay verified; see current external-check status in the run guide |
-| P4 — Quality incident investigation | DCR (local engine by default; dcrgraphs.net repository with `DCR_*` credentials) | Restored and adapted to the foundation contract v1 in the replacement PR; offline tests and combined live run `fd021988` pass; dcrgraphs.net API run and ProcessDoctor pending ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
+| P4 — Quality incident investigation | DCR (local engine by default; dcrgraphs.net repository with `DCR_*` credentials) | Restored and adapted to the foundation contract v1 in the replacement PR; offline tests, combined live run `fd021988` and dcrgraphs.net API check pass; ProcessDoctor pending ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Planned |
 | P6 — Supplier claim resolution | Camunda / Zeebe | Planned |
 
@@ -124,7 +124,7 @@ Abid’s P4 uses DCR to **execute** the quality investigation: [`dcr/p4_quality_
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's dcrgraphs.net API run and ProcessDoctor, cooling/recovery contracts and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's ProcessDoctor check, cooling/recovery contracts and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 

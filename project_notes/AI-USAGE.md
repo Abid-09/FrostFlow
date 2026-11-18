@@ -205,4 +205,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh `p4-02` data): run `fd021988` passed; the AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
 
-**Not done / limits:** no dcrgraphs.net API execution and no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.
+**dcrgraphs.net API (by the owner):** Abid ran `stage_tests/check_dcr_repository.py` with his own account (credentials only in the untracked `.env`): graph `2015919`, simulation `2109421` passed after the AI fixed the nesting-group finding.
+
+**Not done / limits:** no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.

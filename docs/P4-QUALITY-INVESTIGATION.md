@@ -67,7 +67,7 @@ The registry stays the authority for quality permission and admission. The test 
 
 | Mode (`/health` → `integrations.p4DcrEngine`) | When | Notes |
 | --- | --- | --- |
-| `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. **Not yet verified with the team account.** |
+| `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. API check passed on graph `2015919` (simulation `2109421`): each step of the release path matches the local engine and an early close is refused. Nesting groups that the API lists as events are ignored. The full stack has not yet been run in this mode. |
 | `local-dcr-engine` | Otherwise (default) | Executes the same XML with flat DCR semantics (identical to `compliance/check.py`); each case's marking is stored in the registry SQLite file. |
 
 To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, copy `.env.example` to `.env`, fill in the three values and rebuild (`docker compose up --build -d --wait`). Never commit `.env`. Before switching the stack, check API access with `python3 stage_tests/check_dcr_repository.py`. It needs only the standard library and reads `.env`. It starts one repository simulation, walks the release path, compares enabled/pending activities with the local engine after every step, checks that an early `CloseInvestigation` is refused, and writes `runtime/p4-compliance/dcr-repository.json`. The owner's graph is dcrgraphs.net graph `2015919`.
@@ -95,7 +95,8 @@ Incident IDs contain `:` (`DELAY:...`, `ASSESS:<shipment>:<event>`); URL-encode 
 | Synthetic forbidden traces (9) | `compliance/p4/invalid-traces.json` | all rejected |
 | Combined foundation/P4 live run (4 scenarios on monitored shipments; Zeebe 8.8.0, Siddhi, local DCR engine) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `fd021988` (455 s): release → admitted (2), replace/return → rejected (2); receipt released the vehicle while held in all four; run 4 refused the decision until version 2 was reassessed; 4 traces valid and accepting |
 | PR #10 live run `900821e9` (pre-foundation, unmonitored) | `compliance/p4/historical/` | historical only |
-| dcrgraphs.net API execution / ProcessDoctor | — | **pending** |
+| dcrgraphs.net Active Repository API (`stage_tests/check_dcr_repository.py`) | `compliance/p4/verification.json` → `dcrRepositoryApi` | PASS on graph `2015919`, simulation `2109421`: 9 steps match the local engine; early `CloseInvestigation` refused (HTTP 400) |
+| ProcessDoctor | — | **pending** |
 
 ```bash
 .venv/bin/python -m unittest discover -s stage_tests -p 'test_p4*.py' -v
@@ -121,5 +122,5 @@ Every case checks that receipt released the vehicle while quality was still held
 
 ## Still to do
 
-- Verify `dcr-repository` mode with the team's dcrgraphs.net account; run ProcessDoctor on the live log.
+- Run ProcessDoctor on `rules.xml` + the live log. Optionally run the full stack in `dcr-repository` mode.
 - Cooling-command/recovery contracts (Siddhi) and P5/P6 consumption of `REPLACE`/`RETURN` remain separate future work.
