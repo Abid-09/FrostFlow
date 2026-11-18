@@ -15,10 +15,12 @@ Start with the documents relevant to your task:
 | [README.md](README.md) | Overview, implemented processes and repository entry points |
 | [Implementation guide](docs/COLD-CHAIN-IMPLEMENTATION-GUIDE.md) | Full P1–P6 scope, required demonstrations and submission requirements |
 | [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) | Shared IDs, message envelopes, handoffs, quality rules and API contracts |
+| [P4 foundation handover](docs/P4-FOUNDATION-HANDOVER.md) | Abid’s reintegration boundary, durable acknowledgements, assessed evidence versions and fixtures |
 | [Run guide](docs/RUNNING.md) | Environment, startup, verification commands, fresh datasets and recovery limits |
 | [Task board](project_notes/TASKS.md) | Current checkpoint, ownership, open dependencies and collaboration workflow |
 | [AI-use record](project_notes/AI-USAGE.md) | Actual assistance and verification history; append your contribution |
 | `compliance/p1/`, `compliance/p2/`, `compliance/p3/` | Rules, captured execution logs and verification reports for each process |
+| [Foundation review refresh](compliance/foundation-review-18.json) | Latest branch verification, handover fixtures, original-P4 reproduction and pending review/external checks |
 | [Merged-main verification](compliance/merged-main-verification.json) | Recorded integrated smoke result and its exact tested revision |
 
 Some guide sections retain older checkpoints or describe the target architecture. Check current code, the task board's latest checkpoint and each report's tested commit/hash before claiming something works. Flag contradictions instead of silently inventing ownership or treating planned work as implemented. The separate course specification, proposal and signed contract PDFs are intentionally absent from Git; do not claim to have inspected them from these summaries.

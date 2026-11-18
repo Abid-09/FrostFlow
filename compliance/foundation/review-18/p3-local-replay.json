@@ -1,0 +1,77 @@
+{
+  "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/compliance/foundation/review-18/p3-execution-log.xes",
+  "localReplay": {
+    "status": "passed",
+    "scenarios": {
+      "normal-receipt-admission": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "GoodsReceived",
+          "MonitoringFinalized",
+          "InspectionPassed",
+          "StockAdmitted"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "quality-hold-release": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "QualityHoldRaised",
+          "GoodsReceived",
+          "MonitoringFinalized",
+          "InspectionPassed",
+          "StockAdmissionHeld",
+          "QualityHoldReleased",
+          "StockAdmitted"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "inspection-rejection": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "GoodsReceived",
+          "MonitoringFinalized",
+          "InspectionFailed",
+          "GoodsRejected"
+        ],
+        "valid": true,
+        "accepting": true
+      },
+      "quality-rejection": {
+        "events": [
+          "ShipmentDispatched",
+          "ShipmentArrived",
+          "QualityHoldRaised",
+          "GoodsReceived",
+          "MonitoringFinalized",
+          "InspectionPassed",
+          "StockAdmissionHeld",
+          "QualityRejected",
+          "GoodsRejected"
+        ],
+        "valid": true,
+        "accepting": true
+      }
+    }
+  },
+  "forbiddenAdmission": {
+    "status": "rejected-as-required",
+    "attempt": "StockAdmitted while QualityHoldRaised remains unresolved",
+    "result": {
+      "valid": false,
+      "accepting": false,
+      "violationIndex": 5,
+      "event": "StockAdmitted",
+      "reason": "activity is excluded"
+    }
+  },
+  "processDoctor": {
+    "status": "pending",
+    "note": "Import rules.xml and execution-log.xes into ProcessDoctor and record the actual result before marking P3 compliance complete."
+  }
+}

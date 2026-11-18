@@ -21,10 +21,13 @@
 - [x] Prepare `revert/p4-until-foundation` from `af3c68c`; removal commit `31ad23b` reverts merge #10 with parent 1 and restores the tree to `552945d` before intentional documentation updates.
 - [x] Restored baseline: 57 offline regressions pass; Compose validation passes. See [verification record](../docs/P4-INTEGRATION-SEQUENCING.md).
 - [x] [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) merged as `f475904` after explicit user approval; preserve removal commit `31ad23b`.
-- [ ] After revert merge, merge main into foundation #9; add the P4 contract handover and fixtures, resolve configuration/menu collisions and complete sequential live verification. Stop for foundation review before merge.
+- [x] Merge main into the shared foundation branch (`4b09482`), retaining history and Arunima's screenshots; add the [P4 handover](../docs/P4-FOUNDATION-HANDOVER.md) and eight producer-checked fixtures (`8d13c3e`). One empty-default P4 URL; temperature remains CLI 18.
+- [x] Fresh verification at `8d13c3e`: 82 offline regressions; sequential P1/P2/P3; four container scenarios; six local Siddhi weather comparisons; closing outage/restore; 21-second restart; exact inventory/end states and local replay. Three legacy P4 contract failures reproduced offline with substituted DCR. See [18 November report](../compliance/foundation-review-18.json).
+- [ ] ProcessDoctor refresh: attempted again 18 November; browser access host unavailable. Keep external conformance separate and pending.
+- [ ] Review PR #9; merge only after its own explicit approval. This checkpoint does not authorize that merge.
 - [ ] After approved foundation merge, rebuild merged main and record integrated smoke at its exact revision. Abid then adapts P4 in a replacement PR, preserving option 18 for temperature simulation and using option 19 for investigation.
 
-P4’s original models, implementation and evidence remain accessible in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) at `45f654b` / merge `af3c68c`. They are historical evidence, not verification of the combined foundation/P4 system. P5/P6 remain later work. Registries and engine volumes are untouched.
+P4’s original models, implementation and evidence remain accessible in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) at `45f654b` / merge `af3c68c`. They are historical evidence, not verification of the combined foundation/P4 system. P5/P6 remain later work. Pre-existing registries and named engine volumes are retained; fresh matched `p1-18`, `p2-18` and `p3-18` datasets hold this review execution. The final stack uses consumed `p3-18` data; see the run guide before resuming.
 
 ## Pre-P4 foundation checkpoint — 17 November 2026
 

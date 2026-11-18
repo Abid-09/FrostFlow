@@ -1,0 +1,24 @@
+{
+  "status": "three-contract-mismatches-reproduced",
+  "legacyRevision": "af3c68c1e98e6d3245cfdea9c7ade36bbae32a5d",
+  "foundationRevision": "8d13c3e9572c19afdf2cb56ec207df0496e0af89",
+  "mode": "offline real temporary SQLite; engine state seeded; DCR calls substituted; no live/P4 execution claim",
+  "intake": {
+    "wireEventType": "AssessmentRequested",
+    "failure": "eventType must be DeliveryRiskDetected"
+  },
+  "acknowledgement": {
+    "returnedKeys": [
+      "handoff",
+      "incidentId",
+      "effect"
+    ],
+    "failure": "P4 consumer must durably acknowledge the matching deliveryId"
+  },
+  "disposition": {
+    "foundationQualityStatus": "PENDING",
+    "evidenceVersion": 2,
+    "legacyDispositionApplied": true,
+    "notApplied": "disposition requires current expectedEvidenceVersion"
+  }
+}

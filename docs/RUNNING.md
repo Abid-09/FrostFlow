@@ -100,7 +100,7 @@ Operate displays engine execution. The terminal represents the person submitting
 
 The dataset must be prepared before recording/presenting. The menu preserves existing data and does not reset containers or reservations. A used dataset may have unavailable vehicles even if stock remains; use the isolated-dataset instructions below to rehearse again.
 
-For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; P4–P6 and the cross-process incident workflow remain planned.
+For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; Abid’s PR #10 P4 investigation awaits foundation adaptation, while P5/P6 and the complete cross-process corrective workflow remain planned.
 
 ### P3 compliance evidence
 
@@ -364,7 +364,7 @@ The DCR Solution importer requires portal metadata in addition to the logical gr
 
 ## Automated verification
 
-Create a Python 3.12 environment and install the application dependencies:
+Reuse the existing `.venv` for offline checks. If it is absent, create a Python 3.12 environment and install the application dependencies:
 
 ```bash
 python3.12 -m venv .venv
@@ -440,15 +440,12 @@ Option **11** remains a manual test alert and bypasses Siddhi's risk detection; 
 
 **Decide before the truck arrives.** While a decision is pending, the scripted truck keeps moving. Each route has seven GPS ticks and the alert comes on the third, leaving about four ticks: roughly 60 s at `GPS_TICK_SECONDS=15`, or 4 minutes at 60. If it reaches its destination first, P2 takes the **Arrived before decision** branch. The alert is closed (`DeliveryRiskClosedAtArrival`), the route is unchanged, and a later option **12**/**13** is refused with *vehicle has already arrived*. That is the intended outcome, not a failure. After an approved route change, the deadline has usually already passed, so expect a second alert on the new route revision and answer it too.
 
-Siddhi listens on two ports: **8006** for telemetry and **8007** for route commands. Its `http` and `http-service` sources cannot share one listener. If an alert is missing, check `docker compose logs siddhi` for `Siddhi App ColdChainTelemetry deployed successfully` first.
+Siddhi listens on **8006** for telemetry, **8007** for route commands and **8008** for container assessment. Its `http` and `http-service` sources cannot share one listener. If an alert is missing, check `docker compose logs siddhi` for `Siddhi App ColdChainTelemetry deployed successfully` first.
 
-**Automated live check.** Instead of driving the CLI, run the same flow unattended on a fresh dataset:
+**Automated live check.** Select fresh paired P2 registry/engine data using the [sequential setup](#automated-verification), with simulator on, `GPS_TICK_SECONDS=10` and `TOMTOM_API_KEY=`. Stop the previous dataset before switching; changing only the registry directory is insufficient. Then run:
 
-```powershell
-$env:REGISTRY_DIR = "./runtime/p2-siddhi-check"
-$env:GPS_TICK_SECONDS = "10"
-docker compose -p cold-chain-p2-siddhi-check up --build -d --wait --wait-timeout 240
-python stage_tests/check_p2_siddhi.py
+```bash
+.venv/bin/python stage_tests/check_p2_siddhi.py
 ```
 
 It dispatches two shipments at once. A has a one-minute deadline:
@@ -459,7 +456,9 @@ It dispatches two shipments at once. A has a one-minute deadline:
 
 ### Evidence: what was verified and where
 
-Foundation results are recorded with exact revisions, source/model/log hashes, image identities and input modes in [foundation verification](../compliance/foundation-verification.json). The current P2/P3 reports reference the refreshed logs. Original repair artifacts are preserved under each process's `history/552945d/`; the original merged-main smoke remains historical evidence in `merged-main-verification.json`.
+The latest pre-merge refresh is [18 November review verification](../compliance/foundation-review-18.json), tested at `8d13c3e`: **82 offline tests**, fresh sequential P1/P2/P3 runs, all four container scenarios, six local Siddhi weather comparisons, closing-evaluation outage/restore and 21-second communication restart pass. Exported P2/P3 end states and exact warehouse/receiving effects were checked. New real business logs and local replay results are retained separately under `compliance/foundation/review-18/`; the earlier reviewed logs/reports are unchanged. Three original-P4 contract failures were also reproduced offline with temporary SQLite and substituted DCR, separately from live engine execution. Actual Open-Meteo and TomTom calls succeeded separately from deterministic local-ETA/recorded-weather scenarios. ProcessDoctor was attempted again and remains pending because the browser access host is unavailable.
+
+The table below preserves the **17 November** evidence and its original tested revisions. Foundation results are recorded with exact revisions, source/model/log hashes, image identities and input modes in [foundation verification](../compliance/foundation-verification.json). The current P2/P3 reports reference the refreshed logs. Original repair artifacts are preserved under each process's `history/552945d/`; the original merged-main smoke remains historical evidence in `merged-main-verification.json`.
 
 | Evidence | Kind | Tested code | Result |
 | --- | --- | --- | --- |
@@ -573,3 +572,19 @@ These checks distinguish live Siddhi/engine behavior from recorded ETA/weather i
 For a live service-restart watchdog check on the named verification stack (one free vehicle and one salad crate), run `.venv/bin/python stage_tests/check_monitoring_restart.py --communication-container frostflow-foundation-communication-1`. It deliberately stops only communication for 21 seconds and starts that same container with its original matched data. It proves the restored session/profile survives, the silence hold precedes resumed sampling, and P3 receipt releases the vehicle during the hold.
 
 To test closing evaluation failure, recreate **only communication** with the original project/registry/overlay variables and `SIDDIHI_CONTAINER_URL=http://127.0.0.1:9/container`, then run `.venv/bin/python stage_tests/check_monitoring_outage.py`. The runner expects a 20-second closure hold and verifies vehicle release precedes finalization. Restore the normal container URL using the same variables afterward. Late unavailable acknowledgements belong to that closing-sequence assessment; they cannot silently clear its hold or reopen the same released uncertainty episode. The endpoint remains a labelled test disposition, not an investigation.
+
+
+### Resume the 18 November review dataset
+
+The retained review stack is `frostflow-foundation` with dataset `p3-18`, simulator on, GPS tick 2 seconds, local ETA estimates and default local Siddhi evaluation. Its registry is consumed; do not rerun fresh-data suites on it. Preserve all earlier paired datasets. To recreate/resume this same dataset, first inspect active stacks and stop any other project, then use:
+
+```bash
+export COMPOSE_PROJECT_NAME=frostflow-foundation
+export VERIFY_DATASET=p3-18 REGISTRY_DIR=./runtime/foundation/p3-18
+export P2_SIMULATOR_ENABLED=true GPS_TICK_SECONDS=2 TOMTOM_API_KEY=
+export SIDDIHI_CONTAINER_URL=http://siddhi:8008/container
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up -d --wait --wait-timeout 240
+curl http://localhost:5001/health
+```
+
+Use new paired suffixes for any future fresh-data suite. Foundation PR #9 still needs separate review and explicit merge approval. After its approved merge, rebuild from merged main using the same paired-dataset variables plus `up --build`, run `stage_tests/check_integration_smoke.py` with sufficient salad/chicken stock and free vehicles, and record the exact merged revision. Until that smoke passes, this is branch verification, not the final handover readiness claim. See [Abid's P4 handover](P4-FOUNDATION-HANDOVER.md).

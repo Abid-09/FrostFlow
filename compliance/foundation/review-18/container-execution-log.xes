@@ -1,0 +1,533 @@
+<?xml version='1.0' encoding='utf-8'?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <trace>
+    <string key="concept:name" value="p3comp-foundation-ed5ef09b-normal" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P1:p3comp-foundation-ed5ef09b-normal:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813686586" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:33.568106Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-foundation-ed5ef09b-normal:SIM:journey-p3comp-foundation-ed5ef09b-normal:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813686649" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:48.545266Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-normal:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813686732" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:51.720000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-normal:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813686732" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:51.954801Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-normal:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813686732" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:52.734000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-normal:StockAdmitted" />
+      <string key="processInstanceKey" value="2251799813686732" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:53.010490Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p3comp-foundation-ed5ef09b-isolated-spike" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P1:p3comp-foundation-ed5ef09b-isolated-spike:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813686856" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:46:57.057582Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-foundation-ed5ef09b-isolated-spike:SIM:journey-p3comp-foundation-ed5ef09b-isolated-spike:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813686918" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:10.632668Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-isolated-spike:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813687006" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:14.023000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-isolated-spike:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813687006" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:14.480539Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-isolated-spike:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813687006" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:15.037000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-isolated-spike:StockAdmitted" />
+      <string key="processInstanceKey" value="2251799813687006" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:15.536686Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p3comp-foundation-ed5ef09b-sustained-excursion" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P1:p3comp-foundation-ed5ef09b-sustained-excursion:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813687137" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:24.654402Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-foundation-ed5ef09b-sustained-excursion:SIM:journey-p3comp-foundation-ed5ef09b-sustained-excursion:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813687202" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:38.739269Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:Assessment:p3comp-foundation-ed5ef09b-sustained-excursion:ASSESS:p3comp-foundation-ed5ef09b-sustained-excursion:CONTAINER:p3comp-foundation-ed5ef09b-sustained-excursion:journey-p3comp-foundation-ed5ef09b-sustained-excursion:7:1" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:55.078697Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:55.539000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:56.251379Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:56.556000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:StockAdmissionHeld" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:57.291363Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldReleased" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:QualityStatusChanged:quality-released-p3comp-foundation-ed5ef09b-sustained-excursion" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:57.577000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-sustained-excursion:StockAdmitted" />
+      <string key="processInstanceKey" value="2251799813687280" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:47:58.325623Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p3comp-foundation-ed5ef09b-missing-telemetry" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P1:p3comp-foundation-ed5ef09b-missing-telemetry:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813687477" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:06.449082Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-foundation-ed5ef09b-missing-telemetry:SIM:journey-p3comp-foundation-ed5ef09b-missing-telemetry:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813687542" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:20.890789Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:Assessment:p3comp-foundation-ed5ef09b-missing-telemetry:ASSESS:p3comp-foundation-ed5ef09b-missing-telemetry:silence:0:1" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:25.822784Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:25.906000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:25.939872Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:26.926000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:StockAdmissionHeld" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:26.984581Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityRejected" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:QualityStatusChanged:quality-rejected-p3comp-foundation-ed5ef09b-missing-telemetry" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:27.941000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsRejected" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-foundation-ed5ef09b-missing-telemetry:GoodsRejected" />
+      <string key="processInstanceKey" value="2251799813687628" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:48:28.006369Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p3comp-outage-78c2cace-evaluation-unavailable" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P1:p3comp-outage-78c2cace-evaluation-unavailable:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813687876" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:17.613351Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:p3comp-outage-78c2cace-evaluation-unavailable:SIM:journey-p3comp-outage-78c2cace-evaluation-unavailable:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813687950" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:32.529596Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:36.039000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="p3-compliance-check" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:37.055000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:Assessment:p3comp-outage-78c2cace-evaluation-unavailable:ASSESS:p3comp-outage-78c2cace-evaluation-unavailable:close:4:1" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:56.484784Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:56.485518Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:StockAdmissionHeld" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:56.498741Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityHoldReleased" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:QualityStatusChanged:quality-released-p3comp-outage-78c2cace-evaluation-unavailable" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:57.255000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:p3comp-outage-78c2cace-evaluation-unavailable:StockAdmitted" />
+      <string key="processInstanceKey" value="2251799813688027" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:49:57.523833Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="restart-9ad34752" />
+    <string key="productId" value="PRD-005" />
+    <string key="productName" value="Prepared salad" />
+    <string key="batchId" value="DEMO-SALAD-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="QualityHoldRaised" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:Assessment:restart-9ad34752:ASSESS:restart-9ad34752:silence:1:1" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:02.905625Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="restart-check" />
+      <string key="eventId" value="P1:restart-9ad34752:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813688285" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:03.929220Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentArrived" />
+      <string key="org:resource" value="p2-simulator" />
+      <string key="eventId" value="P2:external:ShipmentArrived:restart-9ad34752:SIM:J-restart-9ad34752:ShipmentArrived" />
+      <string key="processInstanceKey" value="2251799813688382" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:18.992946Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsReceived" />
+      <string key="org:resource" value="restart-check" />
+      <string key="eventId" value="P3:restart-9ad34752:GoodsReceived" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:21.916000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="MonitoringFinalized" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:restart-9ad34752:MonitoringFinalized" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:22.530264Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="InspectionPassed" />
+      <string key="org:resource" value="restart-check" />
+      <string key="eventId" value="P3:restart-9ad34752:GoodsInspected" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:22.930000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAdmissionHeld" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:restart-9ad34752:StockAdmissionHeld" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:23.594653Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="QualityRejected" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:restart-9ad34752:QualityStatusChanged:restart-9ad34752-test-reject" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:23.947000Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="GoodsRejected" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P3:restart-9ad34752:GoodsRejected" />
+      <string key="processInstanceKey" value="2251799813688459" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T17:51:24.614359Z" />
+    </event>
+  </trace>
+</log>

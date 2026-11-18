@@ -48,7 +48,7 @@ The current implementation contains:
 
 Prerequisites: Docker Desktop with Compose, Python 3.12 for the checks, and Camunda Modeler for editing diagrams. BPMN lint commands also use Node.js/npm. The current checkpoint needs no external API keys or `.env` file.
 
-Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
+Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8008, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
 
 ```bash
 docker compose up --build -d --wait --wait-timeout 180
@@ -76,6 +76,8 @@ docker compose stop
 Resume the existing containers with `docker compose start`, then check `/health` before opening the demo. Stopping preserves orders, stock and engine history. The menu uses preset order quantities (A: 15 crates; B/C: 10) to make the documented shortage scenario repeatable; the API accepts other quantities.
 
 ## Testing
+
+The [18 November foundation review](compliance/foundation-review-18.json) records 82 passing offline tests and fresh sequential P1/P2/P3, container, weather-priority, outage and restart checks at `8d13c3e`. ProcessDoctor remains pending; foundation PR #9 is not merged and needs its own approval followed by merged-main smoke. Earlier reports retain their original tested revisions.
 
 Run the offline API and registry tests with Python 3.12:
 
@@ -130,6 +132,7 @@ P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival
 - [Implementation guide](docs/COLD-CHAIN-IMPLEMENTATION-GUIDE.md) — scenario, process scope and responsibilities.
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — identifiers, messages, quality states and shared rules.
 - [Run guide](docs/RUNNING.md) — beginner walkthrough, BPMN/DCR explanation and verification.
+- [P4 handover to Abid](docs/P4-FOUNDATION-HANDOVER.md) — monitored assessment intake, durable acknowledgements, evidence versions and contract fixtures.
 - [P1 model PDF](bpmn/shipment_preparation.pdf) and [DCR compliance rules](compliance/p1/rules.xml).
 - [Team task board](project_notes/TASKS.md) — ownership, progress and remaining deliverables.
 - [AI-use record](project_notes/AI-USAGE.md) — assistance recorded for the team contract declaration.

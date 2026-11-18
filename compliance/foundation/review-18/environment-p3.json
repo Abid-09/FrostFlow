@@ -1,0 +1,87 @@
+[
+  {
+    "name": "frostflow-foundation-communication-1",
+    "service": "communication",
+    "image": "frostflow-foundation-communication",
+    "imageId": "sha256:998a4c93c87f7c64757181b40df8fac4a8831195cd0b0d068074149e1025fc95",
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/bpmn",
+        "destination": "/bpmn"
+      },
+      {
+        "type": "bind",
+        "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/runtime/foundation/p3-18",
+        "destination": "/data"
+      }
+    ]
+  },
+  {
+    "name": "frostflow-foundation-zeebe-1",
+    "service": "zeebe",
+    "image": "camunda/zeebe:8.8.0",
+    "imageId": "sha256:f2a4737e0bbaacc0ed9ba31efc32262e81746988f9d5210cc2f5f9c66cdd9815",
+    "mounts": [
+      {
+        "type": "volume",
+        "source": "7ee902085e5b05e31499a349893753dbffc8da533493f3fad63688d8239b6951",
+        "destination": "/tmp"
+      },
+      {
+        "type": "volume",
+        "source": "frostflow-foundation-p3-18-zeebe",
+        "destination": "/usr/local/zeebe/data"
+      },
+      {
+        "type": "volume",
+        "source": "dda3a2f2d7f78655302496582494d08b328bc938a078b25d45e12ff1ccea52ad",
+        "destination": "/usr/local/zeebe/logs"
+      }
+    ]
+  },
+  {
+    "name": "frostflow-foundation-elasticsearch-1",
+    "service": "elasticsearch",
+    "image": "docker.elastic.co/elasticsearch/elasticsearch:8.16.0",
+    "imageId": "sha256:93a9a7e1908f0c59ffce42ff494791bd785c36de40189759fc2a0ed7d6006c9d",
+    "mounts": [
+      {
+        "type": "volume",
+        "source": "frostflow-foundation-p3-18-elasticsearch",
+        "destination": "/usr/share/elasticsearch/data"
+      }
+    ]
+  },
+  {
+    "name": "frostflow-foundation-operate-1",
+    "service": "operate",
+    "image": "camunda/operate:8.8.0",
+    "imageId": "sha256:3ef9717192aedbccb66b767577bdf29937ba816d35edba2423adce19aafdaa91",
+    "mounts": [
+      {
+        "type": "volume",
+        "source": "aa2af27ac2f167705a81bb5d880111823ce0c7c7507ba972336a3ac82de5b7bd",
+        "destination": "/tmp"
+      },
+      {
+        "type": "volume",
+        "source": "ac84b68622ca1ae3aa0fec9c69ccb17052623523cf0c5ab620f65c6d3edf2c41",
+        "destination": "/usr/local/operate/logs"
+      }
+    ]
+  },
+  {
+    "name": "frostflow-foundation-siddhi-1",
+    "service": "siddhi",
+    "image": "siddhiio/siddhi-runner-alpine:latest",
+    "imageId": "sha256:17dd32e19116d5219d6211a864693db4bf8d6eebaa13f18f50a1d5df5e3c43ad",
+    "mounts": [
+      {
+        "type": "bind",
+        "source": "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/siddhi-apps",
+        "destination": "/apps"
+      }
+    ]
+  }
+]
