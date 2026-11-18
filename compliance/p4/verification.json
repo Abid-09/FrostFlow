@@ -1,10 +1,10 @@
 {
-  "verifiedAt": "2026-11-18T10:51:34.647538+00:00",
-  "testedCommit": "552945d0727bc8c42428875dec7adea142cff2c8",
+  "verifiedAt": "2026-11-18T10:56:01.295645+00:00",
+  "testedCommit": "053556fb3cd2046e58058ba97225e08ef5c391ab",
   "process": "P4 Quality incident investigation (DCR)",
   "owner": "Abid Hasan (team confirmation pending on the task board)",
   "environment": {
-    "python": "3.13.18",
+    "python": "3.12.3",
     "host": "Linux x86_64"
   },
   "sha256": {
@@ -14,7 +14,7 @@
     "compliance/p4/invalid-traces.json": "336002e3f1259fbc5400acf0a857b00f9a1834bc4621f29198da62474c959cf9",
     "deployer/quality.py": "cff7c5d0e9a186a0d772fc78fcc33659c283d7607812c87345cd34c2260aa4dc",
     "deployer/dcr_client.py": "2e58ae5099fdb1e47120820b5bbfa31f8c4c0f34d06c5a2c2435afb283d90aac",
-    "stage_tests/test_p4.py": "3f95b9d14ef64b0118372dd40f0eb474a9d0c6a2a4b98827f795201f9f3f1ff4",
+    "stage_tests/test_p4.py": "8736db52c78408f04383c356dcf1642759c48ca373e3cf5972b0b0cd2c0b77b3",
     "stage_tests/check_p4_investigation.py": "e59cf3e924ff046d6ef2b8f923e93659371992fd6c6ae14eb905c3eec43ba5e2"
   },
   "model": {
@@ -30,7 +30,7 @@
   "offlineTests": {
     "command": ".venv/bin/python -m unittest discover -s stage_tests -p test_p4.py",
     "result": "PASS",
-    "summary": "Ran 22 tests in 1.224s"
+    "summary": "Ran 24 tests in 0.998s"
   },
   "dcrgraphsSimulation": {
     "status": "PASS",
