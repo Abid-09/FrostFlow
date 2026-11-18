@@ -9,7 +9,7 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer adaptation remains outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in the replacement PR; offline tests pass; combined live run, DCR API run and ProcessDoctor pending | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); review and merge approval |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in the replacement PR; offline tests and combined live run `fd021988` pass; DCR API run and ProcessDoctor pending | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); review and merge approval |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -170,7 +170,7 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] `AssessEvidence` records the assessed evidence version; dispositions use it as `expectedEvidenceVersion` before DCR executes the decision; refused (stale) dispositions are recorded unapplied and require reassessment; transient failures keep one durable decision identity.
 - [x] Enforce requested-check and cooling-answer obligations and prevent premature closure (DCR refuses with 409).
 - [x] Offline proof on new monitored shipments: release after receipt during a hold, replace, return, newer-evidence reassessment, duplicate delivery, DCR outage recovery, handover fixtures in order, legacy messages. CLI 18 temperature / 19 investigation.
-- [ ] Combined foundation/P4 live run (`check_p4_investigation.py`) recorded in `compliance/p4/`; PR #10 run `900821e9` stays historical.
+- [x] Combined foundation/P4 live run `fd021988` (`check_p4_investigation.py`, macOS arm64, fresh `p4-02` data, commit `95e4a85`) recorded in `compliance/p4/`; PR #10 run `900821e9` stays historical.
 - [ ] dcrgraphs.net repository-mode run; ProcessDoctor on the combined live log.
 - [ ] Cooling command through Siddhi and recovery evidence contracts (shared CEP work); P5 consumption of RELEASE/REPLACE/RETURN.
 

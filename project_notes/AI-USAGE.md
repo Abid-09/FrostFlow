@@ -203,4 +203,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Actual results:** full offline suite (103 tests including the foundation and handover contract tests) passes on Python 3.12.3; `docker compose config --quiet` and `git diff --check` pass; dcrgraphs.net simulation replay and 9 forbidden traces unchanged. See `compliance/p4/verification.json`.
 
-**Not done / limits:** no live stack run from the AI workspace (Docker Hub unreachable); the combined live run is for the owner to run on his machine. No dcrgraphs.net API execution and no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh `p4-02` data): run `fd021988` passed; the AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
+
+**Not done / limits:** no dcrgraphs.net API execution and no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.

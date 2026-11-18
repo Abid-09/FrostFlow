@@ -93,7 +93,7 @@ Incident IDs contain `:` (`DELAY:...`, `ASSESS:<shipment>:<event>`); URL-encode 
 | Offline tests on new monitored shipments (real registry, Zeebe substituted, local DCR engine) | `stage_tests/test_p4.py` | PASS — release after receipt during a hold, replace, return, newer-evidence reassessment with a refused stale decision, duplicate delivery, DCR outage recovery, transient failures, handover fixtures consumed in order, legacy delay messages |
 | dcrgraphs.net simulator, 4 manual runs + blocked actions | `compliance/p4/dcrgraphs-simulation-log.xes`, `compliance/p4/screenshots/` | PASS (run 4 intentionally partial; graph unchanged) |
 | Synthetic forbidden traces (9) | `compliance/p4/invalid-traces.json` | all rejected |
-| Combined foundation/P4 live run (4 scenarios) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | **pending** |
+| Combined foundation/P4 live run (4 scenarios on monitored shipments; Zeebe 8.8.0, Siddhi, local DCR engine) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `fd021988` (455 s): release → admitted (2), replace/return → rejected (2); receipt released the vehicle while held in all four; run 4 refused the decision until version 2 was reassessed; 4 traces valid and accepting |
 | PR #10 live run `900821e9` (pre-foundation, unmonitored) | `compliance/p4/historical/` | historical only |
 | dcrgraphs.net API execution / ProcessDoctor | — | **pending** |
 
@@ -121,6 +121,5 @@ Every case checks that receipt released the vehicle while quality was still held
 
 ## Still to do
 
-- Record the combined live run above and commit its log/report.
 - Verify `dcr-repository` mode with the team's dcrgraphs.net account; run ProcessDoctor on the live log.
 - Cooling-command/recovery contracts (Siddhi) and P5/P6 consumption of `REPLACE`/`RETURN` remain separate future work.
