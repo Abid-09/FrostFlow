@@ -70,7 +70,7 @@ The registry stays the authority for quality permission and admission. The test 
 | `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. **Not yet verified with the team account.** |
 | `local-dcr-engine` | Otherwise (default) | Executes the same XML with flat DCR semantics (identical to `compliance/check.py`); each case's marking is stored in the registry SQLite file. |
 
-To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, copy `.env.example` to `.env`, fill in the three values and rebuild (`docker compose up --build -d --wait`). Never commit `.env`.
+To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, copy `.env.example` to `.env`, fill in the three values and rebuild (`docker compose up --build -d --wait`). Never commit `.env`. Before switching the stack, check API access with `python3 stage_tests/check_dcr_repository.py`. It needs only the standard library and reads `.env`. It starts one repository simulation, walks the release path, compares enabled/pending activities with the local engine after every step, checks that an early `CloseInvestigation` is refused, and writes `runtime/p4-compliance/dcr-repository.json`. The owner's graph is dcrgraphs.net graph `2015919`.
 
 Compose has exactly one `P4_INCIDENT_URL` entry. It now defaults to this compatible consumer (`http://communication:5001/integrations/p4/incident`); set `P4_INCIDENT_URL=` to leave handoffs pending as before.
 
