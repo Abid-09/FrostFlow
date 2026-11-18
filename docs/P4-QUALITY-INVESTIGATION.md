@@ -1,53 +1,67 @@
 # P4 — Quality incident investigation (DCR)
 
-**Owner:** Abid Hasan (claimed with this PR; the task board records the team's confirmation) · **Model:** [`dcr/p4_quality_investigation.xml`](../dcr/p4_quality_investigation.xml) ([PDF](../dcr/p4_quality_investigation.pdf), [AS-IS BPMN PDF](../dcr/p4_as_is.pdf)) · **Code:** [`deployer/quality.py`](../deployer/quality.py), [`deployer/dcr_client.py`](../deployer/dcr_client.py) · **Evidence:** [`compliance/p4/`](../compliance/p4/)
+**Owner:** Abid Hasan · **Contract:** [foundation handover v1](P4-FOUNDATION-HANDOVER.md) · **Model:** [`dcr/p4_quality_investigation.xml`](../dcr/p4_quality_investigation.xml) ([PDF](../dcr/p4_quality_investigation.pdf), [AS-IS BPMN PDF](../dcr/p4_as_is.pdf)) · **Code:** [`deployer/quality.py`](../deployer/quality.py), [`deployer/dcr_client.py`](../deployer/dcr_client.py) · **Evidence:** [`compliance/p4/`](../compliance/p4/)
+
+The original implementation (PR #10) was reverted by PR #11 so that the monitoring foundation (PR #9) could merge first. This replacement branch restores it by reverting removal commit `31ad23b` on merged main `ae941cc` and adapts it to the foundation contract; see [sequencing](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr).
 
 ## What P4 does
 
-When P2 accepts a delivery risk (or Siddhi reports a temperature excursion), the shipment is put on **quality hold** and P4 opens an investigation case in DCR. The investigation is knowledge-intensive: the quality officer collects evidence in whatever order the case needs, while DCR enforces the few rules that must always hold. The officer's decision is the only thing that lifts or confirms the hold: **release** lets P3 admit the goods; **replace** or **return** rejects them (P5's corrective fulfilment is still planned).
+When the foundation places a quality hold (a delivery risk, a container temperature excursion, combined transport risk or missing/unavailable monitoring evidence), it sends one durable message to P4. P4 opens an investigation case in DCR. The quality officer collects evidence in whatever order the case needs while DCR enforces the rules that must always hold. The officer's decision is the only thing that lifts or confirms the hold: **release** lets P3 admit the goods (after monitoring finalization and a passed inspection); **replace** or **return** rejects them (P5 corrective fulfilment is still planned).
 
-The AS-IS process (assumed coursework scenario, not interview data) is in [`dcr/p4_as_is.pdf`](../dcr/p4_as_is.pdf): temperature data is read after the trip, goods go straight into stock, evidence is collected by phone/e-mail and the decision is not recorded.
+The AS-IS process (assumed coursework scenario, not interview data) is in [`dcr/p4_as_is.pdf`](../dcr/p4_as_is.pdf).
 
 ```mermaid
 sequenceDiagram
-    participant S as Siddhi
+    participant M as Monitoring + Siddhi
     participant P2 as P2 transport (Zeebe)
     participant R as Registry (SQLite)
     participant P4 as P4 investigation (DCR)
     participant P3 as P3 receiving (Zeebe)
-    S->>P2: DeliveryRiskDetected
-    P2->>R: hold PENDING + incidentId, durable DeliveryRiskIncident handoff
-    R-->>P4: POST /integrations/p4/incident (outbox, retried until 2xx)
-    P4->>P4: OpenIncident (new case) or AddAlertEvidence
-    P3->>R: admission checks qualityStatus: PENDING -> ON_HOLD
-    Note over P4: officer: reviews, cooling request, checks, AssessEvidence
-    P4->>R: accept_quality_status(RELEASED / REJECTED, current incident)
+    M->>R: container evaluation -> assessment_hold (PENDING, evidenceVersion n)
+    P2->>R: delivery risk -> assessment_hold
+    R-->>P4: outbox POST P4_INCIDENT_URL {"event": ...}, Idempotency-Key = deliveryId
+    P4-->>R: {"deliveryId", "status": "accepted" or "duplicate"} (request persisted first)
+    P4->>P4: OpenIncident (new) or AddAlertEvidence (assessment due again)
+    P3->>R: receipt releases vehicle; finalization; admission: PENDING -> ON_HOLD
+    Note over P4: officer reviews; AssessEvidence records assessed version n
+    P4->>R: accept_quality_status(RELEASED/REJECTED, incident, expectedEvidenceVersion = n)
     R-->>P3: QualityStatusChanged -> admit or reject
 ```
 
 ## Rules (R1–R9) and the graph
 
-16 activities in three nesting groups (Investigation, Requests, Decision), 34 drawn arrows = 83 flat relations, only the five lecture relations (condition, response, include, exclude, milestone). Initially `OpenIncident` is pending; acknowledgement, failure, recovery evidence and the additional check are excluded until a request includes them.
+16 activities in three nesting groups (Investigation, Requests, Decision), 34 drawn arrows = 83 flat relations, only the five lecture relations (condition, response, include, exclude, milestone). Initially `OpenIncident` is pending; acknowledgement, failure, recovery evidence and the additional check are excluded until a request includes them. The graph is unchanged from PR #10.
 
 | Rule | Meaning | Activities (role) |
 | --- | --- | --- |
 | R1 | The integration service opens the incident once; nothing happens before | `OpenIncident` (Integration) |
-| R2 | Further alerts are added as evidence; each requires a new assessment | `AddAlertEvidence` (Integration) |
+| R2 | Every further foundation message for the incident is added as evidence and requires a new assessment | `AddAlertEvidence` (Integration) |
 | R3 | Reviews in any order, repeatable; weather and route/ETA are optional | `ReviewTemperatureLog`, `ReviewWeatherData`, `ReviewRouteAndETA` (QualityOfficer) |
-| R4 | Assessment only after the temperature log was reviewed (a delay alone proves nothing) | `AssessEvidence` (QualityOfficer) |
-| R5 | A cooling request must be answered (acknowledged or failed); no closure while outstanding; a failure does not count as completed | `RequestCoolingAdjustment` (QualityOfficer), `RecordCoolingAcknowledgement`, `RecordCoolingFailure` (Integration) |
-| R6 | Recovery evidence only after a successful acknowledgement; it must be assessed and never releases goods by itself | `RecordRecoveryEvidence` (Integration) |
+| R4 | Assessment only after the temperature log was reviewed | `AssessEvidence` (QualityOfficer) |
+| R5 | A cooling request must be answered (acknowledged or failed); no closure while outstanding | `RequestCoolingAdjustment` (QualityOfficer), `RecordCoolingAcknowledgement`, `RecordCoolingFailure` (Integration) |
+| R6 | Recovery evidence only after a successful acknowledgement; it must be assessed and never releases goods | `RecordRecoveryEvidence` (Integration) |
 | R7 | A requested check must be completed by the receiver; while outstanding no assessment, decision or closure | `RequestAdditionalCheck` (QualityOfficer), `CompleteAdditionalCheck` (Receiver) |
 | R8 | After assessment exactly one decision; afterwards no new checks or cooling requests | `DecideRelease`, `DecideReplace`, `DecideReturn` (QualityOfficer) |
 | R9 | Every incident is assessed and closed; closing needs a decision; nothing after closing | `CloseInvestigation` (QualityOfficer) |
 
-The graph is generated from one specification and checked exhaustively: all **3 425** reachable markings can still reach an accepting marking (no deadlock) and every activity can occur (`stage_tests/test_p4.py::P4Graph`).
+All **3 425** reachable markings can reach an accepting marking and every activity can occur (`stage_tests/test_p4.py::P4Graph`). Cooling acknowledgement/failure and recovery evidence are entered manually: cooling/recovery contracts are separate future work.
 
-## Rules enforced by the service, not by DCR
+## Contract v1 behaviour (enforced by the service)
 
-- The hold is recorded **before** the DCR case is created; if DCR is unreachable the hold stays (`DCR_UNAVAILABLE`) and the case is retried by the background loop.
-- One active incident per shipment: P2 reuses the `PENDING` incident; P4 turns a repeated alert into `AddAlertEvidence`. An alert for a closed or `REJECTED` incident is recorded as `LateAlertEvidenceRecorded` and cannot reopen quality permission (agreement invariant 8).
-- A decision needs a `reason`. It is applied through the shared `Registry.accept_quality_status` for the **current** incident only: `RELEASE → RELEASED`, `REPLACE/RETURN → REJECTED`. A decision for a superseded incident is recorded as `StaleDispositionIgnored`. If the registry write fails, it is retried (`dispositionApplied: false`).
+| Boundary | P4 behaviour |
+| --- | --- |
+| Intake | `POST /integrations/p4/incident` accepts `DeliveryRiskDetected` (legacy, or with the v1 `assessment` extension) and `AssessmentRequested` (`temperature-excursion`, `combined-transport-risk`, `container-telemetry-unavailable`, `monitoring-evaluation-unavailable`). The body must be the stored foundation outbox message (`{"event": ...}`, `Idempotency-Key` = `event.deliveryId`). |
+| Durable acknowledgement | The full request and its deduplication identity are persisted before P4 answers `200 {"deliveryId", "status": "accepted"}`. An identical retry answers `"duplicate"` without a second case or effect; changed content with the same ID → 409; a body that does not match the foundation outbox → 409; invalid envelope → 400. |
+| DCR unavailable | The request is still acknowledged; the incident stays `DCR_UNAVAILABLE` and case opening is retried by the service's delivery loop. The hold is never removed by P4. |
+| Evidence | Every message is kept in full on the incident (`evidence[]`): reason, priority, evidenceVersion, profile/session/observation references, ETA/weather context, `missingEvidence`, provenance and timestamps. The incident tracks the highest evidence version received and escalates priority to `urgent` once seen. |
+| Assessment | `AssessEvidence` records the evidence version the officer actually assessed (`assessedEvidenceVersion`). A later message for the incident executes `AddAlertEvidence`, which makes a new assessment due in DCR and blocks the decision. |
+| Disposition | A decision is first applied with `Registry.accept_quality_status` (the operation behind `POST /integrations/p4/quality-status`) for the current incident with `expectedEvidenceVersion` = the assessed version, and only then executed in DCR. `RELEASE → RELEASED`, `REPLACE/RETURN → REJECTED`. |
+| Stale or refused decision | If the registry refuses (newer evidence, wrong incident, terminal rejection), nothing is executed in DCR: the attempt is journalled as `StaleDispositionRefused`, kept in `unappliedDecisions`, and the officer must execute `AssessEvidence` again (HTTP 409 with `reassessmentRequired`). The investigation cannot close as if a release happened. |
+| Transient failure | A failed registry write or DCR call after an accepted disposition leaves one durable `pendingDecision` with a fixed `eventId`/`occurredAt`; the delivery loop retries it with the same identity (HTTP 503 to the officer meanwhile). |
+| Terminal rejection | Later evidence for a rejected incident (`qualityStatus: REJECTED`, `incidentOpened: false`) is recorded (`LateAlertEvidenceRecorded`) and never reopens admission. |
+| Receiving | Physical receipt releases the vehicle while the hold stays; P3 waits for monitoring finalization; a P4 release never bypasses finalization or inspection. |
+
+The registry stays the authority for quality permission and admission. The test stand-in `POST /integrations/p4/quality-status` and CLI option **17** bypass P4; a later P4 decision on an incident they already decided is refused and recorded.
 
 ## DCR engine
 
@@ -56,50 +70,57 @@ The graph is generated from one specification and checked exhaustively: all **3 
 | `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. **Not yet verified with the team account.** |
 | `local-dcr-engine` | Otherwise (default) | Executes the same XML with flat DCR semantics (identical to `compliance/check.py`); each case's marking is stored in the registry SQLite file. |
 
-To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, note the graph ID, copy `.env.example` to `.env`, fill in the three values, and rebuild (`docker compose up --build -d --wait`). Never commit `.env`.
+To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, copy `.env.example` to `.env`, fill in the three values and rebuild (`docker compose up --build -d --wait`). Never commit `.env`.
 
-## HTTP interface
+Compose has exactly one `P4_INCIDENT_URL` entry. It now defaults to this compatible consumer (`http://communication:5001/integrations/p4/incident`); set `P4_INCIDENT_URL=` to leave handoffs pending as before.
+
+## HTTP interface and CLI
 
 | Request | Purpose |
 | --- | --- |
-| `POST /integrations/p4/incident` | P2's durable `DeliveryRiskIncident` handoff (`{"event": {...}}`, header `Idempotency-Key` = `event.deliveryId`). Exact retries return the same result; changed content → 409. Internal, unauthenticated demo route. |
-| `POST /integrations/p4/temperature-excursion` | `eventId, shipmentId, occurredAt (UTC), source, inputMode, payload`. Places the hold (or joins the active incident), then opens/updates the case. For the future Siddhi temperature pattern; until then label inputs `simulated`/`manual`. |
-| `GET /quality/incidents/<incidentId>` | Incident, decision and the DCR case's enabled/pending activities |
-| `POST /quality/incidents/<incidentId>/activities/<Activity>` | `{"actor", "reason" (decisions), "note", "eventId" (optional, makes external inputs idempotent)}`. **409 with the `enabled` list when DCR does not enable the activity.** |
-| `POST /quality/incidents/<incidentId>/sync` | Retry case creation / queued integration events / an unapplied decision |
-| `GET /shipments/<shipmentId>/quality` | `qualityStatus`, `qualityIncidentId` and incident history |
+| `POST /integrations/p4/incident` | Foundation outbox consumer (above). Internal, unauthenticated demo route. |
+| `GET /quality/incidents/<incidentId>` | Incident, evidence, decision, unapplied decisions, the DCR case's enabled/pending activities and the registry's current evidence version (`registry.reassessmentNeeded`) |
+| `POST /quality/incidents/<incidentId>/activities/<Activity>` | `{"actor", "reason" (decisions), "note", "eventId" (optional, idempotent external input)}`. 409 with `enabled` when DCR does not enable it; 409 with `reassessmentRequired` for a refused disposition; 503 while a disposition is pending retry |
+| `POST /quality/incidents/<incidentId>/sync` | Retry case opening, queued integration events or a pending decision |
+| `GET /shipments/<shipmentId>/quality` | `qualityStatus`, `qualityIncidentId`, `evidenceVersion` and incident history |
 
-Incident IDs contain `:` (for example `DELAY:SIDDHI:RISK:...`); URL-encode them in paths. In the demo menu (`tools/demo.py`), option **18** shows the case and executes an enabled activity; option **17** is the earlier test stand-in that bypasses P4.
+Incident IDs contain `:` (`DELAY:...`, `ASSESS:<shipment>:<event>`); URL-encode them. CLI (`tools/demo.py`): **18** changes the simulated container scenario, **19** shows the investigation and executes an enabled activity, **17** is the stand-in that bypasses P4.
 
 ## Evidence and checks
 
 | Evidence | Where | Status |
 | --- | --- | --- |
-| Offline tests (P4 with the real P2/P3 registry code; Zeebe substituted) | `stage_tests/test_p4.py` | PASS |
-| dcrgraphs.net simulator, 4 manual runs + blocked actions | `compliance/p4/dcrgraphs-simulation-log.xes`, `compliance/p4/screenshots/` | PASS (run 4 intentionally partial) |
+| Offline tests on new monitored shipments (real registry, Zeebe substituted, local DCR engine) | `stage_tests/test_p4.py` | PASS — release after receipt during a hold, replace, return, newer-evidence reassessment with a refused stale decision, duplicate delivery, DCR outage recovery, transient failures, handover fixtures consumed in order, legacy delay messages |
+| dcrgraphs.net simulator, 4 manual runs + blocked actions | `compliance/p4/dcrgraphs-simulation-log.xes`, `compliance/p4/screenshots/` | PASS (run 4 intentionally partial; graph unchanged) |
 | Synthetic forbidden traces (9) | `compliance/p4/invalid-traces.json` | all rejected |
-| Live stack run (4 scenarios, P1→P2→P4→P3; Zeebe 8.8.0, local DCR engine, macOS arm64) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `900821e9`: 2 released → admitted, 2 rejected; 9 forbidden actions refused (409); 4 traces valid and accepting |
+| Combined foundation/P4 live run (4 scenarios) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | **pending** |
+| PR #10 live run `900821e9` (pre-foundation, unmonitored) | `compliance/p4/historical/` | historical only |
 | dcrgraphs.net API execution / ProcessDoctor | — | **pending** |
 
 ```bash
-.venv/bin/python -m unittest discover -s stage_tests -p 'test_p4.py' -v
+.venv/bin/python -m unittest discover -s stage_tests -p 'test_p4*.py' -v
 .venv/bin/python compliance/p4/build_p4_evidence.py            # rebuilds verification.json
 .venv/bin/python compliance/check.py compliance/p4/dcrgraphs-simulation-log.xes --model compliance/p4/rules.xml
 ```
 
-The last command exits 1 only because run 4 is intentionally unfinished (`AssessEvidence`, `CloseInvestigation` still pending); runs 1–3 are valid and accepting.
+The last command exits 1 only because simulator run 4 is intentionally unfinished.
 
-**Live run** (fresh paired version-3 dataset, simulator on, default Compose settings), following the [run guide](RUNNING.md#automated-verification):
+**Live run** (fresh paired version-3 dataset, simulator on, Compose defaults, `GPS_TICK_SECONDS=15` so a delay risk can be raised in transit), following the [run guide](RUNNING.md#p4-investigation-live-run):
 
 ```bash
 .venv/bin/python stage_tests/check_p4_investigation.py --base http://localhost:5001
 .venv/bin/python compliance/p4/build_p4_evidence.py --live runtime/p4-compliance/evidence.json
 ```
 
-Each scenario dispatches a real shipment, accepts a delivery risk, waits for P4 to open the case, receives and inspects the goods in P3 (which then waits `ON_HOLD`), executes the investigation, attempts forbidden actions (must be 409) and checks the final P3 outcome. The builder then writes `execution-log.xes` and the live section of `verification.json`. Recorded result: run `900821e9` on 2026-11-18.
+1. **run1:** delay → cooling acknowledged, recovery evidence → release → admitted.
+2. **run2:** container excursion (`AssessmentRequested`) → failed cooling → replace → rejected.
+3. **run3:** delay → additional check → return → rejected.
+4. **run4:** delay → assessed → new container evidence → decision refused → reassessment → release → admitted.
+
+Every case checks that receipt released the vehicle while quality was still held, that monitoring finalized, that forbidden actions were refused (409) and the final P3 outcome.
 
 ## Still to do
 
-- Verify `dcr-repository` mode with the team's dcrgraphs.net account; upload `rules.xml` + the live log to ProcessDoctor.
-- Siddhi temperature-excursion/recovery patterns and the cooling-command bridge (shared CEP work); until then those inputs are manual/simulated.
-- P5 consumes `REPLACE`/`RETURN` dispositions (planned).
+- Record the combined live run above and commit its log/report.
+- Verify `dcr-repository` mode with the team's dcrgraphs.net account; run ProcessDoctor on the live log.
+- Cooling-command/recovery contracts (Siddhi) and P5/P6 consumption of `REPLACE`/`RETURN` remain separate future work.

@@ -192,3 +192,15 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 **Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh dataset): run `900821e9` passed; the AI then built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
 
 **Not done / limits:** no dcrgraphs.net API execution (team credentials not used by the AI; export blocked on our subscription) and no ProcessDoctor check. Siddhi temperature/recovery patterns and the cooling-command bridge are not implemented; those inputs are manual/simulated. The owner must review and be able to explain the changes, run the live check and record its result.
+
+## 2026-11-18 — P4 replacement PR on the merged foundation (Abid Hasan)
+
+**Tool:** Claude (Anthropic) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** after PR #10 was reverted (PR #11) and foundation PR #9 merged, create a branch from the updated main, restore P4 by reverting the removal commit, resolve conflicts, follow the P4 foundation handover (keep CLI 18 temperature, 19 investigation) and prepare a reviewable PR.
+
+**Assistance:** reverted `31ad23b` on `ae941cc` and resolved conflicts (team docs kept, one Compose URL, CLI 18/19); rewrote `deployer/quality.py` intake, acknowledgement, evidence-version and disposition handling for the v1 contract; removed the temperature-specific P4 route; rewrote `stage_tests/test_p4.py` on new monitored shipments plus handover fixtures and legacy messages; rewrote `stage_tests/check_p4_investigation.py` for monitored live scenarios; moved PR #10 live evidence to `compliance/p4/historical/`; updated the P4 guide and the shared documentation listed in the sequencing checkpoint.
+
+**Actual results:** full offline suite (103 tests including the foundation and handover contract tests) passes on Python 3.12.3; `docker compose config --quiet` and `git diff --check` pass; dcrgraphs.net simulation replay and 9 forbidden traces unchanged. See `compliance/p4/verification.json`.
+
+**Not done / limits:** no live stack run from the AI workspace (Docker Hub unreachable); the combined live run is for the owner to run on his machine. No dcrgraphs.net API execution and no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.

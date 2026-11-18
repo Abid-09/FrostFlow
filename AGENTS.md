@@ -1,6 +1,6 @@
 # Working on FrostFlow
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). This branch restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md). It requires review and explicit merge approval.
 
 These instructions apply throughout this repository. Read this file before changing code, process models, tests or documentation. Keep it current when architecture, commands or shared contracts change.
 
@@ -16,10 +16,11 @@ Start with the documents relevant to your task:
 | [Implementation guide](docs/COLD-CHAIN-IMPLEMENTATION-GUIDE.md) | Full P1–P6 scope, required demonstrations and submission requirements |
 | [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) | Shared IDs, message envelopes, handoffs, quality rules and API contracts |
 | [P4 foundation handover](docs/P4-FOUNDATION-HANDOVER.md) | Abid’s reintegration boundary, durable acknowledgements, assessed evidence versions and fixtures |
+| [P4 guide](docs/P4-QUALITY-INVESTIGATION.md) | P4 DCR investigation: rules, contract v1 behaviour, engine modes, API, CLI 19 and evidence |
 | [Run guide](docs/RUNNING.md) | Environment, startup, verification commands, fresh datasets and recovery limits |
 | [Task board](project_notes/TASKS.md) | Current checkpoint, ownership, open dependencies and collaboration workflow |
 | [AI-use record](project_notes/AI-USAGE.md) | Actual assistance and verification history; append your contribution |
-| `compliance/p1/`, `compliance/p2/`, `compliance/p3/` | Rules, captured execution logs and verification reports for each process |
+| `compliance/p1/` … `compliance/p4/` | Rules, captured execution logs and verification reports for each process |
 | [Foundation review refresh](compliance/foundation-review-18.json) | Latest branch verification, handover fixtures, original-P4 reproduction and pending review/external checks |
 | [Merged-main verification](compliance/merged-main-verification.json) | Recorded integrated smoke result and its exact tested revision |
 
@@ -30,7 +31,7 @@ Some guide sections retain older checkpoints or describe the target architecture
 - **P1 — preparation:** stock checks, reservation, shortage/replenishment/cancellation, loading verification and dispatch. Owner: Ashvanth.
 - **P2 — transport:** scripted GPS/ETA, optional TomTom traffic ETAs, local Siddhi risk detection, dispatcher decisions, automatic arrival and receipt-gated vehicle release. Owner: Rahul Shanbhag.
 - **P3 — receiving:** durable arrival handoff, physical receipt, inspection, separate receiving inventory and quality hold/release/rejection. Owner: Arunima Garg.
-- **P4 — investigation:** the quality-status endpoint, persisted hold and durable investigation handoff exist. Abid’s executable DCR investigation and consumer from PR #10 await adaptation to this foundation; test dispositions do not execute P4. Test-harness dispositions and CLI releases are stand-ins, not P4 execution.
+- **P4 — investigation (DCR):** Abid’s investigation (`deployer/quality.py`, `dcr/`) consumes the foundation's durable `DeliveryRiskIncident`/`AssessmentRequested` handoffs, acknowledges `{deliveryId, status}`, runs a DCR case per incident and applies dispositions through `Registry.accept_quality_status` with the assessed `expectedEvidenceVersion`; refused dispositions require reassessment. Default engine is the local DCR engine on the same graph; dcrgraphs.net repository mode needs `DCR_*` credentials. Restored and adapted in the replacement PR; combined live run, repository-mode run and ProcessDoctor are pending. `POST /integrations/p4/quality-status` and CLI option 17 remain test stand-ins that bypass P4.
 - **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Container excursion/combined-risk assessment, Open-Meteo current conditions and P3 monitoring finalization are implemented in this foundation. Recovery CEP, a shared logger and an external physical simulator remain future work. Abid owns P4; P5/P6 and shared integration owners remain unassigned.
 
 Preserve the full P1–P6 plan without expanding an unrelated repair into those features. Mixed-product crates, partial fulfilment, new-batch procurement, route optimisation and detailed refrigeration physics are outside the current increment.
@@ -50,6 +51,7 @@ Preserve the full P1–P6 plan without expanding an unrelated repair into those 
 | `stage_tests/test_*.py` | Offline `unittest` regressions with substituted engine/external calls |
 | `stage_tests/check_*.py` | Live engine/integration runners; inspect prerequisites before running |
 | `compliance/check.py` | Flat DCR replay and XES tooling; not a DCR process execution service |
+| `deployer/quality.py`, `deployer/dcr_client.py`, `dcr/` | P4 investigation service, dcrgraphs.net client/local DCR engine and the executable graph |
 | `compliance/p*/build_*_evidence.py` | Rule/log generation and verification helpers for P2/P3 |
 | `event_streams/` | Example request inputs |
 | `runtime/` | Ignored local registries, provider responses and generated execution evidence |
@@ -132,6 +134,7 @@ Regenerate affected model PDFs using the pinned export commands in the run guide
 | P1 regression | `stage_tests/check_stage1.py` | Fresh paired version-3 data, 100 warehouse crates, free vehicles, simulator **off**; includes independent transports, retry/receipt gates and vehicle reuse |
 | P2 live acceptance | `stage_tests/check_p2_siddhi.py` | Fresh paired data, simulator **on**, local Siddhi, GPS tick 10 s; risk, acknowledged route change, arrival closure and current-incident hold/release |
 | P3 live scenarios | `stage_tests/check_p3_compliance.py --base http://localhost:5001` | Fresh paired data, simulator on; normal admission, hold/release, inspection rejection, quality rejection; runner otherwise defaults to alternate port 5011 |
+| P4 live investigations | `stage_tests/check_p4_investigation.py --base http://localhost:5001` | Fresh paired data, simulator on, local Siddhi, `GPS_TICK_SECONDS=15`; four investigations on monitored shipments (release, replace, return, newer-evidence reassessment) with refused actions and P3 outcomes; then `compliance/p4/build_p4_evidence.py --live ...` |
 | Integrated smoke | `stage_tests/check_integration_smoke.py` | Existing healthy default-port stack permitted; simulator on, free vehicles, one salad and one chicken crate; new shipments, admission/hold-rejection, exported end events and stock deltas |
 
 Follow [the run guide's sequential stack commands](docs/RUNNING.md#automated-verification) rather than launching separate concurrent stacks. Set `TOMTOM_API_KEY=` for deterministic local-estimate runs and label that mode; do not report them as live TomTom verification.
@@ -142,9 +145,10 @@ Local replay of saved evidence can run without Docker:
 .venv/bin/python compliance/check.py compliance/p1/execution-log.xes
 .venv/bin/python compliance/check.py compliance/p2/execution-log.xes --model compliance/p2/rules.xml
 .venv/bin/python compliance/check.py compliance/p3/execution-log.xes --model compliance/p3/rules.xml
+.venv/bin/python compliance/p4/build_p4_evidence.py   # P4: simulation log, forbidden traces, report
 ```
 
-The flat checker implements conditions, responses, includes, excludes and milestones; it does not implement timed/data/hierarchical DCR or real P4 execution. Keep synthetic forbidden traces separate from actual execution logs. A synthetic invalid trace's failure is expected, not a suite failure.
+The flat checker implements conditions, responses, includes, excludes and milestones; it does not implement timed/data/hierarchical DCR. P4's local engine (`deployer/dcr_client.LocalDCR`) uses the same flat semantics; `compliance/p4/rules.xml` must stay identical to `dcr/p4_quality_investigation.xml`. Keep synthetic forbidden traces separate from actual execution logs. A synthetic invalid trace's failure is expected, not a suite failure.
 
 Keep **offline tests, live execution, local DCR replay and external ProcessDoctor conformance** distinct. Record actual commands, environment/input modes, tested commit, source/model/log hashes and outcomes. Manual ProcessDoctor checks for the review-18 P1/P2/P3/container logs passed; screenshots, user-confirmed input identity and exact model/log hashes are in `compliance/foundation/review-18/processdoctor.json`. Earlier reports retain their original scope; their results do not validate changed logs. If model/log evidence changes, refresh external results or mark them pending with the actual reason. Log/verification builders overwrite artifacts: do not run them casually or replace reviewed evidence with synthetic, partial or failed runs.
 
@@ -156,7 +160,7 @@ Keep **offline tests, live execution, local DCR replay and external ProcessDocto
 - Ordinary `stop`/`start` preserves data. For recreation, provide the original project, registry and overlay variables again. Python changes require rebuilding communication; BPMN sources are mounted and redeploy after communication restart; Siddhi changes require reloading/restarting Siddhi.
 - Do not broadly prune Docker or remove volumes with unverified contents. Identify disposable stopped containers, preserve needed evidence and remove only those. `down -v` is a deliberate destructive reset, not a routine test or cleanup step.
 - API: `127.0.0.1:5001`; Operate: `8081`; Elasticsearch: `9200`; Zeebe gRPC: `26501`; broker management: `9601`; Siddhi telemetry/commands/container evaluation: `8006`/`8007`/`8008`. Check health for `status: ready`, `stage: 3` and integration modes. The alternative-port P3 overlay is documented in the run guide.
-- Retain existing environment names, including the spelling `SIDDIHI_TELEMETRY_URL` and `SIDDIHI_COMMAND_URL`. `P3_ARRIVAL_URL` defaults to the local P3 receiver; `P4_INCIDENT_URL` is a future consumer setting, not proof that P4 is deployed. Compose does not currently forward every app-supported variable; check both configurations when adding one.
+- Retain existing environment names, including the spelling `SIDDIHI_TELEMETRY_URL` and `SIDDIHI_COMMAND_URL`. `P3_ARRIVAL_URL` defaults to the local P3 receiver; Compose has one `P4_INCIDENT_URL`, defaulting to the local P4 consumer (`/integrations/p4/incident`); set it empty to leave handoffs pending. `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` belong only in an untracked `.env`. Compose does not currently forward every app-supported variable; check both configurations when adding one.
 - `.env`, keys, SQLite files and raw `runtime/` output stay untracked. Do not print secrets, dump environment files, commit credentials in URLs/logs or expose unauthenticated local demo endpoints publicly. Commit only reviewed, sanitized evidence. Model PDFs under `bpmn/` are tracked; separately supplied reference PDFs under `docs/` are ignored.
 - Engine-start timeouts can have uncertain outcomes. Inspect retained state before retrying. Published messages have finite retention (24 hours in the current implementation); expired-message/uncertain-start reconciliation remains manual. Do not erase records to hide incidents or manufacture success.
 

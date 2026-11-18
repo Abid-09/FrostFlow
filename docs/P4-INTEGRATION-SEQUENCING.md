@@ -40,3 +40,27 @@ Intentional subsequent differences from `552945d` are documentation only: this r
 After explicit revert-merge approval, merge updated main into the shared foundation branch. Resolve documentation and add `docs/P4-FOUNDATION-HANDOVER.md` plus producer-checked contract fixtures. Complete the planned offline and sequential fresh-dataset live checks before foundation review. Keep ProcessDoctor external checks separate and pending if unavailable. After approved foundation merge, rebuild and smoke-test its exact merged revision.
 
 Abid should branch from that verified foundation, deliberately restore the original work (normally by reverting removal commit `31ad23b` on the new feature branch), resolve conflicts and adapt intake, durable acknowledgements, assessed evidence versions, reassessment, receipt/finalization and terminal rejection. Reopening the old merged-and-reverted branch alone will not restore P4. Do not weaken foundation safeguards or treat historical P4 evidence as combined verification. Cooling/recovery contracts and P5/P6 remain separate future work.
+
+## Checkpoint 4 — replacement P4 PR
+
+Foundation PR #9 is merged as `ae941cc`. Branch `feat/p4-foundation-integration` was created from it.
+
+| Commit | Content |
+| --- | --- |
+| Restore | `git revert 31ad23b` (reapplies merge #10). Conflicts resolved: team documentation kept as on main, exactly one Compose `P4_INCIDENT_URL` entry, CLI **18** remains the temperature simulation and the P4 investigation moves to **19**. |
+| Contract v1 | `deployer/quality.py` adapted to the [handover](P4-FOUNDATION-HANDOVER.md): `DeliveryRiskDetected` (legacy and v1) and `AssessmentRequested` intake, request persisted and matched to its foundation outbox message, durable `{deliveryId, status}` acknowledgement, assessed evidence version used as `expectedEvidenceVersion` before the DCR decision, refused dispositions recorded unapplied with reassessment required, one durable identity for transient retries, terminal rejection. The temperature-specific P4 route from PR #10 is removed. |
+| Evidence | Live runner rewritten for monitored shipments; PR #10 live run `900821e9` moved to `compliance/p4/historical/`. |
+| Documentation | P4 guide, README, AGENTS, run guide, agreement, implementation guide, task board, handover status note, AI-use record. |
+
+The three findings above are resolved in source and covered by `stage_tests/test_p4.py`. The suite runs on new monitored shipments with real registry/monitoring code and substituted Zeebe calls. It covers:
+
+- release after physical receipt during a hold;
+- replace and return;
+- newer-evidence reassessment with a refused stale decision;
+- duplicate and conflicting delivery;
+- DCR outage recovery;
+- transient failures;
+- the eight handover fixtures consumed in order;
+- legacy delay messages.
+
+`compliance/foundation/review-18/legacy-contract-reproduction.py` reproduces the failures of the historical revision `af3c68c` by design; it is not a check of this branch. The combined live run (`stage_tests/check_p4_investigation.py`), a dcrgraphs.net repository-mode run and ProcessDoctor are pending; results will be recorded in `compliance/p4/verification.json`. Review and explicit merge approval are required.

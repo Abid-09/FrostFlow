@@ -1,6 +1,6 @@
 # Cold-chain Delivery and Quality Incident Management
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). This branch restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md). It requires review and explicit merge approval.
 
 A process-oriented application for coordinating refrigerated-food deliveries, detecting transport risks, and managing quality incidents.
 
@@ -27,7 +27,7 @@ The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all product
 | P1 — Shipment preparation | Camunda / Zeebe | Stock wait/cancellation, dispatch handoff and local compliance verification implemented |
 | P2 — Transport and delivery | Camunda / Zeebe | Receipt-gated transport, scripted GPS/ETA, arrival and dispatcher decisions implemented |
 | P3 — Receiving and stock admission | Camunda / Zeebe | P2 arrival integration, physical receipt, inspection, separate receiving inventory and quality hold implemented; four live scenarios and local replay verified; see current external-check status in the run guide |
-| P4 — Quality incident investigation | DCR | Abid’s PR #10 implementation deferred pending foundation adaptation |
+| P4 — Quality incident investigation | DCR (local engine by default; dcrgraphs.net repository with `DCR_*` credentials) | Restored and adapted to the foundation contract v1 in the replacement PR; offline tests pass; combined live run, dcrgraphs.net API run and ProcessDoctor pending ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Planned |
 | P6 — Supplier claim resolution | Camunda / Zeebe | Planned |
 
@@ -116,15 +116,15 @@ Directories for additional components will be introduced with their implementati
 
 ### DCR models and compliance rules
 
-`compliance/p1/`, `compliance/p2/` and `compliance/p3/` contain DCR rules that check recorded execution; Camunda runs these three processes. P4–P6 will need their own compliance deliverables as they are implemented.
+`compliance/p1/`, `compliance/p2/` and `compliance/p3/` contain DCR rules that check recorded execution; Camunda runs these three processes. `compliance/p4/` holds P4's rules (the executed graph), dcrgraphs.net simulation log, forbidden traces and report. P5/P6 will need their own compliance deliverables.
 
-Abid’s P4 implementation uses DCR to **execute** the quality investigation. Its `dcr/` models and shared-service integration from PR #10 are retained in history for restoration and adaptation after foundation verification.
+Abid’s P4 uses DCR to **execute** the quality investigation: [`dcr/p4_quality_investigation.xml`](dcr/p4_quality_investigation.xml) ([PDF](dcr/p4_quality_investigation.pdf)), served by `deployer/quality.py`. It consumes the foundation's durable assessment handoffs and applies dispositions with the assessed evidence version. See the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md).
 
 ## Current P2/P3 integration and remaining work
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's adapted investigation/consumer, recovery and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's combined live run and dcrgraphs.net API run, cooling/recovery contracts and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 
@@ -133,6 +133,7 @@ P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — identifiers, messages, quality states and shared rules.
 - [Run guide](docs/RUNNING.md) — beginner walkthrough, BPMN/DCR explanation and verification.
 - [P4 handover to Abid](docs/P4-FOUNDATION-HANDOVER.md) — monitored assessment intake, durable acknowledgements, evidence versions and contract fixtures.
+- [P4 guide](docs/P4-QUALITY-INVESTIGATION.md) — the DCR investigation, contract behaviour, API, CLI 19 and evidence.
 - [P1 model PDF](bpmn/shipment_preparation.pdf) and [DCR compliance rules](compliance/p1/rules.xml).
 - [Team task board](project_notes/TASKS.md) — ownership, progress and remaining deliverables.
 - [AI-use record](project_notes/AI-USAGE.md) — assistance recorded for the team contract declaration.
@@ -144,4 +145,4 @@ Team members work on feature branches and review changes before merging into `ma
 
 See the [requirements and assessment contract](docs/PRE-P4-FOUNDATION.md) and [run instructions](docs/RUNNING.md#container-monitoring-foundation). New shipments monitor from processed loading verification through physical receipt. Container observations are persisted and evaluated by Siddhi; silence or unresolved closing evaluation creates a durable assessment hold. P3 finalizes monitoring before checking current quality permission and admitting stock. Holds do not delay P2 vehicle release after receipt.
 
-CLI option 18 selects normal, isolated-spike, sustained-excursion or missing-telemetry scenarios. Open-Meteo outdoor heat can raise a combined assessment to urgent when fresh persistent ETA lateness and rising container readings coincide. Weather cannot replace container measurements or reject goods. The versioned retry-safe P4 handoff remains queued without a consumer; CLI dispositions are labelled stand-ins and require current incident/evidence version. P4–P6 execution, cooling, recovery and incident closure are excluded. [Foundation verification](compliance/foundation-verification.json) separates recorded fixtures, live providers and live engine execution; the [review refresh](compliance/foundation-review-18.json) records manual external conformance.
+CLI option 18 selects normal, isolated-spike, sustained-excursion or missing-telemetry scenarios; option 19 works through the P4 investigation. Open-Meteo outdoor heat can raise a combined assessment to urgent when fresh persistent ETA lateness and rising container readings coincide. Weather cannot replace container measurements or reject goods. The versioned retry-safe P4 handoff remains queued without a consumer; CLI dispositions are labelled stand-ins and require current incident/evidence version. P4–P6 execution, cooling, recovery and incident closure are excluded. [Foundation verification](compliance/foundation-verification.json) separates recorded fixtures, live providers and live engine execution; the [review refresh](compliance/foundation-review-18.json) records manual external conformance.

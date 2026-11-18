@@ -1,5 +1,7 @@
 # P4 handover to Abid: monitoring foundation v1
 
+> **Status (replacement P4 PR, branch `feat/p4-foundation-integration`):** implemented on merged main `ae941cc` by reverting `31ad23b` and adapting P4 to this contract. How each boundary below is met, the tests and the pending live/external checks are listed in the [P4 guide](P4-QUALITY-INVESTIGATION.md#contract-v1-behaviour-enforced-by-the-service) and [sequencing checkpoint 4](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr). With a compatible consumer now present, the single Compose `P4_INCIDENT_URL` entry defaults to it; set it empty to keep handoffs pending.
+
 Abid owns P4. [Original PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and its models, code and historical evidence remain in Git history. [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) is merged as `f475904`; removal commit `31ad23b` is retained. Foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) must pass review, receive separate merge approval and pass an exact merged-main smoke before this handover is ready for reintegration. This document does not implement P4.
 
 ## Restore and adapt deliberately
