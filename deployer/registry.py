@@ -10,6 +10,9 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
+from monitoring import profile, seconds
+from monitoring_registry import MonitoringRegistry
+
 
 def now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -26,7 +29,7 @@ class Conflict(Exception):
     pass
 
 
-class Registry:
+class Registry(MonitoringRegistry):
     def __init__(self, path):
         self.path = str(path)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +70,9 @@ class Registry:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS outbox (id TEXT PRIMARY KEY, data TEXT NOT NULL)"
             )
+            db.execute("CREATE TABLE IF NOT EXISTS container_observations ("
+                       "shipment_id TEXT NOT NULL, sequence INTEGER NOT NULL, data TEXT NOT NULL, ack TEXT, "
+                       "PRIMARY KEY(shipment_id,sequence))")
             if not db.execute("SELECT 1 FROM products").fetchone():
                 catalog = json.loads(
                     Path(__file__).with_name("catalog.json").read_text()
@@ -253,7 +259,12 @@ class Registry:
 
     def get(self, shipment_id):
         with self.transaction() as db:
-            return self.read(db, shipment_id)
+            record = self.read(db, shipment_id)
+            session = record.get("monitoring", {})
+            record["monitoringStatus"] = session.get("state", "configured-awaiting-loading" if "monitoringProfile" in record else "legacy/unmonitored")
+            last = session.get("lastValidAt")
+            record["containerReadingFresh"] = bool(last and 0 <= seconds(now()) - seconds(last) <= record["monitoringProfile"]["freshSeconds"])
+            return record
 
     def inventory(self):
         with self.transaction() as db:
@@ -346,6 +357,7 @@ class Registry:
                 schemaVersion=3,
             )
             record.update({k: v for k, v in details.items() if k != "initialCrates"})
+            record["monitoringProfile"] = profile(record["productId"])
             self.save(db, record)
             self.event(db, record, "ShipmentCreated")
 
@@ -548,6 +560,8 @@ class Registry:
             record.update(
                 state=target, processInstanceKey=str(key), pendingCommand=None
             )
+            if activity == "LoadingVerified":
+                self.monitoring_start(record, now())
             if activity == "ShipmentCancelled":
                 record["vehicleReleased"] = True
             event = self.event(db, record, activity, actor)
@@ -603,7 +617,7 @@ class Registry:
             if data["status"] == "ACKNOWLEDGED":
                 return
             status = "PENDING" if error else (
-                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http", "p4-http") else "PUBLISHED"
+                "ACKNOWLEDGED" if data.get("destination") in ("p3-http", "siddhi-http", "p4-http", "container-siddhi") else "PUBLISHED"
             )
             data.update(status=status, lastError=error)
             db.execute(
@@ -855,6 +869,21 @@ class Registry:
             )
             self.enqueue(db, eta_event["eventId"], "TelemetryUpdate", shipment_id,
                          {"event": eta_event}, destination="siddhi-http")
+            previous_eta = record.get("etaAssessment", {})
+            if eta_event["eventId"] in record.setdefault("seenEtaEventIds", []):
+                self.save(db, record)
+                return record
+            record["seenEtaEventIds"].append(eta_event["eventId"])
+            late = eta is not None and epoch_milliseconds(eta) > epoch_milliseconds(record["deliveryDeadline"])
+            consecutive = previous_eta.get("times", []) if previous_eta.get("revision") == revision and previous_eta.get("late") else []
+            observed_at = eta_event["occurredAt"]
+            current_ms = epoch_milliseconds(observed_at)
+            consecutive = [t for t in consecutive if 0 <= current_ms - t <= 180000] if late else []
+            if late:
+                consecutive = (consecutive + [current_ms])[-3:]
+            record["etaAssessment"] = {"revision": revision, "late": late, "observedAt": observed_at,
+                                       "times": consecutive, "qualified": len(consecutive) == 3,
+                                       "eta": eta, "inputMode": eta_source, "eventId": eta_event["eventId"]}
             self.save(db, record)
             return record
 
@@ -898,6 +927,8 @@ class Registry:
         outbox entry: if P4 is unavailable it stays PENDING and the hold remains.
         Only P4 releasing this incident (RELEASED) lets P3 admit the stock.
         """
+        if "monitoringProfile" in record:
+            return self.assessment_hold(db, record, "delivery-risk", {**risk_event, "eta": risk_event["payload"]})
         shipment_id = record["shipmentId"]
         if record.get("qualityStatus") in ("PENDING", "REJECTED") and record.get("qualityIncidentId"):
             incident_id, opened = record["qualityIncidentId"], False
@@ -919,6 +950,7 @@ class Registry:
             "incidentId": incident_id, "incidentOpened": opened,
             "qualityStatus": record["qualityStatus"], "riskEvent": risk_event,
             "productId": record["productId"], "batchId": record["batchId"],
+            **({"assessment": record["lastAssessment"]} if "lastAssessment" in record else {}),
         }}, needs_ack=True, destination="p4-http")
         return incident_id
 
@@ -1017,6 +1049,7 @@ class Registry:
                     routeId=decision_event["routeId"], routeIndex=0,
                     routeCoordinates=route_coordinates,
                     routeRevision=record.get("routeRevision", 0) + 1,
+                    etaAssessment={"qualified": False},
                     eta=eta, etaSource=eta_source,
                 )
             record.pop("pendingDeliveryRisk", None)
@@ -1383,6 +1416,7 @@ class Registry:
                 input_mode=receipt_event["inputMode"],
                 producer_event_id=receipt_event["eventId"],
             )
+            self.monitoring_close(db, record, now())
             p2_receipt = {
                 "eventId": f"P3:{shipment_id}:ReceiptAcknowledged",
                 "eventType": "ReceiptAcknowledged",
@@ -1493,6 +1527,14 @@ class Registry:
             if admitted:
                 return {"admissionOutcome": "ADMITTED"}
 
+            session = record.get("monitoring")
+            if "monitoringProfile" in record:
+                if not session or session.get("state") != "CLOSED":
+                    raise Conflict("stock admission requires closed monitoring")
+                self.monitoring_watchdog(db, record, now())
+                self.monitoring_finalize(db, record)
+                if session["finalization"] not in ("FINALIZED", "HELD"):
+                    raise Conflict("stock admission requires monitoring finalization")
             quality_status = record.get("qualityStatus", "CLEAR")
             if quality_status == "PENDING":
                 record.update(p3Status="ON_HOLD", admissionStatus="HELD")
@@ -1564,7 +1606,7 @@ class Registry:
             return {"admissionOutcome": "ADMITTED"}
 
     def accept_quality_status(
-        self, shipment_id, event_id, occurred_at, status, incident_id
+        self, shipment_id, event_id, occurred_at, status, incident_id, expected_evidence_version=None
     ):
         if status not in ("PENDING", "RELEASED", "REJECTED"):
             raise ValueError("qualityStatus must be PENDING, RELEASED or REJECTED")
@@ -1575,6 +1617,8 @@ class Registry:
                 "SELECT data FROM results WHERE id=?", (identity,)
             ).fetchone()
             payload = {"qualityStatus": status, "incidentId": incident_id}
+            if expected_evidence_version is not None:
+                payload["expectedEvidenceVersion"] = expected_evidence_version
             if existing:
                 accepted = json.loads(existing[0])
                 if (
@@ -1584,6 +1628,9 @@ class Registry:
                     raise Conflict("eventId reused with different quality data")
                 return accepted
 
+            if "monitoringProfile" in record and status in ("RELEASED", "REJECTED"):
+                if type(expected_evidence_version) is not int or expected_evidence_version != record.get("evidenceVersion", 0):
+                    raise Conflict("disposition requires current expectedEvidenceVersion")
             previous = record.get("qualityStatus", "CLEAR")
             allowed = {
                 "CLEAR": {"PENDING"},
@@ -1617,6 +1664,9 @@ class Registry:
             message_id = f"P4:{shipment_id}:QualityStatusChanged:{event_id}"
             accepted = {"messageId": message_id, "event": event}
             record.update(qualityStatus=status, qualityIncidentId=incident_id)
+            if status == "PENDING":
+                record.update(evidenceVersion=record.get("evidenceVersion", 0) + 1,
+                              assessmentReasons=[], assessmentEvidenceKeys=[], assessmentPriority="normal")
             self.save(db, record)
             db.execute(
                 "INSERT INTO results VALUES (?,?)", (identity, json.dumps(accepted))

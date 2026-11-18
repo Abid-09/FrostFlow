@@ -1,0 +1,498 @@
+{
+  "status": "passed",
+  "warehouseDelta": -4,
+  "receivingDelta": 2,
+  "warehouse": {
+    "available": 96,
+    "datasetVersion": 3,
+    "products": [
+      {
+        "available": 19,
+        "batchId": "DEMO-MILK-001",
+        "initialCrates": 20,
+        "packDescription": "1 litre carton",
+        "packsPerCrate": 12,
+        "productId": "PRD-001",
+        "productName": "Fresh milk",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 19,
+        "batchId": "DEMO-YOGHURT-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram tub",
+        "packsPerCrate": 12,
+        "productId": "PRD-002",
+        "productName": "Plain yoghurt",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 19,
+        "batchId": "DEMO-CHEESE-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-003",
+        "productName": "Fresh cheese",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 19,
+        "batchId": "DEMO-CHICKEN-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-004",
+        "productName": "Raw chicken breast",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-SALAD-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed bag",
+        "packsPerCrate": 12,
+        "productId": "PRD-005",
+        "productName": "Prepared salad",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      }
+    ],
+    "quantityUnit": "crate",
+    "shipmentCount": 4
+  },
+  "receiving": {
+    "available": 2,
+    "items": [
+      {
+        "available": 1,
+        "batchId": "DEMO-MILK-001",
+        "packDescription": "1 litre carton",
+        "packsPerCrate": 12,
+        "productId": "PRD-001",
+        "productName": "Fresh milk",
+        "quantityUnit": "crate",
+        "recipientId": "C-01",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 1,
+        "batchId": "DEMO-YOGHURT-001",
+        "packDescription": "500 gram tub",
+        "packsPerCrate": 12,
+        "productId": "PRD-002",
+        "productName": "Plain yoghurt",
+        "quantityUnit": "crate",
+        "recipientId": "C-01",
+        "temperatureProfileId": "CHILLED-DEMO"
+      }
+    ],
+    "quantityUnit": "crate"
+  },
+  "cases": [
+    {
+      "shipmentId": "p3comp-f0c9db91-normal-receipt-admission",
+      "scenario": "normal-receipt-admission",
+      "finalStatus": "ADMITTED",
+      "qualityStatus": "CLEAR",
+      "incidentId": null,
+      "evidenceVersion": null,
+      "monitoringFinalization": "FINALIZED",
+      "p2End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-745",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813685444,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentTransport",
+              "processInstanceKey": 2251799813685444,
+              "processDefinitionKey": 2251799813685296,
+              "elementId": "TransportCompleted"
+            },
+            "key": 2251799813685570,
+            "timestamp": 1795023884742,
+            "position": 745,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 730,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685390
+          },
+          "sort": [
+            745
+          ]
+        }
+      ],
+      "p3End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-864",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813685522,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentReceiving",
+              "processInstanceKey": 2251799813685522,
+              "processDefinitionKey": 2251799813685297,
+              "elementId": "StockAdmitted"
+            },
+            "key": 2251799813685642,
+            "timestamp": 1795023884781,
+            "position": 864,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 843,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685424
+          },
+          "sort": [
+            864
+          ]
+        }
+      ],
+      "receiptAndInspectionEachOnce": true
+    },
+    {
+      "shipmentId": "p3comp-f0c9db91-quality-hold-release",
+      "scenario": "quality-hold-release",
+      "finalStatus": "ADMITTED",
+      "qualityStatus": "RELEASED",
+      "incidentId": "incident-p3comp-f0c9db91-quality-hold-release",
+      "evidenceVersion": 1,
+      "monitoringFinalization": "FINALIZED",
+      "p2End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-1383",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813685711,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentTransport",
+              "processInstanceKey": 2251799813685711,
+              "processDefinitionKey": 2251799813685296,
+              "elementId": "TransportCompleted"
+            },
+            "key": 2251799813685848,
+            "timestamp": 1795023907207,
+            "position": 1383,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 1368,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685568
+          },
+          "sort": [
+            1383
+          ]
+        }
+      ],
+      "p3End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-1593",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813685794,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentReceiving",
+              "processInstanceKey": 2251799813685794,
+              "processDefinitionKey": 2251799813685297,
+              "elementId": "StockAdmitted"
+            },
+            "key": 2251799813685955,
+            "timestamp": 1795023908278,
+            "position": 1593,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 1572,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685632
+          },
+          "sort": [
+            1593
+          ]
+        }
+      ],
+      "receiptAndInspectionEachOnce": true
+    },
+    {
+      "shipmentId": "p3comp-f0c9db91-inspection-rejection",
+      "scenario": "inspection-rejection",
+      "finalStatus": "REJECTED",
+      "qualityStatus": "CLEAR",
+      "incidentId": null,
+      "evidenceVersion": null,
+      "monitoringFinalization": "FINALIZED",
+      "p2End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-2104",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813686018,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentTransport",
+              "processInstanceKey": 2251799813686018,
+              "processDefinitionKey": 2251799813685296,
+              "elementId": "TransportCompleted"
+            },
+            "key": 2251799813686157,
+            "timestamp": 1795023930656,
+            "position": 2104,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 2090,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685776
+          },
+          "sort": [
+            2104
+          ]
+        }
+      ],
+      "p3End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-2185",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813686106,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentReceiving",
+              "processInstanceKey": 2251799813686106,
+              "processDefinitionKey": 2251799813685297,
+              "elementId": "GoodsRejected"
+            },
+            "key": 2251799813686215,
+            "timestamp": 1795023930668,
+            "position": 2185,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 2110,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685795
+          },
+          "sort": [
+            2185
+          ]
+        }
+      ],
+      "receiptAndInspectionEachOnce": true
+    },
+    {
+      "shipmentId": "p3comp-f0c9db91-quality-rejection",
+      "scenario": "quality-rejection",
+      "finalStatus": "REJECTED",
+      "qualityStatus": "REJECTED",
+      "incidentId": "incident-p3comp-f0c9db91-quality-rejection",
+      "evidenceVersion": 1,
+      "monitoringFinalization": "FINALIZED",
+      "p2End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-2694",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813686278,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentTransport",
+              "processInstanceKey": 2251799813686278,
+              "processDefinitionKey": 2251799813685296,
+              "elementId": "TransportCompleted"
+            },
+            "key": 2251799813686416,
+            "timestamp": 1795023953082,
+            "position": 2694,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 2680,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813685939
+          },
+          "sort": [
+            2694
+          ]
+        }
+      ],
+      "p3End": [
+        {
+          "_index": "zeebe-record_process-instance_8.8.0_2026-11-18",
+          "_id": "1-2909",
+          "_score": null,
+          "_routing": "1",
+          "_source": {
+            "partitionId": 1,
+            "value": {
+              "version": 1,
+              "parentProcessInstanceKey": -1,
+              "bpmnEventType": "NONE",
+              "parentElementInstanceKey": -1,
+              "elementInstancePath": [],
+              "processDefinitionPath": [],
+              "callingElementPath": [],
+              "bpmnElementType": "END_EVENT",
+              "flowScopeKey": 2251799813686366,
+              "tags": [],
+              "tenantId": "<default>",
+              "bpmnProcessId": "ShipmentReceiving",
+              "processInstanceKey": 2251799813686366,
+              "processDefinitionKey": 2251799813685297,
+              "elementId": "GoodsRejected"
+            },
+            "key": 2251799813686524,
+            "timestamp": 1795023954145,
+            "position": 2909,
+            "valueType": "PROCESS_INSTANCE",
+            "operationReference": -1,
+            "brokerVersion": "8.8.0",
+            "intent": "ELEMENT_COMPLETED",
+            "rejectionType": "NULL_VAL",
+            "rejectionReason": "",
+            "recordType": "EVENT",
+            "sourceRecordPosition": 2882,
+            "recordVersion": 1,
+            "batchOperationReference": -1,
+            "sequence": 2251799813686008
+          },
+          "sort": [
+            2909
+          ]
+        }
+      ],
+      "receiptAndInspectionEachOnce": true
+    }
+  ]
+}

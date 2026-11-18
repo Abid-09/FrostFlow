@@ -48,6 +48,15 @@
             </visualization>
           </custom>
         </event>
+        <event id="MonitoringFinalized">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1090" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
         <event id="StockAdmitted">
           <custom>
             <eventData />
@@ -109,6 +118,7 @@
         <label id="GoodsReceived" />
         <label id="InspectionPassed" />
         <label id="InspectionFailed" />
+        <label id="MonitoringFinalized" />
         <label id="StockAdmitted" />
         <label id="GoodsRejected" />
         <label id="QualityHoldRaised" />
@@ -122,6 +132,7 @@
         <labelMapping eventId="GoodsReceived" labelId="GoodsReceived" />
         <labelMapping eventId="InspectionPassed" labelId="InspectionPassed" />
         <labelMapping eventId="InspectionFailed" labelId="InspectionFailed" />
+        <labelMapping eventId="MonitoringFinalized" labelId="MonitoringFinalized" />
         <labelMapping eventId="StockAdmitted" labelId="StockAdmitted" />
         <labelMapping eventId="GoodsRejected" labelId="GoodsRejected" />
         <labelMapping eventId="QualityHoldRaised" labelId="QualityHoldRaised" />
@@ -133,6 +144,7 @@
     </resources>
     <constraints>
       <conditions>
+        <condition sourceId="MonitoringFinalized" targetId="StockAdmitted" />
         <condition sourceId="ShipmentDispatched" targetId="ShipmentArrived" />
         <condition sourceId="ShipmentArrived" targetId="GoodsReceived" />
         <condition sourceId="GoodsReceived" targetId="InspectionPassed" />
@@ -209,6 +221,7 @@
         <event id="GoodsReceived" />
         <event id="InspectionPassed" />
         <event id="InspectionFailed" />
+        <event id="MonitoringFinalized" />
         <event id="StockAdmitted" />
         <event id="GoodsRejected" />
         <event id="QualityHoldRaised" />

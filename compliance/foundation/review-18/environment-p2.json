@@ -1,0 +1,15 @@
+{
+  "note": "Post-run retained P2 dataset audit; P2 container mount snapshot was overwritten during P3 capture, so no historical P2 mount snapshot is claimed. Communication source/image unchanged between suites.",
+  "registry": "runtime/foundation/p2-18/registry.sqlite",
+  "shipmentCount": 3,
+  "volumes": [
+    {
+      "name": "frostflow-foundation-p2-18-zeebe",
+      "createdAt": "2026-11-18T17:39:23Z"
+    },
+    {
+      "name": "frostflow-foundation-p2-18-elasticsearch",
+      "createdAt": "2026-11-18T17:39:23Z"
+    }
+  ]
+}

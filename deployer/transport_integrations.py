@@ -168,3 +168,10 @@ class TransportIntegrations:
         haversine = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
         return 6371000 * 2 * math.atan2(math.sqrt(haversine), math.sqrt(1 - haversine))
 
+
+
+def validate_p4_acknowledgement(response, delivery_id):
+    """A successful HTTP response must acknowledge durable acceptance by ID."""
+    if (not isinstance(response, dict) or response.get("deliveryId") != delivery_id
+            or response.get("status") not in ("accepted", "duplicate")):
+        raise ValueError("P4 consumer must durably acknowledge the matching deliveryId")

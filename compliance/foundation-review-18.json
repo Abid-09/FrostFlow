@@ -1,0 +1,448 @@
+{
+  "status": "local and manual external conformance passed; foundation merge approval and merged-main smoke pending",
+  "recordedAt": "2026-11-18T17:52:06.060337+00:00",
+  "testedCommit": "8d13c3e9572c19afdf2cb56ec207df0496e0af89",
+  "approvedRevertMerge": "f475904",
+  "originalP4Removal": "31ad23b",
+  "foundationBranch": "feat/pre-p4-foundation",
+  "sourceSha256": {
+    "deployer/app.py": "32689c0e153852b70adbbf176042ddf04210666f19fa3cd0cb2b39e37ae53b34",
+    "deployer/registry.py": "154ed12caf63aebe68113574a3542188473b68e5c5cb5d88aca65a17bc770251",
+    "deployer/monitoring.py": "c8e9f8cc8ae53738700ecf8050863aab4d7ca5de37161a90273503e315edf2a5",
+    "deployer/monitoring_registry.py": "22378e200627701fc90e3882d4222883551b4f77064325992ba7fe7f31b8efa9",
+    "deployer/weather.py": "b4687b1b70f5937c62523fa7df91852a2831b546a8fa32d77f4d3e98f1fd61a5",
+    "deployer/transport_integrations.py": "8c60e20a3f97bf5610ed18ccb548d0c514ba278c794f6321ae91926f78abeee8",
+    "docker-compose.yml": "34f91706a60d7bd84cc148869fc94e3704c7f916c80108efb0ad883d64fa41b7",
+    "tools/demo.py": "3a33cbdcd77a645bef13b5999f1d498b03a9e45a1d98b04ee068531e32d70435",
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "bpmn/receiving.pdf": "0b1085525d9caa8cbb01bc0f50b988b83c826f20c46cbc1b4c238dfecbe90706",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "siddhi-apps/ContainerAssessment.siddhi": "25c8a86035751d4be184c27a92ee37806a6016606f135912ec979af27993784e",
+    "stage_tests/test_p4_contract.py": "fdb72943b81bd384f15d57bccaf470dc8029c546405f7714243d54f924142e06",
+    "stage_tests/p4_contract_examples.py": "55ce7ee5e0b43533cfd811c0885e1ac6cd2d24185dbc650acc8ffc892c7b98b4"
+  },
+  "offline": {
+    "command": ".venv/bin/python -m unittest discover -s stage_tests -p 'test_*.py' -v",
+    "tests": 82,
+    "status": "passed",
+    "artifact": "review-18/offline-tests.txt",
+    "mockConsumer": "503 preserves hold and identity/payload; durable accepted acknowledgement clears delivery; duplicate fixture acknowledgement validated"
+  },
+  "datasets": {
+    "P1": "runtime/foundation/p1-18 + frostflow-foundation-p1-18-{zeebe,elasticsearch}",
+    "P2": "runtime/foundation/p2-18 + frostflow-foundation-p2-18-{zeebe,elasticsearch}",
+    "P3-and-monitoring": "runtime/foundation/p3-18 + frostflow-foundation-p3-18-{zeebe,elasticsearch}"
+  },
+  "environment": {
+    "project": "frostflow-foundation",
+    "sequential": true,
+    "priorDataPreserved": true,
+    "gpsTickSeconds": {
+      "P1": "disabled",
+      "P2": 10,
+      "P3": 2
+    },
+    "etaMode": "local-demo-estimate; TOMTOM_API_KEY empty in all acceptance suites",
+    "imagesAndMounts": [
+      "review-18/environment-p2.json",
+      "review-18/environment-p3.json"
+    ],
+    "evidenceNote": "P3 snapshot records actual images/mounts. P2 entry is a post-run registry/volume audit; its container snapshot was overwritten, so no retained historical P2 mount snapshot is claimed."
+  },
+  "P1": {
+    "command": ".venv/bin/python stage_tests/check_stage1.py --output runtime/foundation/review-18/p1",
+    "status": "passed",
+    "artifact": "review-18/p1-verification.json"
+  },
+  "P2": {
+    "command": ".venv/bin/python -u stage_tests/check_p2_siddhi.py",
+    "status": "passed",
+    "shipments": [
+      "S-SID-A-173950",
+      "S-SID-B-173950",
+      "S-SID-C-173950"
+    ],
+    "checks": [
+      "three live Siddhi journeys",
+      "same-destination route command acknowledgement",
+      "exported route variables",
+      "arrival closes undecided alert; late decision 409",
+      "receipt gates vehicle release",
+      "current incident/evidence-version test releases"
+    ],
+    "localReplay": "review-18/p2-local-replay.json"
+  },
+  "P3": {
+    "command": ".venv/bin/python -u stage_tests/check_p3_compliance.py --base http://localhost:5001 --output runtime/foundation/review-18/p3-evidence.json",
+    "status": "passed",
+    "engineAndInventory": "review-18/p3-engine-and-inventory.json",
+    "localReplay": "review-18/p3-local-replay.json",
+    "supplementalCheckCommand": ".venv/bin/python compliance/foundation/review-18/verify-p3-engine-inventory.py"
+  },
+  "containerScenarios": {
+    "command": ".venv/bin/python -u stage_tests/check_foundation.py",
+    "status": "passed",
+    "cases": [
+      {
+        "shipmentId": "p3comp-foundation-ed5ef09b-normal",
+        "journeyId": "journey-p3comp-foundation-ed5ef09b-normal",
+        "p2ProcessInstanceKey": "2251799813686649",
+        "p3ProcessInstanceKey": "2251799813686732",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "CLEAR",
+        "qualityIncidentId": null,
+        "evidenceVersion": null,
+        "assessmentReasons": null,
+        "assessmentPriority": null,
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:p3comp-foundation-ed5ef09b-normal:journey-p3comp-foundation-ed5ef09b-normal",
+          "state": "CLOSED",
+          "sequence": 4,
+          "evaluatedThrough": 4,
+          "closingSequence": 4,
+          "finalization": "FINALIZED",
+          "closedAt": "2026-11-18T17:46:51.954763Z"
+        }
+      },
+      {
+        "shipmentId": "p3comp-foundation-ed5ef09b-isolated-spike",
+        "journeyId": "journey-p3comp-foundation-ed5ef09b-isolated-spike",
+        "p2ProcessInstanceKey": "2251799813686918",
+        "p3ProcessInstanceKey": "2251799813687006",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "CLEAR",
+        "qualityIncidentId": null,
+        "evidenceVersion": null,
+        "assessmentReasons": null,
+        "assessmentPriority": null,
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:p3comp-foundation-ed5ef09b-isolated-spike:journey-p3comp-foundation-ed5ef09b-isolated-spike",
+          "state": "CLOSED",
+          "sequence": 4,
+          "evaluatedThrough": 4,
+          "closingSequence": 4,
+          "finalization": "FINALIZED",
+          "closedAt": "2026-11-18T17:47:14.480511Z"
+        }
+      },
+      {
+        "shipmentId": "p3comp-foundation-ed5ef09b-sustained-excursion",
+        "journeyId": "journey-p3comp-foundation-ed5ef09b-sustained-excursion",
+        "p2ProcessInstanceKey": "2251799813687202",
+        "p3ProcessInstanceKey": "2251799813687280",
+        "p3Status": "ADMITTED",
+        "qualityStatus": "RELEASED",
+        "qualityIncidentId": "ASSESS:p3comp-foundation-ed5ef09b-sustained-excursion:CONTAINER:p3comp-foundation-ed5ef09b-sustained-excursion:journey-p3comp-foundation-ed5ef09b-sustained-excursion:7",
+        "evidenceVersion": 1,
+        "assessmentReasons": [
+          "temperature-excursion"
+        ],
+        "assessmentPriority": "normal",
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:p3comp-foundation-ed5ef09b-sustained-excursion:journey-p3comp-foundation-ed5ef09b-sustained-excursion",
+          "state": "CLOSED",
+          "sequence": 7,
+          "evaluatedThrough": 7,
+          "closingSequence": 7,
+          "finalization": "FINALIZED",
+          "closedAt": "2026-11-18T17:47:56.251322Z"
+        }
+      },
+      {
+        "shipmentId": "p3comp-foundation-ed5ef09b-missing-telemetry",
+        "journeyId": "journey-p3comp-foundation-ed5ef09b-missing-telemetry",
+        "p2ProcessInstanceKey": "2251799813687542",
+        "p3ProcessInstanceKey": "2251799813687628",
+        "p3Status": "REJECTED",
+        "qualityStatus": "REJECTED",
+        "qualityIncidentId": "ASSESS:p3comp-foundation-ed5ef09b-missing-telemetry:silence:0",
+        "evidenceVersion": 2,
+        "assessmentReasons": [
+          "container-telemetry-unavailable"
+        ],
+        "assessmentPriority": "normal",
+        "vehicleReleased": true,
+        "monitoring": {
+          "sessionId": "CONTAINER:p3comp-foundation-ed5ef09b-missing-telemetry:journey-p3comp-foundation-ed5ef09b-missing-telemetry",
+          "state": "CLOSED",
+          "sequence": 0,
+          "evaluatedThrough": 0,
+          "closingSequence": 0,
+          "finalization": "FINALIZED",
+          "closedAt": "2026-11-18T17:48:25.939325Z"
+        }
+      }
+    ],
+    "warehouseDelta": -4,
+    "receivingDelta": 3,
+    "inputModes": [
+      "simulated-container",
+      "live-siddhi",
+      "local-demo-estimate",
+      "live-open-meteo",
+      "test-disposition"
+    ]
+  },
+  "weatherPriority": {
+    "command": ".venv/bin/python stage_tests/check_container_assessment.py",
+    "status": "passed",
+    "artifact": "review-18/siddhi-container.json",
+    "inputModes": [
+      "live-local-Siddhi",
+      "recorded-weather-and-ETA",
+      "simulated-container"
+    ]
+  },
+  "closingOutage": {
+    "command": ".venv/bin/python -u stage_tests/check_monitoring_outage.py",
+    "status": "passed",
+    "case": {
+      "shipmentId": "p3comp-outage-78c2cace-evaluation-unavailable",
+      "journeyId": "journey-p3comp-outage-78c2cace-evaluation-unavailable",
+      "p2ProcessInstanceKey": "2251799813687950",
+      "p3ProcessInstanceKey": "2251799813688027",
+      "p3Status": "ADMITTED",
+      "qualityStatus": "RELEASED",
+      "qualityIncidentId": "ASSESS:p3comp-outage-78c2cace-evaluation-unavailable:close:4",
+      "evidenceVersion": 1,
+      "assessmentReasons": [
+        "monitoring-evaluation-unavailable"
+      ],
+      "assessmentPriority": "normal",
+      "vehicleReleased": true,
+      "monitoring": {
+        "sessionId": "CONTAINER:p3comp-outage-78c2cace-evaluation-unavailable:journey-p3comp-outage-78c2cace-evaluation-unavailable",
+        "state": "CLOSED",
+        "sequence": 4,
+        "evaluatedThrough": 0,
+        "closingSequence": 4,
+        "finalization": "HELD",
+        "closedAt": "2026-11-18T17:49:36.076809Z"
+      }
+    },
+    "waitSeconds": 20.443753004074097,
+    "vehicleReleasedBeforeFinalization": true,
+    "afterRestore": {
+      "shipmentId": "p3comp-outage-78c2cace-evaluation-unavailable",
+      "p3Status": "ADMITTED",
+      "qualityStatus": "RELEASED",
+      "qualityIncidentId": "ASSESS:p3comp-outage-78c2cace-evaluation-unavailable:close:4",
+      "evidenceVersion": 1,
+      "monitoring": {
+        "closedAt": "2026-11-18T17:49:36.076809Z",
+        "closingSequence": 4,
+        "episode": {},
+        "evaluatedThrough": 4,
+        "finalization": "HELD",
+        "lastSampleAt": "2026-11-18T17:49:32.305Z",
+        "lastValidAt": "2026-11-18T17:49:32.305Z",
+        "scenario": "normal",
+        "scenarioIndex": 3,
+        "sequence": 4,
+        "sessionId": "CONTAINER:p3comp-outage-78c2cace-evaluation-unavailable:journey-p3comp-outage-78c2cace-evaluation-unavailable",
+        "startedAt": "2026-11-18T17:49:16.587069Z",
+        "state": "CLOSED",
+        "window": [
+          {
+            "celsius": 3.0,
+            "eventId": "CONTAINER:p3comp-outage-78c2cace-evaluation-unavailable:journey-p3comp-outage-78c2cace-evaluation-unavailable:2",
+            "inputMode": "simulated",
+            "journeyId": "journey-p3comp-outage-78c2cace-evaluation-unavailable",
+            "occurredAt": "2026-11-18T17:49:21.987Z",
+            "profileId": "CHILLED-DEMO-v1",
+            "recordedAt": "2026-11-18T17:49:22.000882Z",
+            "scenario": "normal",
+            "sequence": 2,
+            "shipmentId": "p3comp-outage-78c2cace-evaluation-unavailable",
+            "source": "container-simulator",
+            "unit": "\u00b0C"
+          },
+          {
+            "celsius": 3.0,
+            "eventId": "CONTAINER:p3comp-outage-78c2cace-evaluation-unavailable:journey-p3comp-outage-78c2cace-evaluation-unavailable:3",
+            "inputMode": "simulated",
+            "journeyId": "journey-p3comp-outage-78c2cace-evaluation-unavailable",
+            "occurredAt": "2026-11-18T17:49:27.150Z",
+            "profileId": "CHILLED-DEMO-v1",
+            "recordedAt": "2026-11-18T17:49:27.162671Z",
+            "scenario": "normal",
+            "sequence": 3,
+            "shipmentId": "p3comp-outage-78c2cace-evaluation-unavailable",
+            "source": "container-simulator",
+            "unit": "\u00b0C"
+          },
+          {
+            "celsius": 3.0,
+            "eventId": "CONTAINER:p3comp-outage-78c2cace-evaluation-unavailable:journey-p3comp-outage-78c2cace-evaluation-unavailable:4",
+            "inputMode": "simulated",
+            "journeyId": "journey-p3comp-outage-78c2cace-evaluation-unavailable",
+            "occurredAt": "2026-11-18T17:49:32.305Z",
+            "profileId": "CHILLED-DEMO-v1",
+            "recordedAt": "2026-11-18T17:49:32.314950Z",
+            "scenario": "normal",
+            "sequence": 4,
+            "shipmentId": "p3comp-outage-78c2cace-evaluation-unavailable",
+            "source": "container-simulator",
+            "unit": "\u00b0C"
+          }
+        ]
+      }
+    }
+  },
+  "restart": {
+    "command": ".venv/bin/python -u stage_tests/check_monitoring_restart.py --communication-container frostflow-foundation-communication-1",
+    "status": "passed",
+    "stoppedSeconds": 21,
+    "sessionAndProfileRetained": true,
+    "case": {
+      "shipmentId": "restart-9ad34752",
+      "journeyId": "J-restart-9ad34752",
+      "p2ProcessInstanceKey": "2251799813688382",
+      "p3ProcessInstanceKey": "2251799813688459",
+      "p3Status": "REJECTED",
+      "qualityStatus": "REJECTED",
+      "qualityIncidentId": "ASSESS:restart-9ad34752:silence:1",
+      "evidenceVersion": 1,
+      "assessmentReasons": [
+        "container-telemetry-unavailable"
+      ],
+      "assessmentPriority": "normal",
+      "vehicleReleased": true,
+      "monitoring": {
+        "sessionId": "CONTAINER:restart-9ad34752:J-restart-9ad34752",
+        "state": "CLOSED",
+        "sequence": 5,
+        "evaluatedThrough": 5,
+        "closingSequence": 5,
+        "finalization": "FINALIZED",
+        "closedAt": "2026-11-18T17:51:22.530233Z"
+      }
+    }
+  },
+  "actualProviderCalls": {
+    "openMeteo": {
+      "available": true,
+      "artifact": "review-18/open-meteo-current.json"
+    },
+    "tomtom": {
+      "status": "attempted",
+      "source": "tomtom-traffic",
+      "estimatedArrival": "2026-11-18T17:43:54.852424Z",
+      "provenance": "tomtom-responses.jsonl"
+    },
+    "limits": "Single actual calls separate from deterministic trigger scenarios; not proof of provider reproducibility."
+  },
+  "BPMN": {
+    "receivingLint": "@camunda8/cli@4.6.1: zero issues",
+    "pdfConsistency": "BPMN and PDF hashes match previously rendered/visually inspected foundation artifacts; no source/layout changes or regeneration in this update."
+  },
+  "localDcrReplay": {
+    "P1": 4,
+    "P2": 3,
+    "P3": 4,
+    "container": 6,
+    "allValidAndAccepting": true,
+    "rawSamplesExcluded": true,
+    "syntheticForbiddenAdmission": {
+      "status": "rejected-as-required",
+      "attempt": "StockAdmitted while QualityHoldRaised remains unresolved",
+      "result": {
+        "valid": false,
+        "accepting": false,
+        "violationIndex": 5,
+        "event": "StockAdmitted",
+        "reason": "activity is excluded"
+      }
+    },
+    "limits": "Flat replay; not timed/data/hierarchical DCR or P4 execution."
+  },
+  "pending": [
+    {
+      "check": "Foundation PR #9 review and merge",
+      "reason": "Separate explicit merge approval required"
+    },
+    {
+      "check": "Merged-main rebuild and smoke",
+      "reason": "After approved foundation merge; this report is branch verification"
+    },
+    {
+      "check": "P4 adaptation",
+      "reason": "Abid restores/adapts original work in a new PR after merged-main smoke"
+    }
+  ],
+  "artifactSha256": {
+    "compliance/foundation/review-18/container-execution-log.xes": "de6cbae7e4938dc56e732d8ba1051de0393fd1e7cbfaa466aa8e33369f237308",
+    "compliance/foundation/review-18/container-local-replay.json": "69c380de677971de4d659f6d3d62bcc9b270ef91204cbe6e7112dfbffc227517",
+    "compliance/foundation/review-18/environment-p2.json": "1bee72ffbd726996a0738e074e7a6fd4f8ea713d29b28802b0b61534c076b286",
+    "compliance/foundation/review-18/environment-p3.json": "864ef3c95d4112d4f48a90fe191e21e418dbe246da3e8b25fae9b8da00552b1a",
+    "compliance/foundation/review-18/legacy-contract-reproduction.json": "9069275c9bdd5a9e3c445d7428ed2840507e2dd31f322cd0c5b36c72608ca694",
+    "compliance/foundation/review-18/legacy-contract-reproduction.py": "a4888d5dfa916af82a5e925280b2075664f3c351ca7161e2e4de886f289ecaa4",
+    "compliance/foundation/review-18/offline-tests.txt": "bd1ac831df0e30be144d8d2b7155143cffa7e620cddd2bea519637d62ba1d5ba",
+    "compliance/foundation/review-18/open-meteo-current.json": "4f3eedbbad1116d9b56a63ecb9810400792ae39bbdad32a70d0817fa989e3313",
+    "compliance/foundation/review-18/p1-execution-log.xes": "1b6ca13779794b6c466b6d018a2be224b9b051821ecf43de6afeeb4928f8930e",
+    "compliance/foundation/review-18/p1-verification.json": "0851fcca53437467397c5060e0be7c45bdfa39a69bbafefe7c5aab3a246710b5",
+    "compliance/foundation/review-18/p2-execution-log.xes": "446d6bbe30a326b67f177ec9b277e93642ec36cd9d9a088c7d787e42c42f0d75",
+    "compliance/foundation/review-18/p2-local-replay.json": "e17a5fcd9c6c93de50abacdbe560cc10abe4576ef8bed1109b5c40b739656792",
+    "compliance/foundation/review-18/p3-engine-and-inventory.json": "34c10795c6726450795a02ce202ca07bdab76f637ea7d7d8f95a49c69a92f90f",
+    "compliance/foundation/review-18/p3-execution-log.xes": "059feba4531c4250a9bb5be8169e503371af2b9a8baeb20b4dbd8a4cdea570b4",
+    "compliance/foundation/review-18/p3-local-replay.json": "f067838146bc0646dddd3adafb7e14a1b041875a8bd2908b669e5b9ed85e2187",
+    "compliance/foundation/review-18/processdoctor.json": "c63aff3428f7132638be8871c514ed1b88f7be2223cb64dc327500a7742a6b9f",
+    "compliance/foundation/review-18/screenshots/container-processdoctor.png": "ed2b1997f4dc2b9cabd5a6c556f6a6274a7061611ca0a14c47b7234b13dad20e",
+    "compliance/foundation/review-18/screenshots/p1-processdoctor.png": "5aab2a6e862d8ac582e1cfd4c1ad8653a84cb9aae56581bfcb2d00cc20710806",
+    "compliance/foundation/review-18/screenshots/p2-processdoctor.png": "18664387ae26adffc1a17c0a9adf6808e5b04092e33cd9549bcffc6107b8d6e6",
+    "compliance/foundation/review-18/screenshots/p3-processdoctor.png": "cf9ca97ba56c709d0773e912ef8d4ece66675620ffe0348aa2858f538e32c650",
+    "compliance/foundation/review-18/siddhi-container.json": "cf4ed6ba5ee4cbeeeb970a6dd2871a335a579868a13095105ee183e1cebdcc92",
+    "compliance/foundation/review-18/tomtom-check.json": "f508d50e94c0fc8e663d9899676029a0f5988227b5f1b8148c11aeb943135b6a",
+    "compliance/foundation/review-18/tomtom-responses.jsonl": "97364a3e82970f55374af52cac55bef8aba75dd6d6d461b0119f0ab4908bc661",
+    "compliance/foundation/review-18/verify-p3-engine-inventory.py": "5f4f2ed5345b8afcd2464d9238c1d5324c11b40217635f70ee8dcb5a8fc6bfba"
+  },
+  "runtimeEvidenceSha256": {
+    "runtime/foundation/review-18/container-live.json": "f0ae31d3c7f70915ed1ec3ae43ded4713e33137880cd294ed62821b3fd593ec6",
+    "runtime/foundation/review-18/environment-p2.json": "1bee72ffbd726996a0738e074e7a6fd4f8ea713d29b28802b0b61534c076b286",
+    "runtime/foundation/review-18/environment-p3.json": "864ef3c95d4112d4f48a90fe191e21e418dbe246da3e8b25fae9b8da00552b1a",
+    "runtime/foundation/review-18/legacy-contract-reproduction.json": "9069275c9bdd5a9e3c445d7428ed2840507e2dd31f322cd0c5b36c72608ca694",
+    "runtime/foundation/review-18/monitoring-outage.json": "45a2087d8ab4bbc22c255a89bb53c3d9ade5bd41de79b7298f556df7dcf5f898",
+    "runtime/foundation/review-18/open-meteo-current.json": "4f3eedbbad1116d9b56a63ecb9810400792ae39bbdad32a70d0817fa989e3313",
+    "runtime/foundation/review-18/outage-restored.json": "7e796ba3249c05fc645b9c2102330cea2cfb8c37c32e5ca85c0867ed3dee504c",
+    "runtime/foundation/review-18/p2-evidence.json": "c2b8d8969da1ed0d7b49d16c1243d45dca475fd7f530f17ae0ba1b41f926284d",
+    "runtime/foundation/review-18/p2-stock-observation.json": "483e8227305bd0ab08404c44b0c7755d125de1100bb1dc0a724b5c157144d2a2",
+    "runtime/foundation/review-18/p3-engine-and-inventory.json": "34c10795c6726450795a02ce202ca07bdab76f637ea7d7d8f95a49c69a92f90f",
+    "runtime/foundation/review-18/p3-evidence.json": "968539b358998248a65eec208989c6e626dd99b1bb2b05cc6041f7957be274c1",
+    "runtime/foundation/review-18/restart-live.json": "99e8ea97df3bfb2078eb545aecd6f2140c1a578552ce3b894d8d663f0c3f8207",
+    "runtime/foundation/review-18/siddhi-container.json": "cf4ed6ba5ee4cbeeeb970a6dd2871a335a579868a13095105ee183e1cebdcc92",
+    "runtime/foundation/review-18/tomtom-check.json": "f508d50e94c0fc8e663d9899676029a0f5988227b5f1b8148c11aeb943135b6a"
+  },
+  "legacyP4ContractReproduction": {
+    "command": ".venv/bin/python compliance/foundation/review-18/legacy-contract-reproduction.py",
+    "status": "three mismatches reproduced",
+    "artifact": "review-18/legacy-contract-reproduction.json",
+    "mode": "offline temporary SQLite, seeded engine state and substituted DCR; no real P4 execution"
+  },
+  "contractFixtureSha256": {
+    "stage_tests/fixtures/p4-contract/delivery-risk.json": "67d54cb9a99cc5157683d04e4662ba3b34b52acd8b1a01b4faa9f39091b192a6",
+    "stage_tests/fixtures/p4-contract/duplicate-delivery.json": "4f3e2af7c00835ff5248483ddb2c929bda055253f946cda3044bc91a57347b24",
+    "stage_tests/fixtures/p4-contract/evaluation-unavailable.json": "c00e63b14bd4ee6d388313fd8e78b6e517dc3ad1dff5d239778ab828fc186023",
+    "stage_tests/fixtures/p4-contract/initial-assessment.json": "17bd4888b7686044093ef7a8055220ecd720ccbc8063507c53789a3238f12810",
+    "stage_tests/fixtures/p4-contract/newer-evidence.json": "89cb4e41c10deb92ad636eb83edb9cad12be18bf142698380faaf194c6e8dcd3",
+    "stage_tests/fixtures/p4-contract/rejected-goods.json": "628beaf72dd62ce3224123f94d941e25b5ab24ae7c986e26f72644ae2203454a",
+    "stage_tests/fixtures/p4-contract/uncertainty.json": "d6ed1b3b81abc59bb5cb434bad8ed64630c3a26b702b9c63447d6e87415c3e05",
+    "stage_tests/fixtures/p4-contract/urgent-escalation.json": "aaf93517f0061ac64f42b9c0f22d7191fad950ac098adb4a98bbe9fb4d901d3e"
+  },
+  "processDoctor": {
+    "status": "passed",
+    "performedBy": "user; manual browser checks",
+    "evidence": "compliance/foundation/review-18/processdoctor.json",
+    "coverageThreshold": 100,
+    "conformingVariants": {
+      "P1": 3,
+      "P2": 3,
+      "P3": 4,
+      "container": 5
+    },
+    "violations": 0,
+    "note": "Agent browser access failed earlier; user supplied screenshots and confirmed the review-18 inputs."
+  }
+}

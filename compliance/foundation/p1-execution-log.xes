@@ -1,0 +1,297 @@
+<?xml version='1.0' encoding='utf-8'?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <trace>
+    <string key="concept:name" value="p1-020f8bb8-1" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentCreated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:ShipmentCreated" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:06.886325Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:StockChecked:2251799813685419" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:06.925635Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAllocated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:StockAllocated" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:06.972770Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="TransportAssigned" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:TransportAssigned" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:06.980535Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="LoadingVerified" />
+      <string key="org:resource" value="warehouse-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:LoadingVerified" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:08.627312Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="dispatcher-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-1:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813685408" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:09.644655Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p1-020f8bb8-2" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentCreated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-2:ShipmentCreated" />
+      <string key="processInstanceKey" value="2251799813685521" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:16.215998Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-2:StockChecked:2251799813685532" />
+      <string key="processInstanceKey" value="2251799813685521" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:16.234661Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockUnavailable" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-2:StockUnavailable:2251799813685532" />
+      <string key="processInstanceKey" value="2251799813685521" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:16.235299Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentCancelled" />
+      <string key="org:resource" value="dispatcher-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-2:ShipmentCancelled" />
+      <string key="processInstanceKey" value="2251799813685521" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:19.736061Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p1-020f8bb8-3" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentCreated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:ShipmentCreated" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.385164Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockChecked:2251799813685586" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.400421Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockUnavailable" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockUnavailable:2251799813685586" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.401035Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockReplenished" />
+      <string key="org:resource" value="warehouse-demo" />
+      <string key="eventId" value="SUPPLY:replenish-020f8bb8-1" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.411170Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockChecked:2251799813685608" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.778267Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockUnavailable" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockUnavailable:2251799813685608" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:24.779121Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockReplenished" />
+      <string key="org:resource" value="warehouse-demo" />
+      <string key="eventId" value="SUPPLY:replenish-020f8bb8-2" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:25.433978Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockChecked:2251799813685628" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:25.801155Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockAllocated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:StockAllocated" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:25.816346Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="TransportAssigned" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:TransportAssigned" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:25.825222Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="LoadingVerified" />
+      <string key="org:resource" value="warehouse-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:LoadingVerified" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:26.824317Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentDispatched" />
+      <string key="org:resource" value="dispatcher-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-3:ShipmentDispatched" />
+      <string key="processInstanceKey" value="2251799813685575" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:27.850193Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p1-020f8bb8-4" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ShipmentCreated" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-4:ShipmentCreated" />
+      <string key="processInstanceKey" value="2251799813685876" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:54.876028Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockChecked" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-4:StockChecked:2251799813685887" />
+      <string key="processInstanceKey" value="2251799813685876" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:54.895551Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="StockUnavailable" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P1:p1-020f8bb8-4:StockUnavailable:2251799813685887" />
+      <string key="processInstanceKey" value="2251799813685876" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:54.896451Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ShipmentCancelled" />
+      <string key="org:resource" value="dispatcher-demo" />
+      <string key="eventId" value="P1:p1-020f8bb8-4:ShipmentCancelled" />
+      <string key="processInstanceKey" value="2251799813685876" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-17T15:29:55.188064Z" />
+    </event>
+  </trace>
+</log>

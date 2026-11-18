@@ -1,0 +1,7 @@
+{
+  "_fixture": "Schema fixture for deterministic replay, not a captured live provider call",
+  "latitude": 48.86,
+  "longitude": 2.35,
+  "current_units": {"time": "iso8601", "temperature_2m": "°C", "precipitation": "mm", "wind_speed_10m": "km/h", "weather_code": "wmo code"},
+  "current": {"time": "2026-11-17T12:00", "temperature_2m": 32.0, "precipitation": 0.0, "wind_speed_10m": 12.5, "weather_code": 0}
+}

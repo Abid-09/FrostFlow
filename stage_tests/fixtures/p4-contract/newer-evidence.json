@@ -1,0 +1,144 @@
+{
+  "previous": {
+    "event": {
+      "deliveryId": "P4:Assessment:CONTRACT-001:DELAY:risk-001:2",
+      "eventId": "P4:Assessment:CONTRACT-001:DELAY:risk-001:2",
+      "eventType": "AssessmentRequested",
+      "shipmentId": "CONTRACT-001",
+      "journeyId": "J-CONTRACT-001",
+      "productId": "PRD-001",
+      "batchId": "DEMO-MILK-001",
+      "incidentId": "DELAY:risk-001",
+      "incidentOpened": false,
+      "qualityStatus": "PENDING",
+      "assessment": {
+        "schemaVersion": 1,
+        "reason": "temperature-excursion",
+        "priority": "normal",
+        "evidenceVersion": 2,
+        "sessionId": "CONTAINER:CONTRACT-001:J-CONTRACT-001",
+        "profile": {
+          "profileId": "CHILLED-DEMO-v1",
+          "normalC": 3.0,
+          "faultC": 10.0,
+          "thresholdC": 5.0,
+          "chickenThresholdC": 4.0,
+          "sampleSeconds": 5,
+          "spanSeconds": 10,
+          "maxGapSeconds": 10,
+          "freshSeconds": 15,
+          "missingSeconds": 20,
+          "finalizeSeconds": 20,
+          "riseC": 0.5,
+          "hotC": 30.0,
+          "weatherMaxAgeSeconds": 1800,
+          "weatherMaxDistanceM": 10000
+        },
+        "observationReference": {
+          "eventId": "temperature-001",
+          "occurredAt": "2026-11-18T12:00:00Z",
+          "inputMode": "recorded-fixture"
+        },
+        "interval": {
+          "from": "2026-11-18T12:00:00Z",
+          "to": "2026-11-18T12:00:00Z"
+        },
+        "weather": null,
+        "eta": null,
+        "missingEvidence": [
+          "outdoor conditions",
+          "ETA context"
+        ],
+        "source": "container-monitoring",
+        "inputMode": "recorded-fixture",
+        "occurredAt": "2026-11-18T12:00:00Z",
+        "recordedAt": "2026-11-18T12:00:00Z"
+      },
+      "occurredAt": "2026-11-18T12:00:00Z",
+      "recordedAt": "2026-11-18T12:00:00Z"
+    }
+  },
+  "current": {
+    "event": {
+      "deliveryId": "P4:Assessment:CONTRACT-001:DELAY:risk-001:3",
+      "eventId": "P4:Assessment:CONTRACT-001:DELAY:risk-001:3",
+      "eventType": "AssessmentRequested",
+      "shipmentId": "CONTRACT-001",
+      "journeyId": "J-CONTRACT-001",
+      "productId": "PRD-001",
+      "batchId": "DEMO-MILK-001",
+      "incidentId": "DELAY:risk-001",
+      "incidentOpened": false,
+      "qualityStatus": "PENDING",
+      "assessment": {
+        "schemaVersion": 1,
+        "reason": "combined-transport-risk",
+        "priority": "urgent",
+        "evidenceVersion": 3,
+        "sessionId": "CONTAINER:CONTRACT-001:J-CONTRACT-001",
+        "profile": {
+          "profileId": "CHILLED-DEMO-v1",
+          "normalC": 3.0,
+          "faultC": 10.0,
+          "thresholdC": 5.0,
+          "chickenThresholdC": 4.0,
+          "sampleSeconds": 5,
+          "spanSeconds": 10,
+          "maxGapSeconds": 10,
+          "freshSeconds": 15,
+          "missingSeconds": 20,
+          "finalizeSeconds": 20,
+          "riseC": 0.5,
+          "hotC": 30.0,
+          "weatherMaxAgeSeconds": 1800,
+          "weatherMaxDistanceM": 10000
+        },
+        "observationReference": {
+          "eventId": "rising-window-001",
+          "occurredAt": "2026-11-18T12:00:00Z",
+          "inputMode": "recorded-fixture"
+        },
+        "interval": {
+          "from": "2026-11-18T12:00:00Z",
+          "to": "2026-11-18T12:00:00Z"
+        },
+        "weather": {
+          "available": true,
+          "observationId": "weather-fixture-001",
+          "providerTime": "2026-11-18T12:00:00Z",
+          "retrievedAt": "2026-11-18T12:00:00Z",
+          "coordinates": [
+            48.8566,
+            2.3522
+          ],
+          "conditions": {
+            "temperature_2m": 32
+          },
+          "inputMode": "recorded-fixture"
+        },
+        "eta": {
+          "qualified": true,
+          "late": true,
+          "observedAt": "2026-11-18T12:00:00Z",
+          "revision": 0,
+          "inputMode": "recorded-fixture"
+        },
+        "missingEvidence": [],
+        "source": "container-monitoring",
+        "inputMode": "recorded-fixture",
+        "occurredAt": "2026-11-18T12:00:00Z",
+        "recordedAt": "2026-11-18T12:00:00Z"
+      },
+      "occurredAt": "2026-11-18T12:00:00Z",
+      "recordedAt": "2026-11-18T12:00:00Z"
+    }
+  },
+  "staleDisposition": {
+    "shipmentId": "CONTRACT-001",
+    "eventId": "stale-decision-001",
+    "occurredAt": "2026-11-18T12:00:00Z",
+    "qualityStatus": "RELEASED",
+    "incidentId": "DELAY:risk-001",
+    "expectedEvidenceVersion": 2
+  }
+}

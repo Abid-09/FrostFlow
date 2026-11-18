@@ -1,0 +1,241 @@
+{
+  "status": "passed",
+  "testedCommit": "8d13c3e9572c19afdf2cb56ec207df0496e0af89",
+  "inputModes": [
+    "recorded-fixture-weather",
+    "recorded-fixture-ETA",
+    "simulated-container",
+    "live-siddhi"
+  ],
+  "cases": [
+    {
+      "scenario": "hot-rising",
+      "expectedPriority": "urgent",
+      "reasons": [
+        "combined-transport-risk"
+      ],
+      "acknowledgements": [
+        {
+          "messageId": "a50db3e3-66d0-4d62-a585-35e1ee7e011a",
+          "eventId": "CONTAINER:hot-rising:J-hot-rising:1",
+          "shipmentId": "hot-rising",
+          "journeyId": "J-hot-rising",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142734,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "0878a6f0-ebe0-48c4-b529-d3625b9f6454",
+          "eventId": "CONTAINER:hot-rising:J-hot-rising:2",
+          "shipmentId": "hot-rising",
+          "journeyId": "J-hot-rising",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142740,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "2b464ffe-8d97-4038-931a-c352a7ce819f",
+          "eventId": "CONTAINER:hot-rising:J-hot-rising:3",
+          "shipmentId": "hot-rising",
+          "journeyId": "J-hot-rising",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142743,
+          "excursion": false,
+          "combined": true
+        }
+      ]
+    },
+    {
+      "scenario": "cool-rising",
+      "expectedPriority": null,
+      "reasons": null,
+      "acknowledgements": [
+        {
+          "messageId": "fd371afd-dbbe-4eb8-b86c-3747cb90b52b",
+          "eventId": "CONTAINER:cool-rising:J-cool-rising:1",
+          "shipmentId": "cool-rising",
+          "journeyId": "J-cool-rising",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142749,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "31a147ce-f08d-4a96-84dc-fd357ed2c117",
+          "eventId": "CONTAINER:cool-rising:J-cool-rising:2",
+          "shipmentId": "cool-rising",
+          "journeyId": "J-cool-rising",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142752,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "db983de2-f6cc-437b-85a8-1aa8040e7062",
+          "eventId": "CONTAINER:cool-rising:J-cool-rising:3",
+          "shipmentId": "cool-rising",
+          "journeyId": "J-cool-rising",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142755,
+          "excursion": false,
+          "combined": false
+        }
+      ]
+    },
+    {
+      "scenario": "unavailable-rising",
+      "expectedPriority": null,
+      "reasons": null,
+      "acknowledgements": [
+        {
+          "messageId": "6af1cd47-59a5-4057-9900-f279b8ff7d4e",
+          "eventId": "CONTAINER:unavailable-rising:J-unavailable-rising:1",
+          "shipmentId": "unavailable-rising",
+          "journeyId": "J-unavailable-rising",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142761,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "f9735ae2-aefb-47ed-8e35-0a679be381fb",
+          "eventId": "CONTAINER:unavailable-rising:J-unavailable-rising:2",
+          "shipmentId": "unavailable-rising",
+          "journeyId": "J-unavailable-rising",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142763,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "4571033e-3e5e-4f44-8ca8-5e3978c403b6",
+          "eventId": "CONTAINER:unavailable-rising:J-unavailable-rising:3",
+          "shipmentId": "unavailable-rising",
+          "journeyId": "J-unavailable-rising",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142767,
+          "excursion": false,
+          "combined": false
+        }
+      ]
+    },
+    {
+      "scenario": "hot-excursion",
+      "expectedPriority": "urgent",
+      "reasons": [
+        "temperature-excursion",
+        "combined-transport-risk"
+      ],
+      "acknowledgements": [
+        {
+          "messageId": "7ee19115-7b1a-4365-a884-77f31ce02b4d",
+          "eventId": "CONTAINER:hot-excursion:J-hot-excursion:1",
+          "shipmentId": "hot-excursion",
+          "journeyId": "J-hot-excursion",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142775,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "5a946ddd-8574-4a6f-ba5b-22d8562ffc6d",
+          "eventId": "CONTAINER:hot-excursion:J-hot-excursion:2",
+          "shipmentId": "hot-excursion",
+          "journeyId": "J-hot-excursion",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142777,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "0c2d8250-b669-4777-a255-e9e6755cfffa",
+          "eventId": "CONTAINER:hot-excursion:J-hot-excursion:3",
+          "shipmentId": "hot-excursion",
+          "journeyId": "J-hot-excursion",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142779,
+          "excursion": true,
+          "combined": true
+        }
+      ]
+    },
+    {
+      "scenario": "cool-excursion",
+      "expectedPriority": "normal",
+      "reasons": [
+        "temperature-excursion"
+      ],
+      "acknowledgements": [
+        {
+          "messageId": "94a01c7e-5e7e-424f-8391-99bf45b47825",
+          "eventId": "CONTAINER:cool-excursion:J-cool-excursion:1",
+          "shipmentId": "cool-excursion",
+          "journeyId": "J-cool-excursion",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142784,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "050a8a2f-4928-4ef2-ab22-8207b0f836cd",
+          "eventId": "CONTAINER:cool-excursion:J-cool-excursion:2",
+          "shipmentId": "cool-excursion",
+          "journeyId": "J-cool-excursion",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142788,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "8cacb2ad-529a-4280-a7a7-1e3b03149268",
+          "eventId": "CONTAINER:cool-excursion:J-cool-excursion:3",
+          "shipmentId": "cool-excursion",
+          "journeyId": "J-cool-excursion",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142793,
+          "excursion": true,
+          "combined": false
+        }
+      ]
+    },
+    {
+      "scenario": "isolated-spike",
+      "expectedPriority": null,
+      "reasons": null,
+      "acknowledgements": [
+        {
+          "messageId": "f3d8a71e-dc03-42cf-a174-0e1121095fe0",
+          "eventId": "CONTAINER:isolated-spike:J-isolated-spike:1",
+          "shipmentId": "isolated-spike",
+          "journeyId": "J-isolated-spike",
+          "sequence": 1,
+          "evaluatedAtMillis": 1795024142799,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "1d07a8e0-2180-43ca-afa6-9d4cf44aa4e9",
+          "eventId": "CONTAINER:isolated-spike:J-isolated-spike:2",
+          "shipmentId": "isolated-spike",
+          "journeyId": "J-isolated-spike",
+          "sequence": 2,
+          "evaluatedAtMillis": 1795024142802,
+          "excursion": false,
+          "combined": false
+        },
+        {
+          "messageId": "038e86e6-6f54-455e-b08e-d38ff25dbfd6",
+          "eventId": "CONTAINER:isolated-spike:J-isolated-spike:3",
+          "shipmentId": "isolated-spike",
+          "journeyId": "J-isolated-spike",
+          "sequence": 3,
+          "evaluatedAtMillis": 1795024142805,
+          "excursion": false,
+          "combined": false
+        }
+      ]
+    }
+  ]
+}

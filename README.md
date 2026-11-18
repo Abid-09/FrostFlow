@@ -1,6 +1,6 @@
 # Cold-chain Delivery and Quality Incident Management
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
 
 A process-oriented application for coordinating refrigerated-food deliveries, detecting transport risks, and managing quality incidents.
 
@@ -10,13 +10,13 @@ Developed for **02268 — Process-oriented and Event-driven Software Systems**, 
 
 The system follows refrigerated shipments from warehouse preparation to cafeteria receiving and any subsequent quality investigation, corrective fulfilment or supplier claim. The scenario covers two vehicles, three campus cafeterias and five chilled products: milk, yoghurt, fresh cheese, chicken breast and prepared salad.
 
-Delivery-risk events already support workflow decisions through the local Siddhi app; temperature-excursion and recovery patterns remain planned. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated. Optional TomTom traffic ETAs are implemented; weather integration remains planned.
+Delivery-risk events support workflow decisions through the local Siddhi app. Container excursion and combined transport-risk assessment are implemented; recovery remains planned. Physical receipt is separate from stock admission: goods under investigation must remain on hold until an authorised quality decision permits their release. Vehicle telemetry and physical actions are simulated. Optional TomTom traffic ETAs are implemented; Open-Meteo current outdoor conditions support urgent combined-risk assessment.
 
 ## Demonstration dataset
 
 A fresh dataset contains **20 crates of each of five products: 100 crates total**. Each crate represents 12 retail packs, with the pack size defined in [the catalogue](deployer/catalog.json). Every shipment contains one product from one batch. Reservations and replenishment use that exact product/batch; total stock cannot substitute for a missing item.
 
-The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all products, batches, units and stored records. These are simulated quantities and handling assumptions. `CHILLED-DEMO` identifies a shared demonstration profile; product-specific food-safety limits have not been validated or implemented.
+The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all products, batches, units and stored records. These are simulated quantities and handling assumptions. `CHILLED-DEMO` identifies a shared demonstration profile; new shipments snapshot configurable assessment triggers, whose product-specific food-safety suitability has not been validated.
 
 **Existing pooled-stock databases require a new dataset.** Preserve their matching engine data and follow [the upgrade/start instructions](docs/RUNNING.md#persistence-isolated-checks-and-troubleshooting); they are not converted automatically.
 
@@ -48,7 +48,7 @@ The current implementation contains:
 
 Prerequisites: Docker Desktop with Compose, Python 3.12 for the checks, and Camunda Modeler for editing diagrams. BPMN lint commands also use Node.js/npm. The current checkpoint needs no external API keys or `.env` file.
 
-Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
+Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8008, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
 
 ```bash
 docker compose up --build -d --wait --wait-timeout 180
@@ -77,6 +77,8 @@ Resume the existing containers with `docker compose start`, then check `/health`
 
 ## Testing
 
+The [18 November foundation review](compliance/foundation-review-18.json) records 82 passing offline tests and fresh sequential P1/P2/P3, container, weather-priority, outage and restart checks at `8d13c3e`. The user’s manual ProcessDoctor checks passed for all four review logs; [screenshots and hashes](compliance/foundation/review-18/processdoctor.json) are recorded. Foundation PR #9 is not merged and needs its own approval followed by merged-main smoke. Earlier reports retain their original tested revisions.
+
 Run the offline API and registry tests with Python 3.12:
 
 ```bash
@@ -93,7 +95,7 @@ For the P1 engine regression, use fresh paired version-3 registry/engine data (a
 
 The live integration check exercises P1 stock wait/cancellation/replenishment and completes two independent P2 journeys through manual arrival and physical receipt recorded by P3. It confirms early receipt is rejected, exact retries do not duplicate activities, both transports reach the `TransportCompleted` end event, and a released vehicle can be reused. For an existing dataset with sufficient stock, use `stage_tests/check_integration_smoke.py` instead of repeating the fresh-data suite; see the run guide for prerequisites.
 
-The offline suite covers P1/P2 behavior and P3 arrival deduplication, receipt acknowledgement, inspection, stock admission and quality holds. P2's three live journeys and P3's four live scenarios pass local DCR replay; the P3 forbidden-admission check is rejected as required. Evidence is under `compliance/p2/` and `compliance/p3/`. Fresh ProcessDoctor checks for the current P2/P3 logs remain pending; historical portal results apply only to their original logs. P1 evidence is under `compliance/p1/` and its XES contains P1 activities only. `runtime/verification-results/p2-completion.json` records live P2 execution, not DCR conformance. The [merged-main report](compliance/merged-main-verification.json) records the successful P1–P3 smoke test.
+The offline suite covers P1/P2 behavior and P3 arrival deduplication, receipt acknowledgement, inspection, stock admission and quality holds. P2's three live journeys and P3's four live scenarios pass local DCR replay; the P3 forbidden-admission check is rejected as required. Evidence is under `compliance/p2/` and `compliance/p3/`. Manual ProcessDoctor checks for the newer review-18 logs passed; earlier portal results apply only to their original logs. P1 evidence is under `compliance/p1/` and its XES contains P1 activities only. `runtime/verification-results/p2-completion.json` records live P2 execution, not DCR conformance. The [merged-main report](compliance/merged-main-verification.json) records the successful P1–P3 smoke test.
 
 ## Repository structure
 
@@ -122,7 +124,7 @@ Abid’s P4 implementation uses DCR to **execute** the quality investigation. It
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's real investigation/consumer, fresh P2/P3 ProcessDoctor checks, a current live TomTom recheck, temperature/weather integration and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's adapted investigation/consumer, recovery and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 
@@ -130,8 +132,16 @@ P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival
 - [Implementation guide](docs/COLD-CHAIN-IMPLEMENTATION-GUIDE.md) — scenario, process scope and responsibilities.
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — identifiers, messages, quality states and shared rules.
 - [Run guide](docs/RUNNING.md) — beginner walkthrough, BPMN/DCR explanation and verification.
+- [P4 handover to Abid](docs/P4-FOUNDATION-HANDOVER.md) — monitored assessment intake, durable acknowledgements, evidence versions and contract fixtures.
 - [P1 model PDF](bpmn/shipment_preparation.pdf) and [DCR compliance rules](compliance/p1/rules.xml).
 - [Team task board](project_notes/TASKS.md) — ownership, progress and remaining deliverables.
 - [AI-use record](project_notes/AI-USAGE.md) — assistance recorded for the team contract declaration.
 
 Team members work on feature branches and review changes before merging into `main`. Changes to shared interfaces must update the integration agreement and their affected producers and consumers. Credentials, generated runtime data and supplied course/team PDFs are excluded from version control.
+
+
+## Pre-P4 monitoring foundation
+
+See the [requirements and assessment contract](docs/PRE-P4-FOUNDATION.md) and [run instructions](docs/RUNNING.md#container-monitoring-foundation). New shipments monitor from processed loading verification through physical receipt. Container observations are persisted and evaluated by Siddhi; silence or unresolved closing evaluation creates a durable assessment hold. P3 finalizes monitoring before checking current quality permission and admitting stock. Holds do not delay P2 vehicle release after receipt.
+
+CLI option 18 selects normal, isolated-spike, sustained-excursion or missing-telemetry scenarios. Open-Meteo outdoor heat can raise a combined assessment to urgent when fresh persistent ETA lateness and rising container readings coincide. Weather cannot replace container measurements or reject goods. The versioned retry-safe P4 handoff remains queued without a consumer; CLI dispositions are labelled stand-ins and require current incident/evidence version. P4–P6 execution, cooling, recovery and incident closure are excluded. [Foundation verification](compliance/foundation-verification.json) separates recorded fixtures, live providers and live engine execution; the [review refresh](compliance/foundation-review-18.json) records manual external conformance.

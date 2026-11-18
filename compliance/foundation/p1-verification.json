@@ -1,0 +1,225 @@
+{
+  "observedAt": "2026-11-17T15:29:55.942646+00:00",
+  "evidenceType": "real Zeebe execution and application activity logs",
+  "datasetVersion": 3,
+  "initialInventory": {
+    "available": 100,
+    "datasetVersion": 3,
+    "products": [
+      {
+        "available": 20,
+        "batchId": "DEMO-MILK-001",
+        "initialCrates": 20,
+        "packDescription": "1 litre carton",
+        "packsPerCrate": 12,
+        "productId": "PRD-001",
+        "productName": "Fresh milk",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-YOGHURT-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram tub",
+        "packsPerCrate": 12,
+        "productId": "PRD-002",
+        "productName": "Plain yoghurt",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-CHEESE-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-003",
+        "productName": "Fresh cheese",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-CHICKEN-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-004",
+        "productName": "Raw chicken breast",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-SALAD-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed bag",
+        "packsPerCrate": 12,
+        "productId": "PRD-005",
+        "productName": "Prepared salad",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      }
+    ],
+    "quantityUnit": "crate",
+    "shipmentCount": 0
+  },
+  "finalInventory": {
+    "available": 80,
+    "datasetVersion": 3,
+    "products": [
+      {
+        "available": 0,
+        "batchId": "DEMO-MILK-001",
+        "initialCrates": 20,
+        "packDescription": "1 litre carton",
+        "packsPerCrate": 12,
+        "productId": "PRD-001",
+        "productName": "Fresh milk",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-YOGHURT-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram tub",
+        "packsPerCrate": 12,
+        "productId": "PRD-002",
+        "productName": "Plain yoghurt",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-CHEESE-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-003",
+        "productName": "Fresh cheese",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-CHICKEN-001",
+        "initialCrates": 20,
+        "packDescription": "500 gram sealed pack",
+        "packsPerCrate": 12,
+        "productId": "PRD-004",
+        "productName": "Raw chicken breast",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      },
+      {
+        "available": 20,
+        "batchId": "DEMO-SALAD-001",
+        "initialCrates": 20,
+        "packDescription": "250 gram sealed bag",
+        "packsPerCrate": 12,
+        "productId": "PRD-005",
+        "productName": "Prepared salad",
+        "quantityUnit": "crate",
+        "temperatureProfileId": "CHILLED-DEMO"
+      }
+    ],
+    "quantityUnit": "crate",
+    "shipmentCount": 4
+  },
+  "modelSha256": "a7e9610eaae4a288cae629c84aa06abeec4d9a2eb37265228b48b37a85a6844f",
+  "bpmnSha256": {
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
+    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6"
+  },
+  "sourceSha256": {
+    "deployer/app.py": "32689c0e153852b70adbbf176042ddf04210666f19fa3cd0cb2b39e37ae53b34",
+    "deployer/registry.py": "154ed12caf63aebe68113574a3542188473b68e5c5cb5d88aca65a17bc770251",
+    "deployer/catalog.json": "805f082c60f4c54551c506bc5e5ee5864ddc0001de0a822169dd970571714860",
+    "compliance/check.py": "eb2421c8b29795b39e2e415b75abd560c1448749211af4083bca989a270fe2e6",
+    "tools/demo.py": "3a33cbdcd77a645bef13b5999f1d498b03a9e45a1d98b04ee068531e32d70435",
+    "stage_tests/check_stage1.py": "cdfb6ca7685301da5ee83986b1da9f338bb12dff30452fa0b7715ab56099f441",
+    "deployer/requirements.txt": "700b7496391e5f60825686724f9d9088504b075e3d51db6de2a8279df518ae29",
+    "docker-compose.yml": "34f91706a60d7bd84cc148869fc94e3704c7f916c80108efb0ad883d64fa41b7"
+  },
+  "executionLogSha256": "199b14dd1823640de0c9429f26d1153878a2e956e33959e0e29c55552622dbb2",
+  "cases": {
+    "p1-020f8bb8-1": {
+      "handoffStatus": "ACKNOWLEDGED",
+      "p2ProcessInstanceKey": "2251799813685480",
+      "processInstanceKey": "2251799813685408",
+      "state": "DISPATCHED",
+      "stockAttempt": 1
+    },
+    "p1-020f8bb8-2": {
+      "processInstanceKey": "2251799813685521",
+      "state": "CANCELLED",
+      "stockAttempt": 1
+    },
+    "p1-020f8bb8-3": {
+      "handoffStatus": "ACKNOWLEDGED",
+      "p2ProcessInstanceKey": "2251799813685674",
+      "processInstanceKey": "2251799813685575",
+      "state": "DISPATCHED",
+      "stockAttempt": 3
+    },
+    "p1-020f8bb8-4": {
+      "processInstanceKey": "2251799813685876",
+      "state": "CANCELLED",
+      "stockAttempt": 1
+    }
+  },
+  "compliance": {
+    "p1-020f8bb8-1": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
+    },
+    "p1-020f8bb8-2": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
+    },
+    "p1-020f8bb8-3": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
+    },
+    "p1-020f8bb8-4": {
+      "valid": true,
+      "accepting": true,
+      "pending": []
+    }
+  },
+  "deliberatelyInvalidTrace": {
+    "valid": false,
+    "accepting": false,
+    "violationIndex": 4,
+    "event": "ShipmentDispatched",
+    "reason": "activity is excluded"
+  },
+  "checks": [
+    "shortage wait",
+    "premature actions blocked",
+    "cancellation ends P1 and releases vehicle",
+    "insufficient supply rechecks",
+    "replenishment deduplicated",
+    "product/batch identity exported to P2 and P1 activities",
+    "other four products retain 20 crates each",
+    "two dispatched P1 completions",
+    "two distinct P2 instances completed only after receipt",
+    "duplicate P2 start suppressed",
+    "early receipt rejected for both shipments",
+    "arrival and receipt exact retries recorded once",
+    "P2 reaches its end event and releases each vehicle",
+    "released vehicle can be reserved by a new shipment",
+    "actual P1 logs conform and are accepting",
+    "deliberately invalid trace rejected"
+  ],
+  "processDoctor": "Not run; import rules.xml and execution-log.xes for course-tool confirmation",
+  "testedCommit": "113b93fbf9acf2e3a94c2f9250e5af50540659ae",
+  "applicationSourceRevision": "1b40a938bc079b798b6bcc172f59f57e17de651a",
+  "command": ".venv/bin/python -u stage_tests/check_stage1.py --output runtime/foundation/p1-final-evidence"
+}

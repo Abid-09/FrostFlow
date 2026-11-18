@@ -30,6 +30,7 @@ EVENTS = [
     ("GoodsReceived", 580, 170),
     ("InspectionPassed", 840, 60),
     ("InspectionFailed", 840, 300),
+    ("MonitoringFinalized", 1090, 60),
     ("StockAdmitted", 1360, 60),
     ("GoodsRejected", 1360, 300),
     ("QualityHoldRaised", 580, 520),
@@ -40,6 +41,7 @@ EVENTS = [
 NAMES = [name for name, _, _ in EVENTS]
 
 CONDITIONS = [
+    ("MonitoringFinalized", "StockAdmitted"),
     ("ShipmentDispatched", "ShipmentArrived"),
     ("ShipmentArrived", "GoodsReceived"),
     ("GoodsReceived", "InspectionPassed"),
@@ -178,6 +180,8 @@ def event_activity(event):
         return "InspectionPassed" if payload.get("passed") is True else "InspectionFailed"
     if event_type == "StockAdmissionHeld" and payload.get("qualityStatus") == "PENDING":
         return "StockAdmissionHeld"
+    if event_type == "QualityHoldEstablished":
+        return "QualityHoldRaised"
     if event_type == "QualityStatusChanged":
         return {
             "PENDING": "QualityHoldRaised",
@@ -189,6 +193,7 @@ def event_activity(event):
         "ShipmentArrived",
         "GoodsReceived",
         "StockAdmitted",
+        "MonitoringFinalized",
         "GoodsRejected",
     }:
         return event_type

@@ -1,0 +1,32 @@
+{
+  "p3comp-foundation-ed5ef09b-normal": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  },
+  "p3comp-foundation-ed5ef09b-isolated-spike": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  },
+  "p3comp-foundation-ed5ef09b-sustained-excursion": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  },
+  "p3comp-foundation-ed5ef09b-missing-telemetry": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  },
+  "p3comp-outage-78c2cace-evaluation-unavailable": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  },
+  "restart-9ad34752": {
+    "valid": true,
+    "accepting": true,
+    "pending": []
+  }
+}

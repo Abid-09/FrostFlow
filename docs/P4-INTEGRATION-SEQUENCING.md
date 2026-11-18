@@ -1,5 +1,7 @@
 # P4 integration sequencing — 18 November 2026
 
+**Current checkpoint:** PR #11 is merged as `f475904` after explicit user approval. Main was merged into the shared foundation branch in `4b09482`. The [handover](P4-FOUNDATION-HANDOVER.md) and contract fixtures are committed in `8d13c3e`; foundation PR #9 still requires separate review/merge approval and merged-main smoke. The restoration checks below describe the earlier revert checkpoint. The [18 November foundation review report](../compliance/foundation-review-18.json) records subsequent live verification and fresh offline reproduction of the three P4 contract failures; DCR calls were substituted in that reproduction.
+
 Abid owns P4. His executable investigation, DCR models, code and historical evidence are preserved in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10), its head `45f654b` and merge `af3c68c1e98e6d3245cfdea9c7ade36bbae32a5d`. Removing that merge from the active tree defers integration; it does not discard his contribution or imply it never existed.
 
 The agreed order is **revert PR → foundation PR #9 → verified merged main → replacement P4 PR**. Each merge requires a separate explicit user review approval. This revert PR is checkpoint 1 only. No foundation or P4 integration is claimed complete here.

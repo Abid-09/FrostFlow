@@ -1,6 +1,6 @@
 # Running and testing P1, P2 and P3
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
 
 Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. TomTom is optional; current deterministic verification uses local demo ETAs. The physical/external simulator and P4 investigation remain team integration work.
 
@@ -20,7 +20,7 @@ A fresh dataset has **100 crates / 1,200 retail packs in total**, zero shipments
 
 One shipment carries one product and one batch; a vehicle carries one active shipment. Stock is reserved atomically by `(productId, batchId)`. Replenishment credits that exact pair; it cannot borrow from other products or batches. Reopening a registry does not restore seed stock. Seed changes apply only to new datasets. The current API uses one seeded batch per product; supplier purchasing, new-batch creation, mixed loads, shelf life, hygiene/segregation and physical vehicle capacity are outside this increment.
 
-All products carry the placeholder `temperatureProfileId: CHILLED-DEMO`. It identifies the agreed shared configurable demonstration profile for future CEP integration. No numeric temperature range, validated product-specific storage rule or food-safety suitability is asserted; future temperature settings must be documented before telemetry/CEP is implemented.
+All products carry `temperatureProfileId: CHILLED-DEMO`. New shipments snapshot the approved configurable `CHILLED-DEMO-v1` assessment settings described in [the foundation contract](PRE-P4-FOUNDATION.md). These numeric triggers are demonstration settings, not validated product-specific storage rules or food-safety suitability.
 
 `GET /stock` lists each product/batch, pack definition, initial crates and current availability. Its top-level `available` is only the sum across products; shipment eligibility uses the selected product/batch. The response also contains `datasetVersion: 3` and `shipmentCount`.
 
@@ -100,7 +100,7 @@ Operate displays engine execution. The terminal represents the person submitting
 
 The dataset must be prepared before recording/presenting. The menu preserves existing data and does not reset containers or reservations. A used dataset may have unavailable vehicles even if stock remains; use the isolated-dataset instructions below to rehearse again.
 
-For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; P4–P6 and the cross-process incident workflow remain planned.
+For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; Abid’s PR #10 P4 investigation awaits foundation adaptation, while P5/P6 and the complete cross-process corrective workflow remain planned.
 
 ### P3 compliance evidence
 
@@ -364,7 +364,7 @@ The DCR Solution importer requires portal metadata in addition to the logical gr
 
 ## Automated verification
 
-Create a Python 3.12 environment and install the application dependencies:
+Reuse the existing `.venv` for offline checks. If it is absent, create a Python 3.12 environment and install the application dependencies:
 
 ```bash
 python3.12 -m venv .venv
@@ -376,7 +376,7 @@ npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/transport.bpmn
 npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/receiving.bpmn
 ```
 
-The offline suite defines **57 tests** (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
+The offline suite includes the original **57 tests** plus foundation monitoring/weather regressions (P1, P2, P3, TomTom adapter, route model, quality hold and P2 DCR replay). The tests stub engine calls and external services; they do not replace the live runs below. On Windows without a local `grpc` install, run them in the service image: `docker run --rm -v "${PWD}:/repo" --entrypoint sh <project>-communication -c "cp -r /repo /tmp/r && cd /tmp/r && python -m unittest discover -s stage_tests -p 'test_*.py'"`.
 
 The Siddhi delivery-risk rule has its own check, which needs only Docker: `python stage_tests/check_siddhi_risk_rule.py`. It starts a throwaway Siddhi runner and proves that repeated delivery of one ETA event, an isolated late ETA, stale late ETAs and a run broken by an unavailable ETA raise no alert, while three distinct consecutive fresh late ETAs raise exactly one alert per route revision.
 
@@ -440,15 +440,12 @@ Option **11** remains a manual test alert and bypasses Siddhi's risk detection; 
 
 **Decide before the truck arrives.** While a decision is pending, the scripted truck keeps moving. Each route has seven GPS ticks and the alert comes on the third, leaving about four ticks: roughly 60 s at `GPS_TICK_SECONDS=15`, or 4 minutes at 60. If it reaches its destination first, P2 takes the **Arrived before decision** branch. The alert is closed (`DeliveryRiskClosedAtArrival`), the route is unchanged, and a later option **12**/**13** is refused with *vehicle has already arrived*. That is the intended outcome, not a failure. After an approved route change, the deadline has usually already passed, so expect a second alert on the new route revision and answer it too.
 
-Siddhi listens on two ports: **8006** for telemetry and **8007** for route commands. Its `http` and `http-service` sources cannot share one listener. If an alert is missing, check `docker compose logs siddhi` for `Siddhi App ColdChainTelemetry deployed successfully` first.
+Siddhi listens on **8006** for telemetry, **8007** for route commands and **8008** for container assessment. Its `http` and `http-service` sources cannot share one listener. If an alert is missing, check `docker compose logs siddhi` for `Siddhi App ColdChainTelemetry deployed successfully` first.
 
-**Automated live check.** Instead of driving the CLI, run the same flow unattended on a fresh dataset:
+**Automated live check.** Select fresh paired P2 registry/engine data using the [sequential setup](#automated-verification), with simulator on, `GPS_TICK_SECONDS=10` and `TOMTOM_API_KEY=`. Stop the previous dataset before switching; changing only the registry directory is insufficient. Then run:
 
-```powershell
-$env:REGISTRY_DIR = "./runtime/p2-siddhi-check"
-$env:GPS_TICK_SECONDS = "10"
-docker compose -p cold-chain-p2-siddhi-check up --build -d --wait --wait-timeout 240
-python stage_tests/check_p2_siddhi.py
+```bash
+.venv/bin/python stage_tests/check_p2_siddhi.py
 ```
 
 It dispatches two shipments at once. A has a one-minute deadline:
@@ -459,22 +456,26 @@ It dispatches two shipments at once. A has a one-minute deadline:
 
 ### Evidence: what was verified and where
 
-Each result below is tied to the code it ran against. Runtime output stays under the ignored `runtime/` folder; reviewed copies are committed in `compliance/p2/`.
+The latest pre-merge refresh is [18 November review verification](../compliance/foundation-review-18.json), tested at `8d13c3e`: **82 offline tests**, fresh sequential P1/P2/P3 runs, all four container scenarios, six local Siddhi weather comparisons, closing-evaluation outage/restore and 21-second communication restart pass. Exported P2/P3 end states and exact warehouse/receiving effects were checked. New real business logs and local replay results are retained separately under `compliance/foundation/review-18/`; the earlier reviewed logs/reports are unchanged. Three original-P4 contract failures were also reproduced offline with temporary SQLite and substituted DCR, separately from live engine execution. Actual Open-Meteo and TomTom calls succeeded separately from deterministic local-ETA/recorded-weather scenarios. The user subsequently completed all four ProcessDoctor checks manually: P1 3/3, P2 3/3, P3 4/4 and container 5/5 conforming variants, with zero violations at coverage 100. [Screenshots, trace counts and model/log hashes](../compliance/foundation/review-18/processdoctor.json) record the results; the agent’s earlier browser attempt remains a failed access attempt.
 
-| Evidence | Kind | Tested code | Artefact and result |
+The table below preserves the **17 November** evidence and its original tested revisions. Foundation results are recorded with exact revisions, source/model/log hashes, image identities and input modes in [foundation verification](../compliance/foundation-verification.json). The current P2/P3 reports reference the refreshed logs. Original repair artifacts are preserved under each process's `history/552945d/`; the original merged-main smoke remains historical evidence in `merged-main-verification.json`.
+
+| Evidence | Kind | Tested code | Result |
 | --- | --- | --- | --- |
-| Offline suite | unit/regression tests | `89dfd26` | 57 tests OK, local Python 3.12.13; terminal rejection and P3 readiness regressions included |
-| `check_siddhi_risk_rule.py` | isolated live Siddhi rule | `eaaaf6b` | PASS: duplicate identity, isolated, stale and gap-broken observations do not alert; three distinct fresh late observations alert once per revision |
-| `check_stage1.py` | live P1 regression; simulator off | `1e4d141` | PASS: independent transports, receipt gate, retries, vehicle reuse and local replay |
-| `check_p2_siddhi.py` | live P2 acceptance; local demo ETAs | `89dfd26` (application image `1e4d141`, identical implementation) | PASS: run `131337`, three completed P2/P3 journeys; current [P2 report](../compliance/p2/verification.json) |
-| `check_p3_compliance.py --base http://localhost:5001` | live P3 scenarios; fresh data | `89dfd26` | PASS: run `9d1cd66e`, normal admission, hold/release, inspection rejection, quality rejection; exact inventory and retry checks in [P3 report](../compliance/p3/verification.json) |
-| `compliance/check.py` on P2 log | local DCR replay | log from run `131337` | 3 valid, accepting cases; 6 synthetic violations rejected by offline tests |
-| `build_p3_evidence.py verify` on P3 log | local DCR replay | log from run `9d1cd66e` | 4 valid, accepting cases; forbidden admission rejected |
-| Pinned BPMN lint | model validation | `89dfd26` | All three models: zero errors, zero warnings |
-| ProcessDoctor | external conformance | current P2/P3 logs | **Pending:** browser tool returned “The browser access host is unavailable”. Previous results remain historical in each report; no fresh portal result is claimed |
-| TomTom | historical live provider check | earlier code/log | Preserved in P2 report and `tomtom-responses.jsonl`; current deterministic checks use local demo ETAs |
+| Offline suite | SQLite/API/provider regressions with substituted engine calls | See foundation report | 79 passing tests |
+| P1 regression | Fresh paired data, simulator off | See foundation report | Stock waits/cancellation, independent transports, retries, vehicle reuse and local replay |
+| P2 acceptance | Fresh paired data, simulator on, local demo ETAs | `fb06a44` | Run `151259`: three completed journeys, acknowledged route revision, arrival/receipt gates and incident/version release |
+| Four standard P3 scenarios | Fresh paired data, simulator on | `83ec452` | Run `53e0ffb2`: admission, hold/release, inspection rejection, quality rejection; new MonitoringFinalized activity |
+| Four container scenarios | Real engine and local Siddhi | `7be2210` | Normal, isolated spike, sustained excursion and missing telemetry; exact inventory and exported end states |
+| Container weather comparison | Real local Siddhi; recorded ETA/weather, temporary SQLite | `7be2210` | Six cases distinguish urgent hot-weather assessment from cool/unavailable weather and normal-priority standalone excursion |
+| Evaluation outage/restart | Real engine; retained matched data | `1b40a93` | Closing-evaluation hold after 20 s; P2 vehicle release precedes finalization; 21-second service restart retains profile/session and detects silence |
+| Integration smoke | Branch smoke, real engine end states and exact stock deltas | `1b40a93` application bytes | Passing admission and quality rejection; this is pre-merge verification |
+| Local DCR replay | Actual business logs, raw samples excluded | Current rules/log hashes in reports | P2: three traces; P3: four; foundation: six; forbidden admission without finalization/during hold rejected separately |
+| Pinned receiving BPMN lint/PDF | Structural/layout validation | Current receiving model | Zero errors/warnings; PDF regenerated and rendered diagram inspected |
+| Open-Meteo and TomTom | Separate actual provider calls | Source/response hashes in foundation report | Usable model-based current weather; TomTom HTTP 200 traffic ETA |
+| ProcessDoctor | External conformance of changed logs/model | Current foundation evidence | Pending: browser access host unavailable; historical results apply only to archived artifacts |
 
-Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. PR #4 merged first (`e36b0ac`); PR #5 was updated against main, its remaining diff inspected, then merged (`ad47a3c`). The user explicitly approved merging while fresh ProcessDoctor checks remain pending. Merged-main smoke passed normal admission and hold/rejection, both process end events and exact inventory deltas; see [merged-main verification](../compliance/merged-main-verification.json).
+No merge or post-merge smoke is claimed for the foundation branch. Review and explicit merge authorization remain required; repeat the smoke against merged main after an authorised merge. The flat DCR checker does not implement timed/data/hierarchical semantics or a real P4 investigation.
 
 **Deferred from this baseline:** Abid’s P4 DCR investigation from PR #10. The delivery-risk hold and the durable P4 handoff exist, and admission stays blocked until the current incident is released, but the release is a stand-in until P4 consumes the handoff (tracked on the task board).
 
@@ -534,4 +535,56 @@ For disposable data only, `docker compose down -v` removes that project's engine
 - **502 on creation:** engine-start outcome uncertain; inspect engine/logs before retrying. The registry entry is retained.
 - **A pending command/handoff does not advance:** check `docker compose logs communication` and Operate for publication/worker incidents. Published messages expire after 24 hours if unconsumed; recovery is manual.
 
-One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and temperature/weather integration remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
+One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and cooling/recovery remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
+
+
+## Container monitoring foundation
+
+Use one matched registry/engine stack, with the same sequential dataset commands above. Compose loads both Siddhi apps from `/apps`; container assessment uses `SIDDIHI_CONTAINER_URL=http://siddhi:8008/container` (host port 8008). Sampling and the durable watchdog run independently from GPS ticks, HTTP delivery and Open-Meteo refresh. Both normal GPS-disabled P1 runs and arrivals awaiting receipt continue container monitoring.
+
+`MONITORING_PROFILE_JSON` accepts JSON overrides for the numeric defaults and profile ID in `deployer/monitoring.py`; invalid/unknown settings are refused at shipment creation. New shipments snapshot settings, so changing configuration affects only later shipments. Defaults: normal 3°C, fault 10°C, chicken assessment above 4°C, others above 5°C, 5 s samples, three readings spanning at least 10 s, gap ≤10 s, freshness ≤15 s, silence/finalization timeouts 20 s. Ten seconds demonstrates persistence, not spoilage. No product safety certification is implied.
+
+Use CLI option 18 or:
+
+```bash
+curl -s -X POST http://localhost:5001/shipments/S-DEMO/simulation/temperature \
+  -H 'Content-Type: application/json' \
+  -d '{"commandId":"temperature-demo-1","actor":"demo-operator","scenario":"sustained-excursion"}'
+```
+
+The shipment must have processed loading verification. `normal` emits 3°C; `isolated-spike` emits one fault reading then normal; `sustained-excursion` emits a three-reading rising ramp (3, 3.25, 3.5°C by default), then 10°C; `missing-telemetry` emits no readings. Scenario changes are durable journal entries. They are scripted inputs, not cooling commands or refrigeration physics.
+
+Shipment views show monitoring session/profile, sequence/evaluation cursor, closing sequence/finalization, last reading/freshness, weather, assessment reasons/priority and evidence version. Inspect all stored windows via `GET /shipments/<id>/monitoring/observations`. Raw container observations live in `container_observations`; compliance exports include only business effects such as `MonitoringFinalized`, holds and admission. Existing shipments without a profile snapshot show `legacy/unmonitored`; no migration of their running instances or invented samples occurs.
+
+Open-Meteo requests current temperature, precipitation, wind speed and weather code at the simulated position. Responses retain requested/provider coordinates, UTC model-data time, retrieval time, units and model-based provenance; sanitized JSONL is saved beside the ignored registry. Success caches for 10 minutes by 0.05° grid; at most one refresh attempt per journey per minute. Combined risk requires data age ≤30 minutes and distance ≤10 km, ≥30°C outdoors, current-revision qualified and still-fresh late ETA, plus three rising fresh container readings spanning 10 s and rising ≥0.5°C. Failed/stale data is unavailable. Repeated/cached provider observations retain their identity, and weather alone cannot hold/reject goods.
+
+P3 receipt releases the vehicle independently of assessment. Admission waits for closing evaluation or a durable timeout hold. Unavailable Siddhi or silence cannot silently permit admission. Test dispositions must name `expectedEvidenceVersion` as well as the current incident; CLI option 17 fetches these. New material evidence invalidates older dispositions. No `P4_INCIDENT_URL` leaves immutable handoffs pending and the hold intact.
+
+```bash
+# Existing healthy stack, simulator enabled; four milk crates and a free vehicle:
+.venv/bin/python stage_tests/check_foundation.py
+# Same local Siddhi, isolated temporary SQLite fixtures; no shared engine data:
+.venv/bin/python stage_tests/check_container_assessment.py
+```
+
+These checks distinguish live Siddhi/engine behavior from recorded ETA/weather inputs. Actual Open-Meteo and TomTom checks are recorded separately in [foundation verification](../compliance/foundation-verification.json). The schema fixture and sanitized captured Open-Meteo response in `stage_tests/fixtures/` are labelled separately. Manual external ProcessDoctor checks for the review-18 logs passed; see [the current record](../compliance/foundation/review-18/processdoctor.json). Older screenshots apply only to their original inputs.
+
+For a live service-restart watchdog check on the named verification stack (one free vehicle and one salad crate), run `.venv/bin/python stage_tests/check_monitoring_restart.py --communication-container frostflow-foundation-communication-1`. It deliberately stops only communication for 21 seconds and starts that same container with its original matched data. It proves the restored session/profile survives, the silence hold precedes resumed sampling, and P3 receipt releases the vehicle during the hold.
+
+To test closing evaluation failure, recreate **only communication** with the original project/registry/overlay variables and `SIDDIHI_CONTAINER_URL=http://127.0.0.1:9/container`, then run `.venv/bin/python stage_tests/check_monitoring_outage.py`. The runner expects a 20-second closure hold and verifies vehicle release precedes finalization. Restore the normal container URL using the same variables afterward. Late unavailable acknowledgements belong to that closing-sequence assessment; they cannot silently clear its hold or reopen the same released uncertainty episode. The endpoint remains a labelled test disposition, not an investigation.
+
+
+### Resume the 18 November review dataset
+
+The retained review stack is `frostflow-foundation` with dataset `p3-18`, simulator on, GPS tick 2 seconds, local ETA estimates and default local Siddhi evaluation. Its registry is consumed; do not rerun fresh-data suites on it. Preserve all earlier paired datasets. To recreate/resume this same dataset, first inspect active stacks and stop any other project, then use:
+
+```bash
+export COMPOSE_PROJECT_NAME=frostflow-foundation
+export VERIFY_DATASET=p3-18 REGISTRY_DIR=./runtime/foundation/p3-18
+export P2_SIMULATOR_ENABLED=true GPS_TICK_SECONDS=2 TOMTOM_API_KEY=
+export SIDDIHI_CONTAINER_URL=http://siddhi:8008/container
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up -d --wait --wait-timeout 240
+curl http://localhost:5001/health
+```
+
+Use new paired suffixes for any future fresh-data suite. Foundation PR #9 still needs separate review and explicit merge approval. After its approved merge, rebuild from merged main using the same paired-dataset variables plus `up --build`, run `stage_tests/check_integration_smoke.py` with sufficient salad/chicken stock and free vehicles, and record the exact merged revision. Until that smoke passes, this is branch verification, not the final handover readiness claim. See [Abid's P4 handover](P4-FOUNDATION-HANDOVER.md).
