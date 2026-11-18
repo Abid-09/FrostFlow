@@ -162,9 +162,11 @@ def main():
             "capturedAt": evidence["capturedAt"], "runId": evidence["runId"],
             "dcrEngine": evidence["health"]["integrations"]["p4DcrEngine"],
             "source": evidence["source"],
-            "cases": [{k: c[k] for k in ("scenario", "shipmentId", "incidentId",
-                                         "qualityStatus", "p3Status", "refusedActions",
-                                         "processInstanceKeys")}
+            "cases": [{k: c[k] for k in (
+                "scenario", "shipmentId", "incidentId", "trigger", "evidence", "decision",
+                "unappliedDecisions", "reassessedVersions", "receiptWhileHeld",
+                "monitoringFinalization", "qualityStatus", "p3Status", "refusedActions",
+                "processInstanceKeys") if k in c}
                       for c in evidence["cases"]],
             "replay": replays,
         }
@@ -179,9 +181,10 @@ def main():
         "verifiedAt": datetime.now(timezone.utc).isoformat(),
         "testedCommit": git_commit(),
         "process": "P4 Quality incident investigation (DCR)",
-        "owner": "Abid Hasan (team confirmation pending on the task board)",
-        "environment": {"python": platform.python_version(),
-                        "host": f"{platform.system()} {platform.machine()}"},
+        "owner": "Abid Hasan",
+        "contract": "foundation P4 assessment contract v1 (docs/P4-FOUNDATION-HANDOVER.md)",
+        "builderEnvironment": {"python": platform.python_version(),
+                               "host": f"{platform.system()} {platform.machine()}"},
         "sha256": {str(p.relative_to(ROOT)): sha256(p) for p in tracked},
         "model": {"events": 16, "flatRelations": 83, "drawnArrows": 34, "groups": 3,
                   "reachableMarkings": 3425,
@@ -198,6 +201,7 @@ def main():
         },
         "forbiddenTraces": {name: result["reason"] for name, result in forbidden.items()},
         "liveExecution": live,
+        "historical": previous.get("historical"),
         "dcrRepositoryApi": previous.get("dcrRepositoryApi", {
             "status": "PENDING",
             "reason": "Needs the team's dcrgraphs.net credentials in an untracked .env; "

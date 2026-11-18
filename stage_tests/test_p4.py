@@ -528,21 +528,23 @@ class Evidence(unittest.TestCase):
     def test_live_runner_scenarios_follow_the_graph(self):
         import check_p4_investigation as runner
 
-        for scenario, _, steps, expected in runner.SCENARIOS:
+        for scenario, _, trigger, before, after, expected in runner.SCENARIOS:
             graph = Graph(MODEL)
             graph.execute("OpenIncident")
-            for step in steps:
-                if isinstance(step, tuple):
+            for step in before + after:
+                if isinstance(step, tuple) and step[0] == "blocked":
                     probe = Graph(MODEL)
                     probe.included, probe.executed, probe.pending = (
                         set(graph.included), set(graph.executed), set(graph.pending))
                     self.assertIsNotNone(probe.execute(step[1]), (scenario, step))
-                else:
-                    name = "AddAlertEvidence" if step == "temperature-alert" else step
-                    self.assertIsNone(graph.execute(name), (scenario, step))
+                elif isinstance(step, tuple) and step[0] == "await-evidence":
+                    self.assertIsNone(graph.execute("AddAlertEvidence"), scenario)
+                elif isinstance(step, str):
+                    self.assertIsNone(graph.execute(step), (scenario, step))
             self.assertFalse(graph.pending & graph.included, scenario)
-            decision = next(s for s in steps if isinstance(s, str) and s.startswith("Decide"))
+            decision = next(s for s in after if isinstance(s, str) and s.startswith("Decide"))
             self.assertEqual(expected, "ADMITTED" if decision == "DecideRelease" else "REJECTED")
+            self.assertIn(trigger, ("delay", "sustained-excursion"))
 
 
 class Client(unittest.TestCase):
