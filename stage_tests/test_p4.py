@@ -572,6 +572,26 @@ class Client(unittest.TestCase):
         self.assertEqual(request.full_url, "https://repository.dcrgraphs.net/api/graphs/42/sims")
         self.assertTrue(request.headers["Authorization"].startswith("Basic "))
 
+    def test_repository_nesting_groups_are_not_reported_as_activities(self):
+        raw = (b'<events isAccepting="false">'
+               b'<event id="A19" included="true" enabled="true" pending="false" executed="false"/>'
+               b'<event id="A19.A18" included="true" enabled="true" pending="false" executed="false"/>'
+               b'<event id="ReviewTemperatureLog" included="true" enabled="true" pending="false" '
+               b'executed="false"/></events>')
+
+        class Response:
+            status, headers = 200, {}
+            def read(self): return raw
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        client = dcr_client.DCRClient("2015919", "user", "secret",
+                                      activities=dcr_client.model_activities(MODEL))
+        with patch.object(dcr_client, "urlopen", return_value=Response()):
+            events = client.events("1")["events"]
+        self.assertEqual([e["id"] for e in events], ["ReviewTemperatureLog"])
+        self.assertEqual(len(dcr_client.model_activities(MODEL)), 16)
+
     def test_unconfigured_client_reports_unavailable(self):
         with self.assertRaises(dcr_client.DCRUnavailable):
             dcr_client.DCRClient("", "", "").create_simulation()

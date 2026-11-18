@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "deployer"))
-from dcr_client import DCRClient, DCRUnavailable, LocalDCR  # noqa: E402
+from dcr_client import DCRClient, DCRUnavailable, LocalDCR, model_activities  # noqa: E402
 
 MODEL = ROOT / "dcr/p4_quality_investigation.xml"
 PATH = ["OpenIncident", "ReviewWeatherData", "RequestCoolingAdjustment",
@@ -63,7 +63,7 @@ def execute(client, sim, activity):
 
 def main():
     load_env()
-    client = DCRClient()
+    client = DCRClient(activities=model_activities(MODEL))  # ignores nesting groups
     missing = [k for k in ("DCR_GRAPH_ID", "DCR_USERNAME", "DCR_PASSWORD") if not os.getenv(k)]
     if missing:
         raise SystemExit(f"Fill in {', '.join(missing)} in .env first")

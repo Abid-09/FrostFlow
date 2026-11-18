@@ -35,7 +35,11 @@ class DCRUnavailable(Exception):
 class DCRClient:
     mode = "dcr-repository"
 
-    def __init__(self, graph_id=None, username=None, password=None, base_url=None):
+    def __init__(self, graph_id=None, username=None, password=None, base_url=None,
+                 activities=None):
+        # dcrgraphs.net also lists nesting groups (e.g. "A19", "A19.A18") as events,
+        # enabled when a child is. Only the graph's real activities are reported.
+        self.activities = set(activities) if activities else None
         self.graph_id = graph_id or os.getenv("DCR_GRAPH_ID", "")
         self.username = username or os.getenv("DCR_USERNAME", "")
         self.password = password or os.getenv("DCR_PASSWORD", "")
@@ -88,7 +92,10 @@ class DCRClient:
         _, _, raw = self._call(
             "GET", f"/sims/{quote(sim_id)}/events?filter={quote(filter_)}"
         )
-        return parse_events(raw)
+        events = parse_events(raw)
+        if self.activities is not None:
+            events["events"] = [e for e in events["events"] if e["id"] in self.activities]
+        return events
 
     def execute(self, sim_id, event_id, role=None):
         self._call(
@@ -252,9 +259,15 @@ def default_model_path():
     return str(Path(__file__).resolve().parents[1] / "dcr" / "p4_quality_investigation.xml")
 
 
+def model_activities(model_path):
+    root = ET.parse(model_path).getroot()
+    return {e.get("id") for e in root.findall("./specification/resources/events/event")
+            if not e.findall("./event")}
+
+
 def make_dcr(registry_path):
     """Use the DCR repository when credentials are set, otherwise the local engine."""
-    client = DCRClient()
+    client = DCRClient(activities=model_activities(default_model_path()))
     mode = os.getenv("DCR_MODE", "auto")
     if mode == "repository" or (mode == "auto" and client.configured()):
         return client
