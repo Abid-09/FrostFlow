@@ -16,8 +16,7 @@ Start with the documents relevant to your task:
 | [Run guide](docs/RUNNING.md) | Environment, startup, verification commands, fresh datasets and recovery limits |
 | [Task board](project_notes/TASKS.md) | Current checkpoint, ownership, open dependencies and collaboration workflow |
 | [AI-use record](project_notes/AI-USAGE.md) | Actual assistance and verification history; append your contribution |
-| `compliance/p1/` … `compliance/p4/` | Rules, captured execution logs and verification reports for each process |
-| [P4 guide](docs/P4-QUALITY-INVESTIGATION.md) | P4 DCR investigation: rules, engine modes, endpoints and evidence |
+| `compliance/p1/`, `compliance/p2/`, `compliance/p3/` | Rules, captured execution logs and verification reports for each process |
 | [Merged-main verification](compliance/merged-main-verification.json) | Recorded integrated smoke result and its exact tested revision |
 
 Some guide sections retain older checkpoints or describe the target architecture. Check current code, the task board's latest checkpoint and each report's tested commit/hash before claiming something works. Flag contradictions instead of silently inventing ownership or treating planned work as implemented. The separate course specification, proposal and signed contract PDFs are intentionally absent from Git; do not claim to have inspected them from these summaries.
@@ -27,8 +26,8 @@ Some guide sections retain older checkpoints or describe the target architecture
 - **P1 — preparation:** stock checks, reservation, shortage/replenishment/cancellation, loading verification and dispatch. Owner: Ashvanth.
 - **P2 — transport:** scripted GPS/ETA, optional TomTom traffic ETAs, local Siddhi risk detection, dispatcher decisions, automatic arrival and receipt-gated vehicle release. Owner: Rahul Shanbhag.
 - **P3 — receiving:** durable arrival handoff, physical receipt, inspection, separate receiving inventory and quality hold/release/rejection. Owner: Arunima Garg.
-- **P4 — investigation (DCR):** consumes P2's durable handoff (and temperature alerts) into a DCR case, enforces the investigation rules and applies decisions through `Registry.accept_quality_status` for the current incident. Runs in the dcrgraphs.net repository when `DCR_*` credentials are set, otherwise in the local engine on the same graph. Owner claimed: Abid Hasan (team confirmation pending). Offline tests and a live stack run (`compliance/p4/`) pass; repository-mode run and ProcessDoctor are pending. `POST /integrations/p4/quality-status` and CLI option 17 remain test stand-ins that bypass P4.
-- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. P5/P6 and shared integration owners remain unassigned.
+- **P4 — investigation:** the quality-status endpoint, persisted hold and durable investigation handoff exist. The real executable DCR investigation and handoff consumer are still to be implemented. Test-harness dispositions and CLI releases are stand-ins, not P4 execution.
+- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. P4 ownership awaits team confirmation (an earlier draft named Abid); P5/P6 and shared integration owners remain unassigned.
 
 Preserve the full P1–P6 plan without expanding an unrelated repair into those features. Mixed-product crates, partial fulfilment, new-batch procurement, route optimisation and detailed refrigeration physics are outside the current increment.
 
@@ -46,7 +45,6 @@ Preserve the full P1–P6 plan without expanding an unrelated repair into those 
 | `stage_tests/test_*.py` | Offline `unittest` regressions with substituted engine/external calls |
 | `stage_tests/check_*.py` | Live engine/integration runners; inspect prerequisites before running |
 | `compliance/check.py` | Flat DCR replay and XES tooling; not a DCR process execution service |
-| `deployer/quality.py`, `deployer/dcr_client.py`, `dcr/` | P4 investigation service, DCR repository client/local engine and the executable graph |
 | `compliance/p*/build_*_evidence.py` | Rule/log generation and verification helpers for P2/P3 |
 | `event_streams/` | Example request inputs |
 | `runtime/` | Ignored local registries, provider responses and generated execution evidence |
@@ -127,7 +125,6 @@ Regenerate affected model PDFs using the pinned export commands in the run guide
 | P1 regression | `stage_tests/check_stage1.py` | Fresh paired version-3 data, 100 warehouse crates, free vehicles, simulator **off**; includes independent transports, retry/receipt gates and vehicle reuse |
 | P2 live acceptance | `stage_tests/check_p2_siddhi.py` | Fresh paired data, simulator **on**, local Siddhi, GPS tick 10 s; risk, acknowledged route change, arrival closure and current-incident hold/release |
 | P3 live scenarios | `stage_tests/check_p3_compliance.py --base http://localhost:5001` | Fresh paired data, simulator on; normal admission, hold/release, inspection rejection, quality rejection; runner otherwise defaults to alternate port 5011 |
-| P4 live investigations | `stage_tests/check_p4_investigation.py --base http://localhost:5001` | Fresh paired data, simulator on, P4 enabled (Compose default); four DCR investigations with refused actions and the P3 outcome; then `compliance/p4/build_p4_evidence.py --live ...` |
 | Integrated smoke | `stage_tests/check_integration_smoke.py` | Existing healthy default-port stack permitted; simulator on, free vehicles, one salad and one chicken crate; new shipments, admission/hold-rejection, exported end events and stock deltas |
 
 Follow [the run guide's sequential stack commands](docs/RUNNING.md#automated-verification) rather than launching separate concurrent stacks. Set `TOMTOM_API_KEY=` for deterministic local-estimate runs and label that mode; do not report them as live TomTom verification.
@@ -138,10 +135,9 @@ Local replay of saved evidence can run without Docker:
 .venv/bin/python compliance/check.py compliance/p1/execution-log.xes
 .venv/bin/python compliance/check.py compliance/p2/execution-log.xes --model compliance/p2/rules.xml
 .venv/bin/python compliance/check.py compliance/p3/execution-log.xes --model compliance/p3/rules.xml
-.venv/bin/python compliance/p4/build_p4_evidence.py   # P4: simulation log, forbidden traces, report
 ```
 
-The flat checker implements conditions, responses, includes, excludes and milestones; it does not implement timed/data/hierarchical DCR. P4's local engine (`deployer/dcr_client.LocalDCR`) uses the same flat semantics; `compliance/p4/rules.xml` must stay identical to `dcr/p4_quality_investigation.xml`. Keep synthetic forbidden traces separate from actual execution logs. A synthetic invalid trace's failure is expected, not a suite failure.
+The flat checker implements conditions, responses, includes, excludes and milestones; it does not implement timed/data/hierarchical DCR or real P4 execution. Keep synthetic forbidden traces separate from actual execution logs. A synthetic invalid trace's failure is expected, not a suite failure.
 
 Keep **offline tests, live execution, local DCR replay and external ProcessDoctor conformance** distinct. Record actual commands, environment/input modes, tested commit, source/model/log hashes and outcomes. Current P2/P3 ProcessDoctor refreshes remain pending in the committed reports; historical portal results do not validate changed logs. Check those reports for later updates. If model/log evidence changes, refresh external results or mark them pending with the actual reason. Log/verification builders overwrite artifacts: do not run them casually or replace reviewed evidence with synthetic, partial or failed runs.
 
@@ -153,7 +149,7 @@ Keep **offline tests, live execution, local DCR replay and external ProcessDocto
 - Ordinary `stop`/`start` preserves data. For recreation, provide the original project, registry and overlay variables again. Python changes require rebuilding communication; BPMN sources are mounted and redeploy after communication restart; Siddhi changes require reloading/restarting Siddhi.
 - Do not broadly prune Docker or remove volumes with unverified contents. Identify disposable stopped containers, preserve needed evidence and remove only those. `down -v` is a deliberate destructive reset, not a routine test or cleanup step.
 - API: `127.0.0.1:5001`; Operate: `8081`; Elasticsearch: `9200`; Zeebe gRPC: `26501`; broker management: `9601`; Siddhi telemetry/commands: `8006`/`8007`. Check health for `status: ready`, `stage: 3` and integration modes. The alternative-port P3 overlay is documented in the run guide.
-- Retain existing environment names, including the spelling `SIDDIHI_TELEMETRY_URL` and `SIDDIHI_COMMAND_URL`. `P3_ARRIVAL_URL` defaults to the local P3 receiver; `P4_INCIDENT_URL` defaults to the local P4 consumer. `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` belong only in an untracked `.env`. Compose does not currently forward every app-supported variable; check both configurations when adding one.
+- Retain existing environment names, including the spelling `SIDDIHI_TELEMETRY_URL` and `SIDDIHI_COMMAND_URL`. `P3_ARRIVAL_URL` defaults to the local P3 receiver; `P4_INCIDENT_URL` is a future consumer setting, not proof that P4 is deployed. Compose does not currently forward every app-supported variable; check both configurations when adding one.
 - `.env`, keys, SQLite files and raw `runtime/` output stay untracked. Do not print secrets, dump environment files, commit credentials in URLs/logs or expose unauthenticated local demo endpoints publicly. Commit only reviewed, sanitized evidence. Model PDFs under `bpmn/` are tracked; separately supplied reference PDFs under `docs/` are ignored.
 - Engine-start timeouts can have uncertain outcomes. Inspect retained state before retrying. Published messages have finite retention (24 hours in the current implementation); expired-message/uncertain-start reconciliation remains manual. Do not erase records to hide incidents or manufacture success.
 
