@@ -234,3 +234,5 @@ git switch -c feat/p2-transport
 Choose a branch name for your task and agree on ownership before starting shared changes. Update this board with the implementation, push your branch and open a pull request with the relevant test results. A teammate should review and run the change before it is merged into `main`.
 
 Keep business IDs and message contracts consistent with the [integration agreement](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md). Use the implemented outbox/inbox for P2 handoff; extend its manual-recovery limits when implementing the rest of transport. Agree on geographic routes, CEP thresholds, reading cadence and freshness limits before simulator/CEP work. Keep each developer's engine volumes and registry local and consistent.
+
+See [Abid’s P4 foundation handover](../docs/P4-FOUNDATION-HANDOVER.md) for intake, durable acknowledgements, assessed evidence versions, fixtures and reintegration requirements.

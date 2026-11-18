@@ -286,3 +286,5 @@ The [foundation specification](PRE-P4-FOUNDATION.md) defines the approved profil
 - `POST /integrations/p4/quality-status`: monitored RELEASED/REJECTED dispositions require `expectedEvidenceVersion` and the current incident. This trusted-local test endpoint is a stand-in. Material new reason/episode/urgent escalation advances the version. Normal readings never release goods; terminal rejection retains its incident.
 
 Loading verification starts a session with an immutable profile. Physical receipt closes it at a final sequence and promptly sends P2 acknowledgement. `p3-finalize-monitoring` keeps P3 at an explicit service task until evaluation reaches closure, or a 20-second timeout establishes a durable uncertainty hold. Admission rechecks closed/finalized monitoring and current quality permission in one transaction. Legacy shipments without a snapshot are labelled legacy/unmonitored and retain their original engine model.
+
+See [Abid’s P4 foundation handover](P4-FOUNDATION-HANDOVER.md) for intake, durable acknowledgements, assessed evidence versions, fixtures and reintegration requirements.
