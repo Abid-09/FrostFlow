@@ -178,3 +178,17 @@ Separate actual Open-Meteo and TomTom HTTP 200 calls succeeded; deterministic su
 ## 2026-11-18 — user-performed ProcessDoctor checks
 
 Codex preserved four user-supplied screenshots and recorded manual external conformance for the review-18 logs: P1 3/3 variants (4 traces), P2 3/3 (3), P3 4/4 (4), container 5/5 (6), all with zero violations at coverage 100. The user confirmed P2/P3 input identity despite generic displayed filenames; the corrected P1 screenshot matches the current log's 2/1/1 occurrences. Recorded model/log/screenshot hashes, updated the review report and current documentation, and updated PR #9. Codex did not operate ProcessDoctor or claim a fresh external negative-trace check. Historical logs/reports remain unchanged. Documentation/evidence checks only; no runtime changes or merge performed.
+
+## 2026-11-04 to 2026-11-18 — P4 quality investigation in DCR (Abid Hasan)
+
+**Tool:** Claude (Anthropic, Claude Opus 5.5) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** read the course material, proposal and repository; plan P4 and write its AS-IS/TO-BE, rules and DCR graph step by step with the owner; check the owner's dcrgraphs.net drawing and simulation; then align P4 with the merged P1–P3 code and finish it to the same standard (code, diagrams, compliance evidence, documentation) for a PR.
+
+**Assistance:** generated `dcr/p4_quality_investigation.xml` from a reviewed rule list (the owner drew and simulated the same graph in dcrgraphs.net); wrote `deployer/quality.py` (consumer of P2's `DeliveryRiskIncident` handoff, temperature-alert intake, DCR-gated activities, decisions through `Registry.accept_quality_status`, background retries), `deployer/dcr_client.py` (dcrgraphs.net REST client and a local engine on the same graph), demo option 18, `stage_tests/test_p4.py`, `stage_tests/check_p4_investigation.py`, `compliance/p4/` (rules, builder, forbidden traces, simulation log transcribed from the owner's trace screenshots) and the documentation updates listed in the PR. The `dcr/` PDFs are the owner's dcrgraphs.net screenshot and the owner's AS-IS BPMN figure.
+
+**Actual results:** the full offline suite (81 tests, including the P1–P3 suite unchanged) passes with Python 3.12.3 (and 3.13); the exhaustive marking search finds 3 425 reachable markings with no deadlock and no dead activity; dcrgraphs.net runs 1–3 replay as valid and accepting, run 4 as an intentionally unfinished case; all 9 synthetic forbidden traces are rejected. See `compliance/p4/verification.json`.
+
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh dataset): run `900821e9` passed; the AI then built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
+
+**Not done / limits:** no dcrgraphs.net API execution (team credentials not used by the AI; export blocked on our subscription) and no ProcessDoctor check. Siddhi temperature/recovery patterns and the cooling-command bridge are not implemented; those inputs are manual/simulated. The owner must review and be able to explain the changes, run the live check and record its result.
