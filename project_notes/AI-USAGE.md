@@ -146,3 +146,17 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Output:** corrected the README, run guide, integration agreement, implementation guide and task board against current code and committed reports. Replaced the default-flow P2 receipt shortcut with P3 receipt/inspection, aligned demo actions and fresh-data prerequisites, separated verified local integration from pending external checks, updated current log references and split partially completed shared tasks. P4 ownership is explicitly awaiting confirmation because the earlier Abid attribution conflicts with the task board; no new owner was assigned. Added a mandatory cross-file documentation review and PR impact note to `AGENTS.md`. Preserved historical AI-use entries, model/log artifacts and verification results.
 
 **Validation:** relative links/anchors, documented scripts, curl endpoint/payload shapes, Markdown fences and whitespace checked against repository files; `git diff --check` passed. Documentation only: no application/model edits or live-stack mutation. Extended documentation PR #7 with these corrections.
+
+## 2026-11-04 to 2026-11-18 — P4 quality investigation in DCR (Abid Hasan)
+
+**Tool:** Claude (Anthropic, Claude Opus 5.5) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** read the course material, proposal and repository; plan P4 and write its AS-IS/TO-BE, rules and DCR graph step by step with the owner; check the owner's dcrgraphs.net drawing and simulation; then align P4 with the merged P1–P3 code and finish it to the same standard (code, diagrams, compliance evidence, documentation) for a PR.
+
+**Assistance:** generated `dcr/p4_quality_investigation.xml` from a reviewed rule list (the owner drew and simulated the same graph in dcrgraphs.net); wrote `deployer/quality.py` (consumer of P2's `DeliveryRiskIncident` handoff, temperature-alert intake, DCR-gated activities, decisions through `Registry.accept_quality_status`, background retries), `deployer/dcr_client.py` (dcrgraphs.net REST client and a local engine on the same graph), demo option 18, `stage_tests/test_p4.py`, `stage_tests/check_p4_investigation.py`, `compliance/p4/` (rules, builder, forbidden traces, simulation log transcribed from the owner's trace screenshots) and the documentation updates listed in the PR. The `dcr/` PDFs are the owner's dcrgraphs.net screenshot and the owner's AS-IS BPMN figure.
+
+**Actual results:** the full offline suite (81 tests, including the P1–P3 suite unchanged) passes with Python 3.12.3 (and 3.13); the exhaustive marking search finds 3 425 reachable markings with no deadlock and no dead activity; dcrgraphs.net runs 1–3 replay as valid and accepting, run 4 as an intentionally unfinished case; all 9 synthetic forbidden traces are rejected. See `compliance/p4/verification.json`.
+
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh dataset): run `900821e9` passed; the AI then built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
+
+**Not done / limits:** no dcrgraphs.net API execution (team credentials not used by the AI; export blocked on our subscription) and no ProcessDoctor check. Siddhi temperature/recovery patterns and the cooling-command bridge are not implemented; those inputs are manual/simulated. The owner must review and be able to explain the changes, run the live check and record its result.

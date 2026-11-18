@@ -1,13 +1,13 @@
 # Team task board
 
-**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** P4 ownership awaits team confirmation (an earlier guide named Abid); P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
+**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** Abid Hasan claims P4 with the P4 PR; the team confirms this when reviewing it; P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks and real P4 consumer remain outstanding |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks remain outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | To be confirmed | TODO | Confirm ownership (earlier guide named Abid), DCR access + incident integration |
+| P4 Quality investigation (DCR) | Abid Hasan (claimed; team to confirm) | IMPLEMENTED; offline tests, dcrgraphs.net simulation and live stack run (`900821e9`) pass; DCR API run and ProcessDoctor pending | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); team dcrgraphs.net account |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -23,7 +23,10 @@
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
 - [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
-- [ ] P4 owner (awaiting confirmation): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
+- [x] P4 (Abid): consume the durable handoff into a DCR investigation and apply decisions through the shared quality-status contract; offline suite 81 tests OK (P4 PR, branch `feat/p4-quality-investigation`).
+- [x] P4 (Abid): `check_p4_investigation.py` passed on a fresh stack (run `900821e9`, macOS arm64, commit `f9a92ee`); `compliance/p4/execution-log.xes` and the live report are committed.
+- [ ] P4 (Abid): ProcessDoctor on `compliance/p4/rules.xml` + `execution-log.xes`.
+- [ ] P4 (Abid + team account): run the investigation in `dcr-repository` mode against dcrgraphs.net and record the result.
 
 Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
 
@@ -36,7 +39,8 @@ The sections below retain dated historical checkpoints and original P1–P6 work
 - [x] Add project README, shared task board and consolidated run/verification guide.
 - [ ] Team reviews scope/contracts; confirms P4 ownership and assigns P5/P6 and shared integration owners. P1/P2/P3 owners are already recorded above.
 - [x] Run the P1 engine check and restart assertions; record results in [the run guide](../docs/RUNNING.md#automated-verification).
-- [ ] Create and execute one minimal real DCR case; record access instructions without credentials.
+- [x] Execute the P4 graph in the dcrgraphs.net simulator (four runs, screenshots in `compliance/p4/`); access instructions without credentials are in the [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md#dcr-engine).
+- [ ] Execute a P4 case through the dcrgraphs.net API (repository mode).
 - [x] Historical live TomTom requests and sanitized provider evidence recorded; see P2 report for the tested revision.
 - [ ] Recheck TomTom with a valid current key, and implement/verify Open-Meteo independently.
 - [x] Import the P1 DCR graph and real three-trace log into processdoctor.compute.dtu.dk and run conformance checking.
@@ -104,7 +108,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] PR review (b): the decision worker returns `routeId`/`routeRevision`; the live check confirms Operate's exported variables match the shipment API.
 - [x] PR review (d), extended by the duplicate-event repair: Siddhi alerts only after three distinct consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
 - [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
-- [ ] **P4 dependency (owner awaiting confirmation):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
+- [x] **P4 dependency:** the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) is consumed by the P4 DCR investigation, which issues the authorised disposition (P4 PR). The stand-in `POST /integrations/p4/quality-status` / CLI option 17 remains for P3-only checks.
 - [ ] Re-verify TomTom with a valid key (the 2026-11-15 key now returns HTTP 401).
 
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
@@ -131,13 +135,18 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 
 ## P4 — Quality investigation (knowledge-intensive DCR process)
 
-- [ ] Author a real DCR graph with flexible evidence order and required assessment/disposition.
-- [ ] Persist hold before creating the DCR case; keep it if DCR creation fails.
-- [ ] Coalesce repeated alerts into one active incident; create a new episode after closure.
-- [ ] Enforce requested-check obligations and prevent premature closure.
-- [ ] Send cooling command through Siddhi; collect acknowledgement and recovery evidence.
-- [ ] Record authorised RELEASE/REPLACE/RETURN and notify P3/P5 for the current incident.
-- [ ] Prove blocked DCR actions, alternative evidence order and the stock-admission gate.
+Owner: Abid Hasan (claimed; team to confirm). Details: [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md).
+
+- [x] Author the DCR graph (16 activities, 3 groups, 83 flat relations) with flexible evidence order and required assessment/disposition; exhaustive search: 3 425 markings, no deadlock, no dead activity.
+- [x] Hold before the DCR case (P2 for delays, P4 via `accept_quality_status` for temperature alerts); the hold stays and the case is retried if DCR is unavailable.
+- [x] Coalesce repeated alerts into one active incident (`AddAlertEvidence` + re-assessment); late alerts for a closed/`REJECTED` incident are evidence only; a new incident after release.
+- [x] Enforce requested-check and cooling-answer obligations and prevent premature closure (DCR refuses with 409).
+- [ ] Send the cooling command through Siddhi and feed acknowledgement/recovery evidence from it (shared CEP work; manual/simulated inputs for now).
+- [x] Record authorised RELEASE/REPLACE/RETURN with a reason; apply it to P3 for the current incident only. P5 consumption is planned.
+- [x] Prove blocked DCR actions, alternative evidence orders and the stock-admission gate offline and in the dcrgraphs.net simulator.
+- [x] Prove the same on a live stack (`check_p4_investigation.py`, run `900821e9`).
+- [ ] Prove it in repository mode; run ProcessDoctor on the live log.
+- [x] Demo menu option 18 drives the investigation; AS-IS model and DCR PDF in `dcr/`.
 
 ## P5 — Corrective fulfilment
 
@@ -160,7 +169,8 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 - [x] Implement/document the current ETA rule: three distinct consecutive fresh late observations, 30-second freshness and 180-second window.
 - [ ] Agree temperature/recovery thresholds, reading cadence, gap limits and units before implementing those patterns.
 - [x] Implement P1–P3 envelope validation, transactional handoffs and event/delivery/command deduplication.
-- [ ] Extend those contracts and retry checks to real P4 and future P5/P6 connections.
+- [x] Extend those contracts and retry checks to P4 (handoff delivery ID, alert and activity event IDs).
+- [ ] Extend them to future P5/P6 connections.
 - [x] Implement persistent distinct-ETA delivery risk in Siddhi; isolated-rule and live P2 checks pass.
 - [ ] Implement temperature excursion and post-cooling-command recovery in Siddhi.
 - [x] Verify the P2 dispatcher-command/Siddhi/scripted-simulator/telemetry loop.

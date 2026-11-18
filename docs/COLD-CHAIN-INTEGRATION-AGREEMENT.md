@@ -2,7 +2,7 @@
 
 **Purpose:** define how the six processes exchange information before their owners implement the connections. Read the [team implementation guide](COLD-CHAIN-IMPLEMENTATION-GUIDE.md) for scope, assignments, and stages.
 
-**Status:** shared contract for implemented P1–P3 and planned P4–P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
+**Status:** shared contract for implemented P1–P4 and planned P5–P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
 
 ## 1. Common identifiers
 
@@ -72,10 +72,11 @@ The Python integration service delivers these messages to the relevant engine or
 | `ShipmentDispatched` | P1 → P2 | Product, batch, quantity/unit, vehicle, recipient, route, delivery deadline | Start transport and simulator journey. |
 | `ShipmentArrivalNotification` | P2 → P3 | Delivery ID, shipment/journey/product/batch, arrival time and destination | Deduplicate the HTTP handoff and start one receiving process. |
 | `ReceiptAcknowledged` | P3 → P2 | Recipient, quantity received, receipt time | Allow transport completion; no quality release is implied. |
-| `TemperatureExcursionDetected` | Siddhi → P4 integration | Pattern start/end, temperature evidence | Establish hold, then open/update investigation. |
+| `TemperatureExcursionDetected` | Siddhi → P4 integration (`POST /integrations/p4/temperature-excursion`; Siddhi pattern still planned) | Pattern start/end, temperature evidence | Establish hold, then open/update investigation. |
 | `DeliveryRiskDetected` | Siddhi → P2 and P4 integration | Latest ETA, deadline, supporting updates | Request dispatcher decision and establish quality assessment/hold. |
+| `DeliveryRiskIncident` | P2 integration → P4 (`P4_INCIDENT_URL`, durable HTTP outbox) | Delivery ID, shipment/journey/product/batch, incident, `incidentOpened`, `qualityStatus`, risk event | Open the DCR case or add the alert as evidence; for a closed/`REJECTED` incident record late evidence only. |
 | `RecoveryVerified` | Siddhi → P4 | Incident, cooling command, stable-reading interval | Add evidence; do not automatically release goods. |
-| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | P3 updates admission permission; P5 starts only for replacement/return. |
+| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | Implemented for P3 as `accept_quality_status` → `QualityStatusChanged` (current incident only) plus a `DispositionRecorded` journal entry; P5 consumption is planned. |
 | `StockAdmitted` | P3 → shared log; P5 when replacement | Admission time and receiver; original link if applicable | Record stock admission; allow replacement fulfilment to progress. |
 | `GoodsRejected` | P3 → shared log; P5 when replacement | Incident and reason | Record rejection; a rejected replacement cannot count as successful fulfilment. |
 | `ReturnCollected` | Manual/simulated collection → P5 | Incident, collector, collection time | Complete acknowledged return after matching the authorised booking. |
@@ -121,7 +122,7 @@ The P2 manual receipt endpoint is usable only in P2-only runs (`P3_ARRIVAL_URL` 
 
 ### P2 and P3 development handover
 
-P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. P4 ownership awaits team confirmation (an earlier guide named Abid); P5/P6 and shared external integration owners remain unassigned. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
+P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. P4 is claimed by **Abid Hasan** with the P4 PR (team confirmation on the task board); P5/P6 and shared external integration owners remain unassigned. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
 
 #### P2 transport implementation
 
@@ -199,7 +200,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | --- | --- | --- |
 | Fresh ProcessDoctor checks for current P2/P3 logs | Rahul (P2), Arunima Garg (P3); portal access | Record actual results for the current log hashes; historical checks do not establish current conformance |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
-| Real P4 investigation consumer and authorised dispositions | P4 owner awaiting confirmation; executable DCR service | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
+| P4 dcrgraphs.net API run and ProcessDoctor | Abid (P4); team DCR account, portal access | The consumer and dispositions are implemented, tested offline and live (run `900821e9`); record a repository-mode run and the external conformance result in `compliance/p4/verification.json` |
 | External physical simulator, temperature/recovery CEP and weather | Shared owners to be assigned | Agree external contracts and verify new end-to-end paths; the local scripted simulator remains the current implementation |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.
@@ -208,7 +209,7 @@ P2 receives `shipmentId` and the complete `dispatchEvent` envelope at its start.
 
 `Registry.advance` is specific to P1. P2 uses process-specific transactional methods for journey start, arrival recording and vehicle release. P3 has its own executable receiving model, durable P2 arrival receiver, receipt acknowledgement, inspection decision and separate inventory. Physical arrival does not complete transport; receipt does not permit stock admission by itself.
 
-Read the current shipment through the state endpoint or shared registry; do not introduce a separate quality-status copy in another service or process variable. Every admission attempt must check permission in the same transaction/order as hold changes. P3's admission operation checks this transactionally. P4's DCR investigation consumer remains to be implemented.
+Read the current shipment through the state endpoint or shared registry; do not introduce a separate quality-status copy in another service or process variable. Every admission attempt must check permission in the same transaction/order as hold changes. P3's admission operation checks this transactionally. P4 changes the status only through `Registry.accept_quality_status`; see [the P4 contract](#implemented-p4-investigation-contract).
 
 Process definitions are deployed on service startup. After editing a model, restart the communication service; after Python changes, rebuild it with `docker compose up --build -d communication`. Existing instances stay on their original model version. Start fresh cases to test a changed definition, and preserve the existing P1 contract/tests.
 
@@ -225,11 +226,11 @@ Delivery progress and quality permission are separate. Goods may be physically r
 
 A small persistent shared registry holds shipment mappings and quality status. Camunda and DCR retain their own workflow state. P3 checks current permission transactionally at the admission action rather than trusting an old screen or process variable.
 
-P3's internal quality-status receiver persists a hold/disposition in the shared registry and resumes a held P3 process after a current-incident release or rejection. The P4 incident handler that creates the DCR case and owns those decisions remains to be implemented. The registry serializes hold changes and admission decisions per shipment so two competing requests cannot bypass the rule.
+P3's internal quality-status receiver persists a hold/disposition in the shared registry and resumes a held P3 process after a current-incident release or rejection. The P4 incident handler (`deployer/quality.py`) creates the DCR case and owns those decisions. The registry serializes hold changes and admission decisions per shipment so two competing requests cannot bypass the rule.
 
 There is at most one active investigation per shipment. Further alerts add evidence to that investigation. After closure and a newly qualifying pattern, create a new incident. Only a confirmed decision for the current incident can change its hold; a delayed release from an older incident cannot clear a newer one.
 
-If a problem is discovered after admission, record a late-discovery exception and notify the receiver. Do not rewrite history as though admission had been blocked. Further food-use investigation is outside this prototype.
+If a problem is discovered after admission, record a late-discovery exception and notify the receiver. Do not rewrite history as though admission had been blocked. Further food-use investigation is outside this prototype. **Not implemented yet:** a temperature excursion after admission is refused (409) because the shared status cannot become `PENDING` after admission.
 
 ## 5. Commands and observable responses
 
@@ -268,6 +269,19 @@ The team guide remains the work plan. This document is the shared connection ref
 
 ETA retries are removed by `(shipmentId, journeyId, eventId)` before Siddhi classifies observations and evaluates its consecutive sequence. Only distinct readings count; freshness (30 seconds), the 180-second window, route revisions and sequence-breaking on-time, unavailable or stale observations retain their existing meaning.
 
-A delivery-risk alert for `REJECTED` goods preserves the quality status, original incident and recorded disposition. The durable `DeliveryRiskIncident` handoff contains the new risk evidence, `qualityStatus: REJECTED` and `incidentOpened: false`. Transport decisions remain available; quality release and stock admission remain forbidden. This is a persisted handoff contract, not an implemented P4 investigation.
+A delivery-risk alert for `REJECTED` goods preserves the quality status, original incident and recorded disposition. The durable `DeliveryRiskIncident` handoff contains the new risk evidence, `qualityStatus: REJECTED` and `incidentOpened: false`. Transport decisions remain available; quality release and stock admission remain forbidden. P4 records such an alert as `LateAlertEvidenceRecorded` on the closed incident; it cannot reopen quality permission.
 
 The P3 compliance runner waits for `AWAITING_LOADING` with no `pendingCommand` before requesting loading verification. The application guard remains enforced. Current live execution, local replay and external conformance results are recorded separately in the verification reports; see the run guide for commands and remaining checks.
+
+## Implemented P4 investigation contract
+
+P4 is implemented in `deployer/quality.py` (HTTP blueprint registered by `deployer/app.py`) and executes `dcr/p4_quality_investigation.xml` either in the dcrgraphs.net Active Repository (`DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` in an untracked `.env`) or, by default, in the local engine (`deployer/dcr_client.LocalDCR`) with the same flat semantics as `compliance/check.py`. `/health` reports `p4DcrEngine`. Compose sets `P4_INCIDENT_URL` to the local `POST /integrations/p4/incident`.
+
+| Endpoint | Required fields | Effect and responses |
+| --- | --- | --- |
+| `POST /integrations/p4/incident` | `{"event": {deliveryId, eventType: DeliveryRiskDetected, shipmentId, journeyId, incidentId, incidentOpened, qualityStatus, riskEvent{eventId, occurredAt}}}`; `Idempotency-Key` = `deliveryId` | The risk must have been accepted by P2. Unknown incident with `PENDING` → open case (`OpenIncident`); open incident → `AddAlertEvidence`; closed/`REJECTED` → `LateAlertEvidenceRecorded`. `202` durably accepted (also while DCR is down); identical retry `202` with the same body; changed content `409`; key mismatch `400` |
+| `POST /integrations/p4/temperature-excursion` | `eventId`, `shipmentId`, UTC `occurredAt`, `source`, `inputMode`, object `payload` | Shipment must be registered by P2. Without an active incident: hold through `accept_quality_status(PENDING, "TEMP:<eventId>")`, then open the case; otherwise join the active incident |
+| `POST /quality/incidents/<incidentId>/activities/<Activity>` | `actor`; `reason` for decisions; optional `note`, `eventId` (idempotency) | Executes only if DCR enables it, otherwise `409` with `enabled`. Integration-only activities (`OpenIncident`, `AddAlertEvidence`) `400` |
+| `GET /quality/incidents/<incidentId>`, `POST .../sync`, `GET /shipments/<id>/quality` | — | Read the case with its enabled/pending activities; retry after an outage; shipment quality view |
+
+A decision (`DecideRelease`/`DecideReplace`/`DecideReturn`) calls `Registry.accept_quality_status(shipmentId, "<incidentId>:disposition", decidedAt, RELEASED|REJECTED, incidentId)`. That enforces the current-incident and before-admission rules and queues `QualityStatusChanged` for a P3 instance waiting `ON_HOLD`. A refused (stale) decision is journalled as `StaleDispositionIgnored`; a failed registry write leaves `dispositionApplied: false` and is retried by the delivery loop together with cases in `DCR_UNAVAILABLE`. P4 journal entries use `process: "P4"`, the incident ID, the DCR role and the DCR case ID as `processInstanceKey`. The stand-in `POST /integrations/p4/quality-status` stays available for P3-only checks; a later P4 decision on an incident already released by the stand-in is stale.
