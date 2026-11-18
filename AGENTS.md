@@ -1,5 +1,7 @@
 # Working on FrostFlow
 
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+
 These instructions apply throughout this repository. Read this file before changing code, process models, tests or documentation. Keep it current when architecture, commands or shared contracts change.
 
 ## Project and sources of truth
@@ -26,8 +28,8 @@ Some guide sections retain older checkpoints or describe the target architecture
 - **P1 — preparation:** stock checks, reservation, shortage/replenishment/cancellation, loading verification and dispatch. Owner: Ashvanth.
 - **P2 — transport:** scripted GPS/ETA, optional TomTom traffic ETAs, local Siddhi risk detection, dispatcher decisions, automatic arrival and receipt-gated vehicle release. Owner: Rahul Shanbhag.
 - **P3 — receiving:** durable arrival handoff, physical receipt, inspection, separate receiving inventory and quality hold/release/rejection. Owner: Arunima Garg.
-- **P4 — investigation:** the quality-status endpoint, persisted hold and durable investigation handoff exist. The real executable DCR investigation and handoff consumer are still to be implemented. Test-harness dispositions and CLI releases are stand-ins, not P4 execution.
-- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. P4 ownership awaits team confirmation (an earlier draft named Abid); P5/P6 and shared integration owners remain unassigned.
+- **P4 — investigation:** the quality-status endpoint, persisted hold and durable investigation handoff exist. Abid’s executable DCR investigation and consumer from PR #10 are deferred pending foundation adaptation; they are absent from this restored baseline. Test-harness dispositions and CLI releases are stand-ins, not P4 execution.
+- **P5/P6:** corrective fulfilment and supplier claim resolution remain planned. Temperature-excursion/recovery CEP, weather integration, a shared logger and an external physical simulator also remain future work. Abid owns P4; P5/P6 and shared integration owners remain unassigned.
 
 Preserve the full P1–P6 plan without expanding an unrelated repair into those features. Mixed-product crates, partial fulfilment, new-batch procurement, route optimisation and detailed refrigeration physics are outside the current increment.
 

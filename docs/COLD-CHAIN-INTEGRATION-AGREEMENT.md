@@ -1,5 +1,7 @@
 # Cold-chain: shared integration agreement
 
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+
 **Purpose:** define how the six processes exchange information before their owners implement the connections. Read the [team implementation guide](COLD-CHAIN-IMPLEMENTATION-GUIDE.md) for scope, assignments, and stages.
 
 **Status:** shared contract for implemented P1–P3 and planned P4–P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
@@ -121,7 +123,7 @@ The P2 manual receipt endpoint is usable only in P2-only runs (`P3_ARRIVAL_URL` 
 
 ### P2 and P3 development handover
 
-P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. P4 ownership awaits team confirmation (an earlier guide named Abid); P5/P6 and shared external integration owners remain unassigned. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
+P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
 
 #### P2 transport implementation
 
@@ -199,7 +201,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | --- | --- | --- |
 | Fresh ProcessDoctor checks for current P2/P3 logs | Rahul (P2), Arunima Garg (P3); portal access | Record actual results for the current log hashes; historical checks do not establish current conformance |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
-| Real P4 investigation consumer and authorised dispositions | P4 owner awaiting confirmation; executable DCR service | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
+| Real P4 investigation consumer and authorised dispositions | Abid; foundation-compatible executable DCR service | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
 | External physical simulator, temperature/recovery CEP and weather | Shared owners to be assigned | Agree external contracts and verify new end-to-end paths; the local scripted simulator remains the current implementation |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.

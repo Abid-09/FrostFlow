@@ -1,5 +1,7 @@
 # Cold-chain delivery: team implementation guide
 
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+
 **Project:** refrigerated-food delivery and quality incident management
 
 **Team:** six students, one process owner each
@@ -8,7 +10,7 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 awaiting team confirmation; P5–P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5–P6 unassigned
 
 **Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
 
@@ -64,7 +66,7 @@ This demonstrates communication in both directions: **events affect processes, a
 
 ## 4. Who will do what?
 
-P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4 ownership and assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
+P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4; assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
 
 ### Ashvanth — P1: Shipment preparation · Camunda
 
@@ -105,9 +107,9 @@ P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4
 
 **Coordinate with P4:** read the same recorded quality status, so the receiving process cannot overlook an investigation.
 
-### Owner to be confirmed — P4: Quality incident investigation · DCR
+### Abid — P4: Quality incident investigation · DCR
 
-An earlier draft named Abid, while the task board recorded P4 as unassigned. Team confirmation is still required; this guide does not assign or remove responsibility.
+Abid is the confirmed P4 owner. His implementation in PR #10 is retained in history and awaits adaptation after the foundation is merged and verified.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 

@@ -146,3 +146,13 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 **Output:** corrected the README, run guide, integration agreement, implementation guide and task board against current code and committed reports. Replaced the default-flow P2 receipt shortcut with P3 receipt/inspection, aligned demo actions and fresh-data prerequisites, separated verified local integration from pending external checks, updated current log references and split partially completed shared tasks. P4 ownership is explicitly awaiting confirmation because the earlier Abid attribution conflicts with the task board; no new owner was assigned. Added a mandatory cross-file documentation review and PR impact note to `AGENTS.md`. Preserved historical AI-use entries, model/log artifacts and verification results.
 
 **Validation:** relative links/anchors, documented scripts, curl endpoint/payload shapes, Markdown fences and whitespace checked against repository files; `git diff --check` passed. Documentation only: no application/model edits or live-stack mutation. Extended documentation PR #7 with these corrections.
+
+## 2026-11-18 — foundation-first P4 revert preparation
+
+**Tool:** OpenAI Codex, Git/GitHub CLI, existing Python 3.12 `.venv`, Docker Compose configuration validation. No sub-agents.
+
+**Request:** implement the supplied foundation-first sequencing plan, stopping for explicit review before each merge.
+
+**Assistance:** fetched remote state, confirmed a clean tree, fast-forwarded foundation to `8726a49` preserving Arunima’s screenshots, created `revert/p4-until-foundation` from `af3c68c`, and reverted merge #10 with parent 1 in `31ad23b`. Confirmed exact tracked-tree equivalence to `552945d` before documentation updates. Reviewed P4/foundation source contracts; documented intake, acknowledgement, evidence-version, Compose merge and CLI collision findings. Updated current ownership to Abid and retained original work/evidence links. `colgrep` failed because no Metal GPU was available; used `rg` instead.
+
+**Checks and limits:** restored baseline passed 57 offline tests, `docker compose config --quiet` and `git diff --check`. Reviewed documentation links and limited baseline differences to documentation. No live integration, previous contract-failure reproduction, provider or ProcessDoctor checks were run; no registry or engine data was modified. Original P4 commits remain in history. Preparing the separate revert PR does not authorize its merge; foundation handover, full verification and replacement P4 work await subsequent review checkpoints.
