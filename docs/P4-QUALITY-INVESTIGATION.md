@@ -78,7 +78,7 @@ Incident IDs contain `:` (for example `DELAY:SIDDHI:RISK:...`); URL-encode them 
 | Offline tests (P4 with the real P2/P3 registry code; Zeebe substituted) | `stage_tests/test_p4.py` | PASS |
 | dcrgraphs.net simulator, 4 manual runs + blocked actions | `compliance/p4/dcrgraphs-simulation-log.xes`, `compliance/p4/screenshots/` | PASS (run 4 intentionally partial) |
 | Synthetic forbidden traces (9) | `compliance/p4/invalid-traces.json` | all rejected |
-| Live stack run (4 scenarios, P1→P2→P4→P3) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | **pending** — see below |
+| Live stack run (4 scenarios, P1→P2→P4→P3; Zeebe 8.8.0, local DCR engine, macOS arm64) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `900821e9`: 2 released → admitted, 2 rejected; 9 forbidden actions refused (409); 4 traces valid and accepting |
 | dcrgraphs.net API execution / ProcessDoctor | — | **pending** |
 
 ```bash
@@ -96,11 +96,10 @@ The last command exits 1 only because run 4 is intentionally unfinished (`Assess
 .venv/bin/python compliance/p4/build_p4_evidence.py --live runtime/p4-compliance/evidence.json
 ```
 
-Each scenario dispatches a real shipment, accepts a delivery risk, waits for P4 to open the case, receives and inspects the goods in P3 (which then waits `ON_HOLD`), executes the investigation, attempts forbidden actions (must be 409) and checks the final P3 outcome. The builder then writes `execution-log.xes` and the live section of `verification.json`.
+Each scenario dispatches a real shipment, accepts a delivery risk, waits for P4 to open the case, receives and inspects the goods in P3 (which then waits `ON_HOLD`), executes the investigation, attempts forbidden actions (must be 409) and checks the final P3 outcome. The builder then writes `execution-log.xes` and the live section of `verification.json`. Recorded result: run `900821e9` on 2026-11-18.
 
 ## Still to do
 
-- Run the live check above and commit its log/report (needs a machine with Docker).
 - Verify `dcr-repository` mode with the team's dcrgraphs.net account; upload `rules.xml` + the live log to ProcessDoctor.
 - Siddhi temperature-excursion/recovery patterns and the cooling-command bridge (shared CEP work); until then those inputs are manual/simulated.
 - P5 consumes `REPLACE`/`RETURN` dispositions (planned).

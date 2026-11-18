@@ -476,14 +476,14 @@ Each result below is tied to the code it ran against. Runtime output stays under
 | `build_p3_evidence.py verify` on P3 log | local DCR replay | log from run `9d1cd66e` | 4 valid, accepting cases; forbidden admission rejected |
 | P4 offline suite (`test_p4.py`) | unit/integration tests with the real P2/P3 registry code; Zeebe substituted; local DCR engine | P4 branch (see [P4 report](../compliance/p4/verification.json)) | PASS; full suite 81 tests OK. Includes the exhaustive marking search (3 425 markings, no deadlock, no dead activity) |
 | P4 dcrgraphs.net simulator | manual DCR execution, transcribed trace views | graph identical to `dcr/p4_quality_investigation.xml` | Runs 1–3 valid and accepting; run 4 intentionally partial; blocked actions shown in `compliance/p4/screenshots/` |
-| `check_p4_investigation.py` | live P1→P2→P4→P3 scenarios | — | **Pending:** not yet run on a Docker host |
+| `check_p4_investigation.py` | live P1→P2→P4→P3 scenarios; fresh data; local DCR engine; local demo ETAs | `f9a92ee` | PASS: run `900821e9`, release → admitted (2), replace/return → rejected (2), forbidden actions refused; 4 P4 traces valid and accepting in [compliance/p4/execution-log.xes](../compliance/p4/execution-log.xes) |
 | Pinned BPMN lint | model validation | `89dfd26` | All three models: zero errors, zero warnings |
 | ProcessDoctor | external conformance | current P2/P3 logs | **Pending:** browser tool returned “The browser access host is unavailable”. Previous results remain historical in each report; no fresh portal result is claimed |
 | TomTom | historical live provider check | earlier code/log | Preserved in P2 report and `tomtom-responses.jsonl`; current deterministic checks use local demo ETAs |
 
 Current logs were regenerated from the successful live runs. The current reports record tested commits, source/model/log hashes, environment and commands. No executable application/model changes followed these runs; subsequent changes update tests, documentation and captured evidence. PR #4 merged first (`e36b0ac`); PR #5 was updated against main, its remaining diff inspected, then merged (`ad47a3c`). The user explicitly approved merging while fresh ProcessDoctor checks remain pending. Merged-main smoke passed normal admission and hold/rejection, both process end events and exact inventory deltas; see [merged-main verification](../compliance/merged-main-verification.json).
 
-**P4:** the DCR investigation consumes the durable handoff and applies decisions for the current incident. Offline tests and the dcrgraphs.net simulation are recorded in [compliance/p4/verification.json](../compliance/p4/verification.json); the live stack run (`check_p4_investigation.py`) and a dcrgraphs.net API run are still pending.
+**P4:** the DCR investigation consumes the durable handoff and applies decisions for the current incident. Offline tests, the dcrgraphs.net simulation and the live stack run (`900821e9`) are recorded in [compliance/p4/verification.json](../compliance/p4/verification.json); a dcrgraphs.net API run and ProcessDoctor are still pending.
 
 ### P2 DCR compliance
 

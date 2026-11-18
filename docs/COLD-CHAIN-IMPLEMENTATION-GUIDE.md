@@ -10,7 +10,7 @@
 
 **Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid Hasan (claimed with the P4 PR; team confirmation on the task board); P5–P6 unassigned
 
-**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. The P4 investigation consumes that handoff as a DCR case and applies the officer's decision for the current incident ([P4 guide](P4-QUALITY-INVESTIGATION.md)); its live stack run and dcrgraphs.net API run are pending. Temperature CEP, weather integration and P5–P6 remain planned. The P1–P3 live checks still use the labelled stand-in for dispositions. See [verification commands and evidence](RUNNING.md#automated-verification).
+**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. The P4 investigation consumes that handoff as a DCR case and applies the officer's decision for the current incident ([P4 guide](P4-QUALITY-INVESTIGATION.md)); its live stack run passed (`900821e9`); a dcrgraphs.net API run is pending. Temperature CEP, weather integration and P5–P6 remain planned. The P1–P3 live checks still use the labelled stand-in for dispositions. See [verification commands and evidence](RUNNING.md#automated-verification).
 
 ## 1. What problem are we solving?
 
@@ -107,7 +107,7 @@ P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4
 
 ### Abid Hasan (team confirmation pending) — P4: Quality incident investigation · DCR
 
-**Status:** implemented — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests and the dcrgraphs.net simulation pass; the live stack run, a dcrgraphs.net API run and ProcessDoctor are pending. The Siddhi temperature/recovery inputs and the cooling-command bridge are shared CEP work; until then those inputs are manual or simulated.
+**Status:** implemented — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests, the dcrgraphs.net simulation and a live stack run (`900821e9`) pass; a dcrgraphs.net API run and ProcessDoctor are pending. The Siddhi temperature/recovery inputs and the cooling-command bridge are shared CEP work; until then those inputs are manual or simulated.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 

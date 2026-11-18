@@ -200,7 +200,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | --- | --- | --- |
 | Fresh ProcessDoctor checks for current P2/P3 logs | Rahul (P2), Arunima Garg (P3); portal access | Record actual results for the current log hashes; historical checks do not establish current conformance |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
-| P4 live stack run and dcrgraphs.net API run | Abid (P4); Docker host, team DCR account | The consumer and dispositions are implemented and tested offline; record `check_p4_investigation.py` results and a repository-mode run in `compliance/p4/verification.json` |
+| P4 dcrgraphs.net API run and ProcessDoctor | Abid (P4); team DCR account, portal access | The consumer and dispositions are implemented, tested offline and live (run `900821e9`); record a repository-mode run and the external conformance result in `compliance/p4/verification.json` |
 | External physical simulator, temperature/recovery CEP and weather | Shared owners to be assigned | Agree external contracts and verify new end-to-end paths; the local scripted simulator remains the current implementation |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.

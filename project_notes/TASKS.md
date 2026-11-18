@@ -7,7 +7,7 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks remain outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid Hasan (claimed; team to confirm) | IMPLEMENTED / VERIFY; offline tests and dcrgraphs.net simulation pass; live stack run, DCR API run and ProcessDoctor pending | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); Docker host for `check_p4_investigation.py`; team dcrgraphs.net account |
+| P4 Quality investigation (DCR) | Abid Hasan (claimed; team to confirm) | IMPLEMENTED; offline tests, dcrgraphs.net simulation and live stack run (`900821e9`) pass; DCR API run and ProcessDoctor pending | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); team dcrgraphs.net account |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -24,7 +24,8 @@
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
 - [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
 - [x] P4 (Abid): consume the durable handoff into a DCR investigation and apply decisions through the shared quality-status contract; offline suite 81 tests OK (P4 PR, branch `feat/p4-quality-investigation`).
-- [ ] P4 (Abid): run `check_p4_investigation.py` on a fresh stack and commit `compliance/p4/execution-log.xes` + live report; then ProcessDoctor.
+- [x] P4 (Abid): `check_p4_investigation.py` passed on a fresh stack (run `900821e9`, macOS arm64, commit `f9a92ee`); `compliance/p4/execution-log.xes` and the live report are committed.
+- [ ] P4 (Abid): ProcessDoctor on `compliance/p4/rules.xml` + `execution-log.xes`.
 - [ ] P4 (Abid + team account): run the investigation in `dcr-repository` mode against dcrgraphs.net and record the result.
 
 Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
@@ -143,7 +144,8 @@ Owner: Abid Hasan (claimed; team to confirm). Details: [P4 guide](../docs/P4-QUA
 - [ ] Send the cooling command through Siddhi and feed acknowledgement/recovery evidence from it (shared CEP work; manual/simulated inputs for now).
 - [x] Record authorised RELEASE/REPLACE/RETURN with a reason; apply it to P3 for the current incident only. P5 consumption is planned.
 - [x] Prove blocked DCR actions, alternative evidence orders and the stock-admission gate offline and in the dcrgraphs.net simulator.
-- [ ] Prove the same on a live stack (`check_p4_investigation.py`) and in repository mode; run ProcessDoctor on the live log.
+- [x] Prove the same on a live stack (`check_p4_investigation.py`, run `900821e9`).
+- [ ] Prove it in repository mode; run ProcessDoctor on the live log.
 - [x] Demo menu option 18 drives the investigation; AS-IS model and DCR PDF in `dcr/`.
 
 ## P5 — Corrective fulfilment
