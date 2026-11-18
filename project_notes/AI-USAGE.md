@@ -147,16 +147,12 @@ The signed team contract requires a faithful declaration of actual prompts, tool
 
 **Validation:** relative links/anchors, documented scripts, curl endpoint/payload shapes, Markdown fences and whitespace checked against repository files; `git diff --check` passed. Documentation only: no application/model edits or live-stack mutation. Extended documentation PR #7 with these corrections.
 
-## 2026-11-04 to 2026-11-18 — P4 quality investigation in DCR (Abid Hasan)
+## 2026-11-18 — foundation-first P4 revert preparation
 
-**Tool:** Claude (Anthropic, Claude Opus 5.5) in a cloud workspace with a clone of the repository; no sub-agents.
+**Tool:** OpenAI Codex, Git/GitHub CLI, existing Python 3.12 `.venv`, Docker Compose configuration validation. No sub-agents.
 
-**Prompt summary (paraphrase):** read the course material, proposal and repository; plan P4 and write its AS-IS/TO-BE, rules and DCR graph step by step with the owner; check the owner's dcrgraphs.net drawing and simulation; then align P4 with the merged P1–P3 code and finish it to the same standard (code, diagrams, compliance evidence, documentation) for a PR.
+**Request:** implement the supplied foundation-first sequencing plan, stopping for explicit review before each merge.
 
-**Assistance:** generated `dcr/p4_quality_investigation.xml` from a reviewed rule list (the owner drew and simulated the same graph in dcrgraphs.net); wrote `deployer/quality.py` (consumer of P2's `DeliveryRiskIncident` handoff, temperature-alert intake, DCR-gated activities, decisions through `Registry.accept_quality_status`, background retries), `deployer/dcr_client.py` (dcrgraphs.net REST client and a local engine on the same graph), demo option 18, `stage_tests/test_p4.py`, `stage_tests/check_p4_investigation.py`, `compliance/p4/` (rules, builder, forbidden traces, simulation log transcribed from the owner's trace screenshots) and the documentation updates listed in the PR. The `dcr/` PDFs are the owner's dcrgraphs.net screenshot and the owner's AS-IS BPMN figure.
+**Assistance:** fetched remote state, confirmed a clean tree, fast-forwarded foundation to `8726a49` preserving Arunima’s screenshots, created `revert/p4-until-foundation` from `af3c68c`, and reverted merge #10 with parent 1 in `31ad23b`. Confirmed exact tracked-tree equivalence to `552945d` before documentation updates. Reviewed P4/foundation source contracts; documented intake, acknowledgement, evidence-version, Compose merge and CLI collision findings. Updated current ownership to Abid and retained original work/evidence links. `colgrep` failed because no Metal GPU was available; used `rg` instead.
 
-**Actual results:** the full offline suite (81 tests, including the P1–P3 suite unchanged) passes with Python 3.12.3 (and 3.13); the exhaustive marking search finds 3 425 reachable markings with no deadlock and no dead activity; dcrgraphs.net runs 1–3 replay as valid and accepting, run 4 as an intentionally unfinished case; all 9 synthetic forbidden traces are rejected. See `compliance/p4/verification.json`.
-
-**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh dataset): run `900821e9` passed; the AI then built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
-
-**Not done / limits:** no dcrgraphs.net API execution (team credentials not used by the AI; export blocked on our subscription) and no ProcessDoctor check. Siddhi temperature/recovery patterns and the cooling-command bridge are not implemented; those inputs are manual/simulated. The owner must review and be able to explain the changes, run the live check and record its result.
+**Checks and limits:** restored baseline passed 57 offline tests, `docker compose config --quiet` and `git diff --check`. Reviewed documentation links and limited baseline differences to documentation. No live integration, previous contract-failure reproduction, provider or ProcessDoctor checks were run; no registry or engine data was modified. Original P4 commits remain in history. Preparing the separate revert PR does not authorize its merge; foundation handover, full verification and replacement P4 work await subsequent review checkpoints.

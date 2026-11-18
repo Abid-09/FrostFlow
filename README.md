@@ -1,5 +1,7 @@
 # Cold-chain Delivery and Quality Incident Management
 
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](docs/P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+
 A process-oriented application for coordinating refrigerated-food deliveries, detecting transport risks, and managing quality incidents.
 
 Developed for **02268 — Process-oriented and Event-driven Software Systems**, Technical University of Denmark, **Group 12**.
@@ -25,11 +27,11 @@ The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all product
 | P1 — Shipment preparation | Camunda / Zeebe | Stock wait/cancellation, dispatch handoff and local compliance verification implemented |
 | P2 — Transport and delivery | Camunda / Zeebe | Receipt-gated transport, scripted GPS/ETA, arrival and dispatcher decisions implemented |
 | P3 — Receiving and stock admission | Camunda / Zeebe | P2 arrival integration, physical receipt, inspection, separate receiving inventory and quality hold implemented; four live scenarios and local replay verified; see current external-check status in the run guide |
-| P4 — Quality incident investigation | DCR (dcrgraphs.net repository, or local engine on the same graph) | Investigation implemented and connected to the P2 hold handoff and P3 admission; offline tests, dcrgraphs.net simulation and a live stack run verified; dcrgraphs.net API check and ProcessDoctor pending ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
+| P4 — Quality incident investigation | DCR | Abid’s PR #10 implementation deferred pending foundation adaptation |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Planned |
 | P6 — Supplier claim resolution | Camunda / Zeebe | Planned |
 
-P1 supports shipment creation, stock checking, replenishment or cancellation during shortages, loading verification and dispatch. P2 starts a scripted route, records GPS/ETA updates, raises automatic arrival, detects delivery risk through the local Siddhi app (three distinct consecutive fresh late ETAs), places the shipment's quality status on hold, and waits for P3's physical receipt before releasing the vehicle. P3 receives P2's durable arrival notification, records physical receipt and inspection, then admits passing goods into a separate cafeteria receiving inventory; goods under a quality investigation remain on hold until P4 sends a disposition. Siddhi forwards approved route commands to the local scripted-simulator endpoint and waits for its acknowledgement before P2 updates the route; a route change keeps the destination. TomTom remains optional. Use the [short-deadline walkthrough](docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough) for Siddhi-generated risk; CLI option 11 is a manual test input. The Siddhi risk and route-command loop, the P3 receipt gate and the quality hold are live-verified; P2's DCR rules and log are in `compliance/p2/`. P4 consumes the hold's durable handoff, runs the investigation as a DCR case and applies the officer's decision for the current incident, which resumes a held P3 (CLI option 18; option 17 remains a stand-in that bypasses P4). See the [evidence table](docs/RUNNING.md#evidence-what-was-verified-and-where) for what was verified on which commit. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
+P1 supports shipment creation, stock checking, replenishment or cancellation during shortages, loading verification and dispatch. P2 starts a scripted route, records GPS/ETA updates, raises automatic arrival, detects delivery risk through the local Siddhi app (three distinct consecutive fresh late ETAs), places the shipment's quality status on hold, and waits for P3's physical receipt before releasing the vehicle. P3 receives P2's durable arrival notification, records physical receipt and inspection, then admits passing goods into a separate cafeteria receiving inventory; goods under a quality investigation remain on hold until P4 sends a disposition. Siddhi forwards approved route commands to the local scripted-simulator endpoint and waits for its acknowledgement before P2 updates the route; a route change keeps the destination. TomTom remains optional. Use the [short-deadline walkthrough](docs/RUNNING.md#live-siddhi-risk-and-route-command-walkthrough) for Siddhi-generated risk; CLI option 11 is a manual test input. The Siddhi risk and route-command loop, the P3 receipt gate and the quality hold are live-verified; P2's DCR rules and log are in `compliance/p2/`. **P4 is deferred from this baseline pending foundation adaptation**: the hold's P4 handoff is queued and the release is a stand-in (CLI option 17). See the [evidence table](docs/RUNNING.md#evidence-what-was-verified-and-where) for what was verified on which commit. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for interface details and remaining checks.
 
 ## Architecture
 
@@ -38,14 +40,13 @@ The transport adapter sends recorded telemetry to a configured Siddhi HTTP endpo
 The current implementation contains:
 
 - **Camunda Zeebe 8.8** — execution of P1 shipment preparation, P2 transport and P3 receiving.
-- **DCR** — execution of the P4 quality investigation: the dcrgraphs.net Active Repository when `DCR_*` credentials are configured, otherwise a local engine on the same graph (reported by `/health`).
 - **Python 3.12** — HTTP endpoints and Zeebe job workers, using Flask and pyzeebe.
 - **SQLite** — persistent shipment registry, warehouse reservations, separate recipient/product/batch receiving inventory, activity journal and durable outbox.
 - **Elasticsearch and Camunda Operate** — exported engine records and process inspection.
 
 ## Getting started
 
-Prerequisites: Docker Desktop with Compose, Python 3.12 for the checks, and Camunda Modeler for editing diagrams. BPMN lint commands also use Node.js/npm. The current checkpoint needs no external API keys or `.env` file; an optional untracked `.env` (see `.env.example`) switches P4 to the dcrgraphs.net repository.
+Prerequisites: Docker Desktop with Compose, Python 3.12 for the checks, and Camunda Modeler for editing diagrams. BPMN lint commands also use Node.js/npm. The current checkpoint needs no external API keys or `.env` file.
 
 Start Docker Desktop, then run these commands from the repository root. Ports 5001, 8006, 8007, 8081, 9200, 9601 and 26501 must be available. Inspect existing stacks/data first and keep only one project stack running; preserve each registry with its matching engine volumes.
 
@@ -102,8 +103,7 @@ deployer/            HTTP integration, Zeebe workers and shipment registry
 event_streams/       Scenario inputs
 stage_tests/         Offline tests and engine integration checks
 tools/               Interactive demonstration controls
-compliance/          P1–P4 DCR rules, replay tools and reviewed evidence
-dcr/                 P4 executable DCR graph, its PDF and the P4 AS-IS model
+compliance/          P1/P2/P3 DCR rules, replay tools and reviewed evidence
 siddhi-apps/         Local telemetry risk rule and route-command bridge
 docs/                Implementation guide, integration agreement and run instructions
 project_notes/       Team task board and AI-use declaration record
@@ -114,15 +114,15 @@ Directories for additional components will be introduced with their implementati
 
 ### DCR models and compliance rules
 
-`compliance/p1/`, `compliance/p2/` and `compliance/p3/` contain DCR rules that check recorded execution; Camunda runs these three processes. P5/P6 will need their own compliance deliverables as they are implemented.
+`compliance/p1/`, `compliance/p2/` and `compliance/p3/` contain DCR rules that check recorded execution; Camunda runs these three processes. P4–P6 will need their own compliance deliverables as they are implemented.
 
-P4 uses DCR to **execute** the quality investigation. Its model is [`dcr/p4_quality_investigation.xml`](dcr/p4_quality_investigation.xml) ([PDF](dcr/p4_quality_investigation.pdf)); `compliance/p4/rules.xml` is the same graph, with the dcrgraphs.net simulation log, forbidden traces, screenshots and verification report. See the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md).
+Abid’s P4 implementation uses DCR to **execute** the quality investigation. Its `dcr/` models and shared-service integration from PR #10 are retained in history for restoration and adaptation after foundation verification.
 
 ## Current P2/P3 integration and remaining work
 
 P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival, receipt acknowledgement, transport completion and vehicle release. P2 sends an idempotent durable arrival notification to P3; P3 records receipt, acknowledges P2, then inspects and admits, holds or rejects goods. Receiving inventory is separate from warehouse inventory. Offline regressions, P2/P3 live acceptance, local DCR replay and merged-main smoke are recorded in the verification reports. See the [P2/P3 handover](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover) for contracts and remaining work.
 
-**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg. P4: Abid Hasan (claimed with the P4 PR; confirm on the task board).** P5/P6 and shared external integration owners remain unassigned. The P4 dcrgraphs.net API check and ProcessDoctor, fresh P2/P3 ProcessDoctor checks, a current live TomTom recheck, temperature/weather integration and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
+**P1 owner: Ashvanth. P2 owner: Rahul. P3 owner: Arunima Garg.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. P4's real investigation/consumer, fresh P2/P3 ProcessDoctor checks, a current live TomTom recheck, temperature/weather integration and the external simulator remain outstanding. Historical TomTom results are retained separately from current deterministic runs using local ETAs.
 
 ## Project documentation
 
@@ -131,7 +131,6 @@ P2's receipt-gated flow is implemented from `ShipmentDispatched` through arrival
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — identifiers, messages, quality states and shared rules.
 - [Run guide](docs/RUNNING.md) — beginner walkthrough, BPMN/DCR explanation and verification.
 - [P1 model PDF](bpmn/shipment_preparation.pdf) and [DCR compliance rules](compliance/p1/rules.xml).
-- [P4 guide](docs/P4-QUALITY-INVESTIGATION.md) — the DCR investigation, its rules, API and evidence.
 - [Team task board](project_notes/TASKS.md) — ownership, progress and remaining deliverables.
 - [AI-use record](project_notes/AI-USAGE.md) — assistance recorded for the team contract declaration.
 

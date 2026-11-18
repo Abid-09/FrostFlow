@@ -1,5 +1,7 @@
 # Cold-chain delivery: team implementation guide
 
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. This branch restores the pre-P4 baseline while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). No merge is authorized by this update.
+
 **Project:** refrigerated-food delivery and quality incident management
 
 **Team:** six students, one process owner each
@@ -8,9 +10,9 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid Hasan (claimed with the P4 PR; team confirmation on the task board); P5–P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5–P6 unassigned
 
-**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. The P4 investigation consumes that handoff as a DCR case and applies the officer's decision for the current incident ([P4 guide](P4-QUALITY-INVESTIGATION.md)); its live stack run passed (`900821e9`); a dcrgraphs.net API run is pending. Temperature CEP, weather integration and P5–P6 remain planned. The P1–P3 live checks still use the labelled stand-in for dispositions. See [verification commands and evidence](RUNNING.md#automated-verification).
+**Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk and P3 receipt, inspection and admission are executable. Delivery risk counts three distinct fresh consecutive late ETA observations; it persists a quality hold and durable P4 handoff. Terminal rejection retains its incident and cannot be reopened by later risk. P4 investigation, temperature CEP, weather integration and P5–P6 remain planned. P4 dispositions in current tests come from an explicitly labelled stand-in. See [verification commands and evidence](RUNNING.md#automated-verification).
 
 ## 1. What problem are we solving?
 
@@ -64,7 +66,7 @@ This demonstrates communication in both directions: **events affect processes, a
 
 ## 4. Who will do what?
 
-P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4 ownership and assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
+P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4; assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
 
 ### Ashvanth — P1: Shipment preparation · Camunda
 
@@ -105,9 +107,9 @@ P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Confirm P4
 
 **Coordinate with P4:** read the same recorded quality status, so the receiving process cannot overlook an investigation.
 
-### Abid Hasan (team confirmation pending) — P4: Quality incident investigation · DCR
+### Abid — P4: Quality incident investigation · DCR
 
-**Status:** implemented — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests, the dcrgraphs.net simulation and a live stack run (`900821e9`) pass; a dcrgraphs.net API run and ProcessDoctor are pending. The Siddhi temperature/recovery inputs and the cooling-command bridge are shared CEP work; until then those inputs are manual or simulated.
+Abid is the confirmed P4 owner. His implementation in PR #10 is retained in history and awaits adaptation after the foundation is merged and verified.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 

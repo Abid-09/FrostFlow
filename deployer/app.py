@@ -1,4 +1,4 @@
-"""P1 preparation, P2 transport, P3 receiving and the P4 DCR quality investigation."""
+"""P1 shipment preparation, P2 transport, and P3 receiving workflows."""
 
 import asyncio
 import math
@@ -12,8 +12,6 @@ from flask import Flask, jsonify, request
 from pyzeebe import Job, ZeebeClient, ZeebeWorker
 from pyzeebe.errors import MessageAlreadyExistsError
 
-from dcr_client import make_dcr
-from quality import QualityService, create_blueprint
 from registry import Conflict, Registry
 from transport_integrations import TransportIntegrations, post_json
 
@@ -41,19 +39,6 @@ app = Flask(__name__)
 registry = Registry(os.getenv("REGISTRY_PATH", "runtime/registry.sqlite"))
 transport_integrations = TransportIntegrations()
 ready = threading.Event()
-_dcr_engines = {}
-
-
-def current_dcr():
-    """DCR repository when configured, otherwise the local engine on this registry."""
-    if registry.path not in _dcr_engines:
-        _dcr_engines[registry.path] = make_dcr(registry.path)
-    return _dcr_engines[registry.path]
-
-
-# P4: quality investigation executed in DCR (deployer/quality.py).
-quality = QualityService(lambda: registry, current_dcr)
-app.register_blueprint(create_blueprint(quality))
 client = None
 event_loop = None
 
@@ -136,7 +121,6 @@ def health():
             "siddhiCommands": "enabled" if os.getenv("SIDDIHI_COMMAND_URL") else "local-demo-acknowledgement",
             "p3ArrivalNotification": "enabled" if os.getenv("P3_ARRIVAL_URL") else "queued-awaiting-endpoint",
             "p4IncidentHandoff": "enabled" if os.getenv("P4_INCIDENT_URL") else "queued-awaiting-p4",
-            "p4DcrEngine": current_dcr().mode,
         },
     ), 200 if ready.is_set() else 503
 
@@ -805,11 +789,6 @@ async def deliver_messages():
                                        message["messageId"], error)
                 else:
                     registry.message_result(message["messageId"])
-        try:
-            # P4: retry DCR cases or dispositions that could not complete earlier.
-            await asyncio.to_thread(quality.retry_unfinished)
-        except Exception as error:
-            app.logger.warning("P4 retry pending: %s", error)
         await asyncio.sleep(1)
 
 
