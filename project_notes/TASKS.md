@@ -1,17 +1,30 @@
 # Team task board
 
-**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** P4 ownership awaits team confirmation (an earlier guide named Abid); P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
+**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](../docs/P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+
+**Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; current external conformance pending | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); fresh ProcessDoctor checks and real P4 consumer remain outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; current external conformance pending | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | To be confirmed | TODO | Confirm ownership (earlier guide named Abid), DCR access + incident integration |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED IN PR #10 / INTEGRATION DEFERRED | Merge and verify foundation #9, then adapt in a new PR |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
+
+## Foundation-first review checkpoint — 18 November 2026
+
+- [x] Fast-forward shared `feat/pre-p4-foundation` to `8726a49`, preserving Arunima’s three evidence screenshots; no rebase or force-push.
+- [x] Prepare `revert/p4-until-foundation` from `af3c68c`; removal commit `31ad23b` reverts merge #10 with parent 1 and restores the tree to `552945d` before intentional documentation updates.
+- [x] Restored baseline: 57 offline regressions pass; Compose validation passes. See [verification record](../docs/P4-INTEGRATION-SEQUENCING.md).
+- [x] [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) merged as `f475904` after explicit user approval; preserve removal commit `31ad23b`.
+- [ ] After revert merge, merge main into foundation #9; add the P4 contract handover and fixtures, resolve configuration/menu collisions and complete sequential live verification. Stop for foundation review before merge.
+- [ ] After approved foundation merge, rebuild merged main and record integrated smoke at its exact revision. Abid then adapts P4 in a replacement PR, preserving option 18 for temperature simulation and using option 19 for investigation.
+
+P4’s original models, implementation and evidence remain accessible in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) at `45f654b` / merge `af3c68c`. They are historical evidence, not verification of the combined foundation/P4 system. P5/P6 remain later work. Registries and engine volumes are untouched.
 
 ## Pre-P4 foundation checkpoint — 17 November 2026
 
@@ -23,7 +36,7 @@
 - [x] Complete integrated foundation verification and local replay; record exact revisions, input modes, images and artifact hashes in the [verification report](../compliance/foundation-verification.json).
 - [ ] Refresh external ProcessDoctor for the changed foundation evidence; browser access host remains unavailable.
 - [ ] Review integration PR, then merge only with explicit authorization; smoke-test merged main afterward.
-- [ ] Implement real P4 consumer/investigation only after foundation review and authorised merge. P5/P6 remain later work.
+- [ ] Abid adapts his existing PR #10 consumer/investigation only after foundation review, authorised merge and merged-main smoke. P5/P6 remain later work.
 
 The repair checkpoint below is historical; its reports identify the original revisions. Foundation results and external pending work are recorded separately.
 
@@ -37,7 +50,7 @@ The repair checkpoint below is historical; its reports identify the original rev
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
 - [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
-- [ ] P4 owner (awaiting confirmation): consume the durable handoff into a real DCR investigation. Test-harness quality dispositions do not implement P4.
+- [ ] Abid: adapt the existing PR #10 DCR investigation to the verified foundation in a new PR. Test-harness quality dispositions do not implement P4.
 
 Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
 
@@ -48,7 +61,7 @@ The sections below retain dated historical checkpoints and original P1–P6 work
 - [x] Read course specification, proposal, signed contract and both existing guides.
 - [x] Track Markdown guides and shared project notes; ignore secrets, PDFs and runtime data.
 - [x] Add project README, shared task board and consolidated run/verification guide.
-- [ ] Team reviews scope/contracts; confirms P4 ownership and assigns P5/P6 and shared integration owners. P1/P2/P3 owners are already recorded above.
+- [ ] Team reviews scope/contracts and assigns P5/P6 and shared integration owners; Abid owns P4. P1/P2/P3 owners are already recorded above.
 - [x] Run the P1 engine check and restart assertions; record results in [the run guide](../docs/RUNNING.md#automated-verification).
 - [ ] Create and execute one minimal real DCR case; record access instructions without credentials.
 - [x] Historical live TomTom requests and sanitized provider evidence recorded; see P2 report for the tested revision.
@@ -118,7 +131,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] PR review (b): the decision worker returns `routeId`/`routeRevision`; the live check confirms Operate's exported variables match the shipment API.
 - [x] PR review (d), extended by the duplicate-event repair: Siddhi alerts only after three distinct consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
 - [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
-- [ ] **P4 dependency (owner awaiting confirmation):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
+- [ ] **P4 dependency (Abid; adaptation deferred):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
 - [x] Current foundation TomTom request succeeds (HTTP 200, 17 November 2026); earlier HTTP 401 observations remain historical.
 
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
