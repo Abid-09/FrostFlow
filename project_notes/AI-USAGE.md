@@ -207,4 +207,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **dcrgraphs.net API (by the owner):** Abid ran `stage_tests/check_dcr_repository.py` with his own account (credentials only in the untracked `.env`): graph `2015919`, simulation `2109421` passed after the AI fixed the nesting-group finding.
 
-**Not done / limits:** no ProcessDoctor check. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.
+**ProcessDoctor (by the owner):** after all traces showed cost Infinity against the role-assigned graph, the AI diagnosed the roles as the cause. The owner checked a role-free copy and got 4/4 conforming. `compliance/p4/rules.xml` became that role-free graph; the AI recorded the result from the owner's screenshots, with file hashes.
+
+**Not done / limits:** no full-stack run in repository mode. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.

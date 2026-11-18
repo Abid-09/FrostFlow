@@ -522,8 +522,17 @@ class P4Graph(unittest.TestCase):
 
 
 class Evidence(unittest.TestCase):
-    def test_compliance_rules_are_the_executed_graph(self):
-        self.assertEqual((ROOT / "compliance/p4/rules.xml").read_bytes(), MODEL.read_bytes())
+    def test_compliance_rules_are_the_executed_graph_without_roles(self):
+        import re
+
+        rules = (ROOT / "compliance/p4/rules.xml").read_text()
+        self.assertNotIn("<role>", rules)
+        self.assertEqual(rules, re.sub(r"\s*<roles>.*?</roles>", "", MODEL.read_text(),
+                                       flags=re.S))
+        executed, checked = Graph(MODEL), Graph(ROOT / "compliance/p4/rules.xml")
+        self.assertEqual((executed.events, executed.relations, executed.included,
+                          executed.pending),
+                         (checked.events, checked.relations, checked.included, checked.pending))
 
     def test_live_runner_scenarios_follow_the_graph(self):
         import check_p4_investigation as runner

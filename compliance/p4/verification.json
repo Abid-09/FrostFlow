@@ -1,6 +1,6 @@
 {
-  "verifiedAt": "2026-11-18T22:59:51.986393+00:00",
-  "testedCommit": "95e4a85ef65119b7c62432a57e57ec8c44266797",
+  "verifiedAt": "2026-11-18T23:36:01.496801+00:00",
+  "testedCommit": "b3751150d3fad4e2440a4bbe5aa3bf48ee9bcea3",
   "process": "P4 Quality incident investigation (DCR)",
   "owner": "Abid Hasan",
   "contract": "foundation P4 assessment contract v1 (docs/P4-FOUNDATION-HANDOVER.md)",
@@ -9,15 +9,15 @@
     "host": "Linux aarch64"
   },
   "sha256": {
-    "compliance/p4/rules.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
+    "compliance/p4/rules.xml": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
     "dcr/p4_quality_investigation.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
-    "compliance/p4/dcrgraphs-simulation-log.xes": "18af2306276355e0d81f201ab0a9be9928b5ea2123a6f85e4b89a1ff2f33e83d",
+    "compliance/p4/dcrgraphs-simulation-log.xes": "fba330c44a1209470e604ca8472dcfd1f846a567a544d7ecac62dbb5cc4e8fb7",
     "compliance/p4/invalid-traces.json": "336002e3f1259fbc5400acf0a857b00f9a1834bc4621f29198da62474c959cf9",
     "deployer/quality.py": "ec875437036a14f37c779cd6e5652c479a0554f48970f3c0d843529d00c84f69",
-    "deployer/dcr_client.py": "2e58ae5099fdb1e47120820b5bbfa31f8c4c0f34d06c5a2c2435afb283d90aac",
-    "stage_tests/test_p4.py": "d209bd46d52c5045530221b6799beacd59cdbc4dfbdaacb6e88e4197d9bb6dd8",
+    "deployer/dcr_client.py": "9831ead575fea747456c2bdec18f774b688703ec679d6474e7fee685a3b32f04",
+    "stage_tests/test_p4.py": "a14f0f9364512b6fa3fbb172b025b4c09f90ffec6c8716b42367a331be94c942",
     "stage_tests/check_p4_investigation.py": "f5b0f4ba55b3e440433116dad59c416f96f2163ade1cb53b44f09dfb2b4c08de",
-    "compliance/p4/execution-log.xes": "f8439bd17c858f3644051a95ee4c322f408c002fe1dda718f65277c449042586"
+    "compliance/p4/execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f"
   },
   "model": {
     "events": 16,
@@ -32,7 +32,7 @@
   "offlineTests": {
     "command": ".venv/bin/python -m unittest discover -s stage_tests -p test_p4.py",
     "result": "PASS",
-    "summary": "Ran 21 tests in 1.578s"
+    "summary": "Ran 22 tests in 1.129s"
   },
   "dcrgraphsSimulation": {
     "status": "PASS",
@@ -395,6 +395,7 @@
         "pending": []
       }
     },
+    "log": "execution-log.xes (org:resource/org:role = DCR role; actor = performer)",
     "durationSeconds": 455,
     "environment": {
       "host": "macOS arm64 (owner's MacBook Pro), Docker Desktop, Docker 29.9.3",
@@ -683,7 +684,32 @@
     ]
   },
   "processDoctor": {
-    "status": "PENDING",
-    "reason": "Upload compliance/p4/rules.xml with compliance/p4/execution-log.xes (4 traces, run fd021988)."
+    "status": "PASS",
+    "provider": "https://processdoctor.compute.dtu.dk/",
+    "checkedDate": "2026-11-19",
+    "performedBy": "Abid Hasan (manual browser check)",
+    "recordedBy": "AI assistant from the owner's screenshots; file identity checked byte-for-byte",
+    "model": "compliance/p4/rules.xml",
+    "modelSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
+    "log": "compliance/p4/execution-log.xes",
+    "logSha256": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f",
+    "liveRunId": "fd021988",
+    "traces": 4,
+    "variants": 4,
+    "variantOccurrences": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "conformingVariants": 4,
+    "partiallyViolatingVariants": 0,
+    "violatingVariants": 0,
+    "structuralViolations": 0,
+    "coverageThreshold": 100,
+    "screenshot": "compliance/p4/screenshots/processdoctor-conforming.png",
+    "screenshotSha256": "039ddca943cae0077921cb553d84d00f6f1616f958b5328a08e24323d50e81b9",
+    "roleFinding": "Against the executed graph with role assignments (dcr/p4_quality_investigation.xml), ProcessDoctor reported all 4 variants violating with cost Infinity, also when the log carried the DCR roles in org:resource and org:role (screenshots/processdoctor-model-with-roles.png). rules.xml is therefore the executed graph without <roles>: same 16 events, 83 relations and initial marking (checked by stage_tests/test_p4.py). Local replay is valid and accepting against both.",
+    "roleFindingScreenshot": "compliance/p4/screenshots/processdoctor-model-with-roles.png"
   }
 }

@@ -5,8 +5,11 @@ Usage (from the repository root):
     python compliance/p4/build_p4_evidence.py
     python compliance/p4/build_p4_evidence.py --live runtime/p4-compliance/evidence.json
 
-P4's process *is* a DCR graph, so its compliance rules are that graph:
-compliance/p4/rules.xml must stay identical to dcr/p4_quality_investigation.xml.
+P4's process *is* a DCR graph, so its compliance rules are that graph without its
+role assignments: compliance/p4/rules.xml must equal dcr/p4_quality_investigation.xml
+with the <roles> elements removed (same events, relations and marking). ProcessDoctor
+reported every trace as violating (cost Infinity) against the model with roles even when
+the log carried the DCR roles, and 4/4 conforming against the role-free model.
 
 Two kinds of execution evidence are kept apart:
 
@@ -24,6 +27,7 @@ replaces it.
 """
 
 import argparse
+import re
 import hashlib
 import json
 import platform
@@ -70,6 +74,10 @@ EXPECTED_PARTIAL = {"dcrgraphs-run4-new-alert-partial": ["AssessEvidence",
                                                          "CloseInvestigation"]}
 
 
+def without_roles(text):
+    return re.sub(r"\s*<roles>.*?</roles>", "", text, flags=re.S)
+
+
 def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -89,6 +97,50 @@ def write_simulation_log(path):
             ET.SubElement(event, "string", {"key": "inputMode", "value": "manual"})
     ET.indent(root, space="  ")
     ET.ElementTree(root).write(path, encoding="utf-8", xml_declaration=True)
+    add_roles(path)
+
+
+def model_roles():
+    """DCR role of every activity, as declared in the executed graph."""
+    root = ET.parse(SOURCE_MODEL).getroot()
+    return {e.get("id"): e.findtext("./custom/roles/role")
+            for e in root.findall("./specification/resources/events/event")}
+
+
+def add_roles(path):
+    """ProcessDoctor checks the performer against the model's roles.
+
+    P4's graph assigns roles (Integration, QualityOfficer, Receiver), so every event
+    carries its DCR role as org:resource and org:role; the person or system that
+    performed it is kept as `actor`.
+    """
+    ET.register_namespace("", "http://www.xes-standard.org/")
+    tree = ET.parse(path)
+    root = tree.getroot()
+    ns = "{http://www.xes-standard.org/}"
+    roles = model_roles()
+    if not any(x.get("prefix") == "org" for x in root.findall(f"{ns}extension")):
+        last = max(i for i, x in enumerate(root) if x.tag == f"{ns}extension")
+        root.insert(last + 1, ET.Element(f"{ns}extension", {
+            "name": "Organization", "prefix": "org",
+            "uri": "http://www.xes-standard.org/org.xesext"}))
+    for event in root.iter(f"{ns}event"):
+        fields = {x.get("key"): x for x in event.findall(f"{ns}string")}
+        role = roles[fields["concept:name"].get("value")]
+        resource = fields.get("org:resource")
+        if resource is not None:
+            if "actor" not in fields:
+                ET.SubElement(event, f"{ns}string", {"key": "actor",
+                                                    "value": resource.get("value")})
+            resource.set("value", role)
+        else:
+            ET.SubElement(event, f"{ns}string", {"key": "org:resource", "value": role})
+        if "org:role" in fields:
+            fields["org:role"].set("value", role)
+        else:
+            ET.SubElement(event, f"{ns}string", {"key": "org:role", "value": role})
+    ET.indent(root, space="  ")
+    tree.write(path, encoding="utf-8", xml_declaration=True)
 
 
 def live_cases(evidence):
@@ -125,8 +177,9 @@ def main():
     parser.add_argument("--live", type=Path,
                         help="evidence JSON from stage_tests/check_p4_investigation.py")
     args = parser.parse_args()
-    if RULES.read_bytes() != SOURCE_MODEL.read_bytes():
-        raise SystemExit("compliance/p4/rules.xml differs from dcr/p4_quality_investigation.xml")
+    if RULES.read_text() != without_roles(SOURCE_MODEL.read_text()):
+        raise SystemExit("compliance/p4/rules.xml must be dcr/p4_quality_investigation.xml "
+                         "without <roles>")
     report_path = HERE / "verification.json"
     previous = json.loads(report_path.read_text()) if report_path.exists() else {}
 
@@ -152,6 +205,7 @@ def main():
         evidence = json.loads(args.live.read_text())
         cases = live_cases(evidence)
         export_xes(HERE / "execution-log.xes", cases)
+        add_roles(HERE / "execution-log.xes")
         replays = {case: replay(RULES, [e["eventType"] for e in events])
                    for case, events in cases.items()}
         if not all(r["valid"] and r["accepting"] for r in replays.values()):
@@ -169,7 +223,13 @@ def main():
                 "processInstanceKeys") if k in c}
                       for c in evidence["cases"]],
             "replay": replays,
+            "log": "execution-log.xes (org:resource/org:role = DCR role; actor = performer)",
         }
+        old = previous.get("liveExecution", {})
+        if old.get("runId") == evidence["runId"]:
+            for key in ("command", "durationSeconds", "environment", "notes"):
+                if key in old:
+                    live[key] = old[key]
 
     tracked = [RULES, SOURCE_MODEL, simulation_log, HERE / "invalid-traces.json",
                ROOT / "deployer/quality.py", ROOT / "deployer/dcr_client.py",

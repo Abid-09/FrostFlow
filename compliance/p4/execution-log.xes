@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+<log xmlns="http://www.xes-standard.org/" xes.version="1.0">
   <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
   <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <extension name="Organization" prefix="org" uri="http://www.xes-standard.org/org.xesext" />
   <trace>
     <string key="concept:name" value="p4live-fd021988-1/DELAY:risk-p4live-fd021988-1" />
     <string key="productId" value="PRD-001" />
@@ -11,93 +12,111 @@
     <string key="temperatureProfileId" value="CHILLED-DEMO" />
     <event>
       <string key="concept:name" value="OpenIncident" />
-      <string key="org:resource" value="system" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:001:OpenIncident" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:51:43.657232Z" />
+      <string key="actor" value="system" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="ReviewWeatherData" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-3-ReviewWeatherData" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.766513Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="RequestCoolingAdjustment" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-4-RequestCoolingAdjustment" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.773663Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="ReviewTemperatureLog" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-5-ReviewTemperatureLog" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.781472Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="RecordCoolingAcknowledgement" />
-      <string key="org:resource" value="vehicle-simulator" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-6-RecordCoolingAcknowledgement" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.789557Z" />
+      <string key="actor" value="vehicle-simulator" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="RecordRecoveryEvidence" />
-      <string key="org:resource" value="recovery-evidence-manual" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-7-RecordRecoveryEvidence" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.795798Z" />
+      <string key="actor" value="recovery-evidence-manual" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="AssessEvidence" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-8-AssessEvidence" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.802036Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="DecideRelease" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-9-DecideRelease" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.809379Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="CloseInvestigation" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-1:ext:p4live-fd021988-1-10-CloseInvestigation" />
       <string key="processInstanceKey" value="local-9954f73e65df" />
       <string key="productId" value="PRD-001" />
       <string key="batchId" value="DEMO-MILK-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:53:26.821675Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
   </trace>
   <trace>
@@ -109,73 +128,87 @@
     <string key="temperatureProfileId" value="CHILLED-DEMO" />
     <event>
       <string key="concept:name" value="OpenIncident" />
-      <string key="org:resource" value="system" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:001:OpenIncident" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:54:00.911501Z" />
+      <string key="actor" value="system" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="ReviewTemperatureLog" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-4-ReviewTemperatureLog" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.182295Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="RequestCoolingAdjustment" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-5-RequestCoolingAdjustment" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.188148Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="RecordCoolingFailure" />
-      <string key="org:resource" value="vehicle-simulator" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-6-RecordCoolingFailure" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.194960Z" />
+      <string key="actor" value="vehicle-simulator" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="AssessEvidence" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-8-AssessEvidence" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.203131Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="DecideReplace" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-9-DecideReplace" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.209730Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="CloseInvestigation" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:ext:p4live-fd021988-2-10-CloseInvestigation" />
       <string key="processInstanceKey" value="local-13703afcb679" />
       <string key="productId" value="PRD-002" />
       <string key="batchId" value="DEMO-YOGHURT-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:12.226019Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
   </trace>
   <trace>
@@ -187,83 +220,99 @@
     <string key="temperatureProfileId" value="CHILLED-DEMO" />
     <event>
       <string key="concept:name" value="OpenIncident" />
-      <string key="org:resource" value="system" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:001:OpenIncident" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:55:17.619625Z" />
+      <string key="actor" value="system" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="ReviewRouteAndETA" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-2-ReviewRouteAndETA" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.656690Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="ReviewTemperatureLog" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-3-ReviewTemperatureLog" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.667659Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="RequestAdditionalCheck" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-4-RequestAdditionalCheck" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.676498Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="CompleteAdditionalCheck" />
-      <string key="org:resource" value="cafeteria-receiver" />
+      <string key="org:resource" value="Receiver" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-7-CompleteAdditionalCheck" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.690074Z" />
+      <string key="actor" value="cafeteria-receiver" />
+      <string key="org:role" value="Receiver" />
     </event>
     <event>
       <string key="concept:name" value="AssessEvidence" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-8-AssessEvidence" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.696430Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="DecideReturn" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-9-DecideReturn" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.703779Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="CloseInvestigation" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-3:ext:p4live-fd021988-3-10-CloseInvestigation" />
       <string key="processInstanceKey" value="local-736d1a519469" />
       <string key="productId" value="PRD-003" />
       <string key="batchId" value="DEMO-CHEESE-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:56:57.718403Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
   </trace>
   <trace>
@@ -275,73 +324,87 @@
     <string key="temperatureProfileId" value="CHILLED-DEMO" />
     <event>
       <string key="concept:name" value="OpenIncident" />
-      <string key="org:resource" value="system" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:001:OpenIncident" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:57:03.236929Z" />
+      <string key="actor" value="system" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="ReviewTemperatureLog" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:ext:p4live-fd021988-4-2-ReviewTemperatureLog" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:58:39.098920Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="AssessEvidence" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:ext:p4live-fd021988-4-3-AssessEvidence" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:58:39.109240Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="AddAlertEvidence" />
-      <string key="org:resource" value="system" />
+      <string key="org:resource" value="Integration" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:002:AddAlertEvidence" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:59:09.664217Z" />
+      <string key="actor" value="system" />
+      <string key="org:role" value="Integration" />
     </event>
     <event>
       <string key="concept:name" value="AssessEvidence" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:ext:p4live-fd021988-4-7-AssessEvidence" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:59:13.568460Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="DecideRelease" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:ext:p4live-fd021988-4-8-DecideRelease" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:59:13.583831Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
     <event>
       <string key="concept:name" value="CloseInvestigation" />
-      <string key="org:resource" value="quality-officer" />
+      <string key="org:resource" value="QualityOfficer" />
       <string key="eventId" value="P4:DELAY:risk-p4live-fd021988-4:ext:p4live-fd021988-4-9-CloseInvestigation" />
       <string key="processInstanceKey" value="local-12c1a7930363" />
       <string key="productId" value="PRD-005" />
       <string key="batchId" value="DEMO-SALAD-001" />
       <string key="quantityUnit" value="crate" />
       <date key="time:timestamp" value="2026-11-18T22:59:13.604965Z" />
+      <string key="actor" value="quality-officer" />
+      <string key="org:role" value="QualityOfficer" />
     </event>
   </trace>
 </log>

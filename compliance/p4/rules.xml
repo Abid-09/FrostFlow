@@ -10,9 +10,6 @@
               <location xLoc="40" yLoc="360" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Integration</role>
-            </roles>
           </custom>
         </event>
         <event id="AddAlertEvidence">
@@ -22,9 +19,6 @@
               <location xLoc="300" yLoc="620" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Integration</role>
-            </roles>
           </custom>
         </event>
         <event id="ReviewTemperatureLog">
@@ -34,9 +28,6 @@
               <location xLoc="300" yLoc="80" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="ReviewWeatherData">
@@ -46,9 +37,6 @@
               <location xLoc="300" yLoc="260" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="ReviewRouteAndETA">
@@ -58,9 +46,6 @@
               <location xLoc="300" yLoc="440" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="RequestCoolingAdjustment">
@@ -70,9 +55,6 @@
               <location xLoc="560" yLoc="80" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="RecordCoolingAcknowledgement">
@@ -82,9 +64,6 @@
               <location xLoc="820" yLoc="40" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Integration</role>
-            </roles>
           </custom>
         </event>
         <event id="RecordCoolingFailure">
@@ -94,9 +73,6 @@
               <location xLoc="820" yLoc="220" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Integration</role>
-            </roles>
           </custom>
         </event>
         <event id="RecordRecoveryEvidence">
@@ -106,9 +82,6 @@
               <location xLoc="1080" yLoc="40" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Integration</role>
-            </roles>
           </custom>
         </event>
         <event id="RequestAdditionalCheck">
@@ -118,9 +91,6 @@
               <location xLoc="560" yLoc="620" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="CompleteAdditionalCheck">
@@ -130,9 +100,6 @@
               <location xLoc="820" yLoc="620" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>Receiver</role>
-            </roles>
           </custom>
         </event>
         <event id="AssessEvidence">
@@ -142,9 +109,6 @@
               <location xLoc="1080" yLoc="360" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="DecideRelease">
@@ -154,9 +118,6 @@
               <location xLoc="1340" yLoc="220" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="DecideReplace">
@@ -166,9 +127,6 @@
               <location xLoc="1340" yLoc="400" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="DecideReturn">
@@ -178,9 +136,6 @@
               <location xLoc="1340" yLoc="580" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
         <event id="CloseInvestigation">
@@ -190,9 +145,6 @@
               <location xLoc="1620" yLoc="360" />
               <size width="130" height="150" />
             </visualization>
-            <roles>
-              <role>QualityOfficer</role>
-            </roles>
           </custom>
         </event>
       </events>

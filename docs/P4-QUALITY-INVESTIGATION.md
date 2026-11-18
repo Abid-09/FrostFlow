@@ -74,6 +74,16 @@ To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, 
 
 Compose has exactly one `P4_INCIDENT_URL` entry. It now defaults to this compatible consumer (`http://communication:5001/integrations/p4/incident`); set `P4_INCIDENT_URL=` to leave handoffs pending as before.
 
+## Compliance model and ProcessDoctor
+
+`compliance/p4/rules.xml` is the executed graph without its role assignments. It has the same 16 events, 83 relations and initial marking (`stage_tests/test_p4.py` checks this). With roles in the model, ProcessDoctor reported every variant violating with cost Infinity, even when the log carried the DCR role in `org:resource` and `org:role` (`screenshots/processdoctor-model-with-roles.png`). The logs still record each step's role (`org:role`) and the performer (`actor`).
+
+To repeat the check:
+
+1. On processdoctor.compute.dtu.dk, choose **Conformance → Open Model → Open DCR Solution XML** → `compliance/p4/rules.xml`.
+2. **Upload Log** → `compliance/p4/execution-log.xes` (4 traces | 4 variants).
+3. Keep the threshold at 100 and click **Check!**. Expect 4 conforming, 0 violations.
+
 ## HTTP interface and CLI
 
 | Request | Purpose |
@@ -96,7 +106,7 @@ Incident IDs contain `:` (`DELAY:...`, `ASSESS:<shipment>:<event>`); URL-encode 
 | Combined foundation/P4 live run (4 scenarios on monitored shipments; Zeebe 8.8.0, Siddhi, local DCR engine) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `fd021988` (455 s): release → admitted (2), replace/return → rejected (2); receipt released the vehicle while held in all four; run 4 refused the decision until version 2 was reassessed; 4 traces valid and accepting |
 | PR #10 live run `900821e9` (pre-foundation, unmonitored) | `compliance/p4/historical/` | historical only |
 | dcrgraphs.net Active Repository API (`stage_tests/check_dcr_repository.py`) | `compliance/p4/verification.json` → `dcrRepositoryApi` | PASS on graph `2015919`, simulation `2109421`: 9 steps match the local engine; early `CloseInvestigation` refused (HTTP 400) |
-| ProcessDoctor | — | **pending** |
+| ProcessDoctor (owner, manual) | `compliance/p4/screenshots/processdoctor-conforming.png`, `verification.json` → `processDoctor` | PASS: live log `fd021988` against `rules.xml`, 4/4 conforming variants, 0 violations, coverage 100 |
 
 ```bash
 .venv/bin/python -m unittest discover -s stage_tests -p 'test_p4*.py' -v
@@ -122,5 +132,5 @@ Every case checks that receipt released the vehicle while quality was still held
 
 ## Still to do
 
-- Run ProcessDoctor on `rules.xml` + the live log. Optionally run the full stack in `dcr-repository` mode.
+- Optional: run the full stack with P4 in `dcr-repository` mode.
 - Cooling-command/recovery contracts (Siddhi) and P5/P6 consumption of `REPLACE`/`RETURN` remain separate future work.
