@@ -1,23 +1,24 @@
 {
-  "verifiedAt": "2026-11-18T23:36:01.496801+00:00",
-  "testedCommit": "b3751150d3fad4e2440a4bbe5aa3bf48ee9bcea3",
+  "verifiedAt": "2026-11-19T22:36:37.208673+00:00",
+  "testedCommit": "35768129b4556758e97d977ec985b556ae2afd73",
   "process": "P4 Quality incident investigation (DCR)",
   "owner": "Abid Hasan",
   "contract": "foundation P4 assessment contract v1 (docs/P4-FOUNDATION-HANDOVER.md)",
   "builderEnvironment": {
-    "python": "3.10.12",
-    "host": "Linux aarch64"
+    "python": "3.12.3",
+    "host": "Linux x86_64"
   },
   "sha256": {
     "compliance/p4/rules.xml": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
     "dcr/p4_quality_investigation.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
     "compliance/p4/dcrgraphs-simulation-log.xes": "fba330c44a1209470e604ca8472dcfd1f846a567a544d7ecac62dbb5cc4e8fb7",
     "compliance/p4/invalid-traces.json": "336002e3f1259fbc5400acf0a857b00f9a1834bc4621f29198da62474c959cf9",
-    "deployer/quality.py": "ec875437036a14f37c779cd6e5652c479a0554f48970f3c0d843529d00c84f69",
-    "deployer/dcr_client.py": "9831ead575fea747456c2bdec18f774b688703ec679d6474e7fee685a3b32f04",
-    "stage_tests/test_p4.py": "a14f0f9364512b6fa3fbb172b025b4c09f90ffec6c8716b42367a331be94c942",
-    "stage_tests/check_p4_investigation.py": "f5b0f4ba55b3e440433116dad59c416f96f2163ade1cb53b44f09dfb2b4c08de",
-    "compliance/p4/execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f"
+    "deployer/quality.py": "911e372d4422ba61553b0441a97f965c3b6516c1902b6165533bf1efe473c7d3",
+    "deployer/dcr_client.py": "4039649743794aa7ef441bf4a3887d584c9e1b0308054909cef9a6fb97757e75",
+    "stage_tests/test_p4.py": "49e20e698487d2bb4176ac3a08db0d8d53a9f16b3625654ca867ec699027c7df",
+    "stage_tests/check_p4_investigation.py": "3b36036a6d82168ca2d32e9a837ccb9cbacf7cf4e1b3b31ccdb28fd2e6e54c03",
+    "compliance/p4/execution-log.xes": "59de888dfc1ae95f80bfa0907f1023554a90c64ec223256caf3671839b143e82",
+    "compliance/p4/historical/fd021988-execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f"
   },
   "model": {
     "events": 16,
@@ -32,7 +33,7 @@
   "offlineTests": {
     "command": ".venv/bin/python -m unittest discover -s stage_tests -p test_p4.py",
     "result": "PASS",
-    "summary": "Ran 22 tests in 1.129s"
+    "summary": "Ran 30 tests in 1.346s"
   },
   "dcrgraphsSimulation": {
     "status": "PASS",
@@ -79,19 +80,19 @@
   "liveExecution": {
     "status": "PASS",
     "command": "python3 stage_tests/check_p4_investigation.py --base http://localhost:5001",
-    "capturedAt": "2026-11-18T22:59:14.642Z",
-    "runId": "fd021988",
-    "dcrEngine": "local-dcr-engine",
-    "source": "live HTTP run on new monitored shipments; P1/P2/P3 in Zeebe; container evaluation in Siddhi; P4 in local-dcr-engine",
+    "capturedAt": "2026-11-19T22:30:11.678Z",
+    "runId": "d2558070",
+    "dcrEngine": "dcr-repository",
+    "source": "live HTTP run on new monitored shipments; P1/P2/P3 in Zeebe; container evaluation in Siddhi; P4 in dcr-repository",
     "cases": [
       {
         "scenario": "run1-delay-cooling-recovery-release",
-        "shipmentId": "p4live-fd021988-1",
-        "incidentId": "DELAY:risk-p4live-fd021988-1",
+        "shipmentId": "p4live-d2558070-1",
+        "incidentId": "DELAY:risk-p4live-d2558070-1",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-fd021988-1:DELAY:risk-p4live-fd021988-1:1",
+            "deliveryId": "P4:Assessment:p4live-d2558070-1:DELAY:risk-p4live-d2558070-1:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
@@ -100,11 +101,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-18T22:53:26.809379Z",
+          "decidedAt": "2026-11-19T22:24:28.276366Z",
           "decision": "RELEASE",
+          "note": null,
           "officer": "quality-officer",
           "qualityStatus": "RELEASED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-1:RELEASE:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-1:RELEASE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -123,11 +125,11 @@
             "reason": "DCR does not enable CloseInvestigation in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
+              "RequestAdditionalCheck",
               "RequestCoolingAdjustment",
-              "RequestAdditionalCheck"
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           },
           {
@@ -136,28 +138,28 @@
             "reason": "DCR does not enable AssessEvidence in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
+              "RequestAdditionalCheck",
               "RequestCoolingAdjustment",
-              "RequestAdditionalCheck"
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           }
         ],
         "processInstanceKeys": {
           "processInstanceKey": "2251799813685318",
           "p2ProcessInstanceKey": "2251799813685377",
-          "p3ProcessInstanceKey": "2251799813685638"
+          "p3ProcessInstanceKey": "2251799813685630"
         }
       },
       {
         "scenario": "run2-temperature-failed-cooling-replace",
-        "shipmentId": "p4live-fd021988-2",
-        "incidentId": "ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7",
+        "shipmentId": "p4live-d2558070-2",
+        "incidentId": "ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6",
         "trigger": "sustained-excursion",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-fd021988-2:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:1",
+            "deliveryId": "P4:Assessment:p4live-d2558070-2:ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6:1",
             "eventType": "AssessmentRequested",
             "reason": "temperature-excursion",
             "evidenceVersion": 1,
@@ -166,11 +168,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-18T22:55:12.209730Z",
+          "decidedAt": "2026-11-19T22:26:12.544725Z",
           "decision": "REPLACE",
+          "note": null,
           "officer": "quality-officer",
           "qualityStatus": "REJECTED",
-          "qualityStatusEventId": "P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:REPLACE:1",
+          "qualityStatusEventId": "P4:ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6:REPLACE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -189,11 +192,11 @@
             "reason": "DCR does not enable CloseInvestigation in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
+              "RequestAdditionalCheck",
               "RequestCoolingAdjustment",
-              "RequestAdditionalCheck"
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           },
           {
@@ -202,29 +205,29 @@
             "reason": "DCR does not enable RecordRecoveryEvidence in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
-              "RequestCoolingAdjustment",
+              "AssessEvidence",
               "RequestAdditionalCheck",
-              "AssessEvidence"
+              "RequestCoolingAdjustment",
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813685802",
-          "p2ProcessInstanceKey": "2251799813685863",
-          "p3ProcessInstanceKey": "2251799813686088"
+          "processInstanceKey": "2251799813685793",
+          "p2ProcessInstanceKey": "2251799813685853",
+          "p3ProcessInstanceKey": "2251799813686081"
         }
       },
       {
         "scenario": "run3-delay-additional-check-return",
-        "shipmentId": "p4live-fd021988-3",
-        "incidentId": "DELAY:risk-p4live-fd021988-3",
+        "shipmentId": "p4live-d2558070-3",
+        "incidentId": "DELAY:risk-p4live-d2558070-3",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-fd021988-3:DELAY:risk-p4live-fd021988-3:1",
+            "deliveryId": "P4:Assessment:p4live-d2558070-3:DELAY:risk-p4live-d2558070-3:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
@@ -233,11 +236,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-18T22:56:57.703779Z",
+          "decidedAt": "2026-11-19T22:27:58.044001Z",
           "decision": "RETURN",
+          "note": null,
           "officer": "quality-officer",
           "qualityStatus": "REJECTED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-3:RETURN:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-3:RETURN:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -256,11 +260,11 @@
             "reason": "DCR does not enable CloseInvestigation in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
+              "RequestAdditionalCheck",
               "RequestCoolingAdjustment",
-              "RequestAdditionalCheck"
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           },
           {
@@ -269,12 +273,12 @@
             "reason": "DCR does not enable AssessEvidence in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
-              "RequestCoolingAdjustment",
+              "CompleteAdditionalCheck",
               "RequestAdditionalCheck",
-              "CompleteAdditionalCheck"
+              "RequestCoolingAdjustment",
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           },
           {
@@ -283,36 +287,36 @@
             "reason": "DCR does not enable CloseInvestigation in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
-              "RequestCoolingAdjustment",
+              "CompleteAdditionalCheck",
               "RequestAdditionalCheck",
-              "CompleteAdditionalCheck"
+              "RequestCoolingAdjustment",
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813686256",
-          "p2ProcessInstanceKey": "2251799813686317",
-          "p3ProcessInstanceKey": "2251799813686563"
+          "processInstanceKey": "2251799813686250",
+          "p2ProcessInstanceKey": "2251799813686312",
+          "p3ProcessInstanceKey": "2251799813686560"
         }
       },
       {
         "scenario": "run4-newer-evidence-reassessment-release",
-        "shipmentId": "p4live-fd021988-4",
-        "incidentId": "DELAY:risk-p4live-fd021988-4",
+        "shipmentId": "p4live-d2558070-4",
+        "incidentId": "DELAY:risk-p4live-d2558070-4",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-fd021988-4:DELAY:risk-p4live-fd021988-4:1",
+            "deliveryId": "P4:Assessment:p4live-d2558070-4:DELAY:risk-p4live-d2558070-4:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
             "priority": "normal"
           },
           {
-            "deliveryId": "P4:Assessment:p4live-fd021988-4:DELAY:risk-p4live-fd021988-4:2",
+            "deliveryId": "P4:Assessment:p4live-d2558070-4:DELAY:risk-p4live-d2558070-4:2",
             "eventType": "AssessmentRequested",
             "reason": "temperature-excursion",
             "evidenceVersion": 2,
@@ -321,11 +325,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 2,
-          "decidedAt": "2026-11-18T22:59:13.583831Z",
+          "decidedAt": "2026-11-19T22:30:10.213466Z",
           "decision": "RELEASE",
+          "note": null,
           "officer": "quality-officer",
           "qualityStatus": "RELEASED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-4:RELEASE:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-4:RELEASE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -344,11 +349,11 @@
             "reason": "DCR does not enable CloseInvestigation in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
+              "RequestAdditionalCheck",
               "RequestCoolingAdjustment",
-              "RequestAdditionalCheck"
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           },
           {
@@ -357,56 +362,61 @@
             "reason": "DCR does not enable DecideRelease in this investigation now",
             "enabledAtThatTime": [
               "AddAlertEvidence",
-              "ReviewTemperatureLog",
-              "ReviewWeatherData",
-              "ReviewRouteAndETA",
-              "RequestCoolingAdjustment",
+              "AssessEvidence",
               "RequestAdditionalCheck",
-              "AssessEvidence"
+              "RequestCoolingAdjustment",
+              "ReviewRouteAndETA",
+              "ReviewTemperatureLog",
+              "ReviewWeatherData"
             ]
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813686732",
-          "p2ProcessInstanceKey": "2251799813686793",
-          "p3ProcessInstanceKey": "2251799813687038"
+          "processInstanceKey": "2251799813686727",
+          "p2ProcessInstanceKey": "2251799813686792",
+          "p3ProcessInstanceKey": "2251799813687047"
         }
       }
     ],
     "replay": {
-      "p4live-fd021988-1/DELAY:risk-p4live-fd021988-1": {
+      "p4live-d2558070-1/DELAY:risk-p4live-d2558070-1": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-fd021988-2/ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7": {
+      "p4live-d2558070-2/ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-fd021988-3/DELAY:risk-p4live-fd021988-3": {
+      "p4live-d2558070-3/DELAY:risk-p4live-d2558070-3": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-fd021988-4/DELAY:risk-p4live-fd021988-4": {
+      "p4live-d2558070-4/DELAY:risk-p4live-d2558070-4": {
         "valid": true,
         "accepting": true,
         "pending": []
       }
     },
     "log": "execution-log.xes (org:resource/org:role = DCR role; actor = performer)",
-    "durationSeconds": 455,
+    "durationSeconds": 453,
     "environment": {
-      "host": "macOS arm64 (owner's MacBook Pro), Docker Desktop, Docker 29.9.3",
-      "engine": "Zeebe/Operate 8.8.0",
-      "elasticsearch": "8.16.0",
-      "siddhi": "siddhiio/siddhi-runner-alpine:latest (amd64 image on arm64; Compose printed a platform warning; telemetry, commands and container evaluation reported enabled)",
-      "data": "fresh paired version-3 registry and named engine volumes (COMPOSE_PROJECT_NAME=frostflow-p4, VERIFY_DATASET=p4-02)",
-      "inputs": "container readings simulated (monitoring profile CHILLED-DEMO-v1); ETA local-demo-estimate (TOMTOM_API_KEY blank); weather open-meteo-current-model; GPS_TICK_SECONDS=15",
-      "testedCommit": "95e4a85ef65119b7c62432a57e57ec8c44266797"
+      "testedCommit": "35768129b4556758e97d977ec985b556ae2afd73",
+      "ranBy": "Abid Hasan (owner), on his Mac",
+      "host": "macOS arm64, Docker Desktop (Docker 29.9.3)",
+      "stack": "docker-compose.yml + stage_tests/verification.compose.yml, project frostflow-p4, fresh dataset p4-03 (registry runtime/repair/p4-03)",
+      "settings": "P2_SIMULATOR_ENABLED=true, GPS_TICK_SECONDS=15, TOMTOM_API_KEY= (local ETA estimate), Compose default P4_INCIDENT_URL",
+      "p4DcrEngine": "dcr-repository: dcrgraphs.net Active Repository, owner's graph 2015919 (credentials only in the untracked .env)",
+      "dcrSimulations": {
+        "run1-delay-cooling-recovery-release": "2110248",
+        "run2-temperature-failed-cooling-replace": "2110249",
+        "run3-delay-additional-check-return": "2110250",
+        "run4-newer-evidence-reassessment-release": "2110251"
+      }
     },
-    "notes": "Run 4: the newer temperature evidence (version 2) reached P4 before the officer decided, so DCR refused DecideRelease (Assess pending) and the release was applied with assessed version 2. The registry-side stale-version refusal path (StaleDispositionRefused) is covered by the offline tests, not by this live run."
+    "notes": "First full-stack run with P4 executing in the dcrgraphs.net repository, and first live run after the PR #12 review fixes. Run 4: newer container evidence (version 2) reached P4 before the decision; DCR refused DecideRelease while AssessEvidence was pending, the officer reassessed and the release was applied with expectedEvidenceVersion 2. The registry's stale-version refusal, lost DCR responses, failed DCR decisions and the new-case path are covered offline only (fault injection)."
   },
   "historical": {
     "pr10LiveExecution": {
@@ -621,7 +631,370 @@
       "log": "historical/pr10-execution-log.xes",
       "scope": "PR #10 code before the monitoring foundation (legacy unmonitored shipments, pre-v1 contract); historical, not combined foundation/P4 evidence"
     },
-    "pr10TestedCommit": "f9a92eec773f54f43b4fa247f57a404eb74c13e7"
+    "pr10TestedCommit": "f9a92eec773f54f43b4fa247f57a404eb74c13e7",
+    "fd021988LiveExecution": {
+      "status": "PASS",
+      "command": "python3 stage_tests/check_p4_investigation.py --base http://localhost:5001",
+      "capturedAt": "2026-11-18T22:59:14.642Z",
+      "runId": "fd021988",
+      "dcrEngine": "local-dcr-engine",
+      "source": "live HTTP run on new monitored shipments; P1/P2/P3 in Zeebe; container evaluation in Siddhi; P4 in local-dcr-engine",
+      "cases": [
+        {
+          "scenario": "run1-delay-cooling-recovery-release",
+          "shipmentId": "p4live-fd021988-1",
+          "incidentId": "DELAY:risk-p4live-fd021988-1",
+          "trigger": "delay",
+          "evidence": [
+            {
+              "deliveryId": "P4:Assessment:p4live-fd021988-1:DELAY:risk-p4live-fd021988-1:1",
+              "eventType": "DeliveryRiskDetected",
+              "reason": "delivery-risk",
+              "evidenceVersion": 1,
+              "priority": "normal"
+            }
+          ],
+          "decision": {
+            "assessedEvidenceVersion": 1,
+            "decidedAt": "2026-11-18T22:53:26.809379Z",
+            "decision": "RELEASE",
+            "officer": "quality-officer",
+            "qualityStatus": "RELEASED",
+            "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-1:RELEASE:1",
+            "reason": "P4 live check: evidence assessed"
+          },
+          "unappliedDecisions": [],
+          "reassessedVersions": [],
+          "receiptWhileHeld": {
+            "qualityStatus": "PENDING",
+            "vehicleReleased": true
+          },
+          "monitoringFinalization": "FINALIZED",
+          "qualityStatus": "RELEASED",
+          "p3Status": "ADMITTED",
+          "refusedActions": [
+            {
+              "activity": "CloseInvestigation",
+              "status": 409,
+              "reason": "DCR does not enable CloseInvestigation in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck"
+              ]
+            },
+            {
+              "activity": "AssessEvidence",
+              "status": 409,
+              "reason": "DCR does not enable AssessEvidence in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck"
+              ]
+            }
+          ],
+          "processInstanceKeys": {
+            "processInstanceKey": "2251799813685318",
+            "p2ProcessInstanceKey": "2251799813685377",
+            "p3ProcessInstanceKey": "2251799813685638"
+          }
+        },
+        {
+          "scenario": "run2-temperature-failed-cooling-replace",
+          "shipmentId": "p4live-fd021988-2",
+          "incidentId": "ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7",
+          "trigger": "sustained-excursion",
+          "evidence": [
+            {
+              "deliveryId": "P4:Assessment:p4live-fd021988-2:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:1",
+              "eventType": "AssessmentRequested",
+              "reason": "temperature-excursion",
+              "evidenceVersion": 1,
+              "priority": "normal"
+            }
+          ],
+          "decision": {
+            "assessedEvidenceVersion": 1,
+            "decidedAt": "2026-11-18T22:55:12.209730Z",
+            "decision": "REPLACE",
+            "officer": "quality-officer",
+            "qualityStatus": "REJECTED",
+            "qualityStatusEventId": "P4:ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7:REPLACE:1",
+            "reason": "P4 live check: evidence assessed"
+          },
+          "unappliedDecisions": [],
+          "reassessedVersions": [],
+          "receiptWhileHeld": {
+            "qualityStatus": "PENDING",
+            "vehicleReleased": true
+          },
+          "monitoringFinalization": "FINALIZED",
+          "qualityStatus": "REJECTED",
+          "p3Status": "REJECTED",
+          "refusedActions": [
+            {
+              "activity": "CloseInvestigation",
+              "status": 409,
+              "reason": "DCR does not enable CloseInvestigation in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck"
+              ]
+            },
+            {
+              "activity": "RecordRecoveryEvidence",
+              "status": 409,
+              "reason": "DCR does not enable RecordRecoveryEvidence in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck",
+                "AssessEvidence"
+              ]
+            }
+          ],
+          "processInstanceKeys": {
+            "processInstanceKey": "2251799813685802",
+            "p2ProcessInstanceKey": "2251799813685863",
+            "p3ProcessInstanceKey": "2251799813686088"
+          }
+        },
+        {
+          "scenario": "run3-delay-additional-check-return",
+          "shipmentId": "p4live-fd021988-3",
+          "incidentId": "DELAY:risk-p4live-fd021988-3",
+          "trigger": "delay",
+          "evidence": [
+            {
+              "deliveryId": "P4:Assessment:p4live-fd021988-3:DELAY:risk-p4live-fd021988-3:1",
+              "eventType": "DeliveryRiskDetected",
+              "reason": "delivery-risk",
+              "evidenceVersion": 1,
+              "priority": "normal"
+            }
+          ],
+          "decision": {
+            "assessedEvidenceVersion": 1,
+            "decidedAt": "2026-11-18T22:56:57.703779Z",
+            "decision": "RETURN",
+            "officer": "quality-officer",
+            "qualityStatus": "REJECTED",
+            "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-3:RETURN:1",
+            "reason": "P4 live check: evidence assessed"
+          },
+          "unappliedDecisions": [],
+          "reassessedVersions": [],
+          "receiptWhileHeld": {
+            "qualityStatus": "PENDING",
+            "vehicleReleased": true
+          },
+          "monitoringFinalization": "FINALIZED",
+          "qualityStatus": "REJECTED",
+          "p3Status": "REJECTED",
+          "refusedActions": [
+            {
+              "activity": "CloseInvestigation",
+              "status": 409,
+              "reason": "DCR does not enable CloseInvestigation in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck"
+              ]
+            },
+            {
+              "activity": "AssessEvidence",
+              "status": 409,
+              "reason": "DCR does not enable AssessEvidence in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck",
+                "CompleteAdditionalCheck"
+              ]
+            },
+            {
+              "activity": "CloseInvestigation",
+              "status": 409,
+              "reason": "DCR does not enable CloseInvestigation in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck",
+                "CompleteAdditionalCheck"
+              ]
+            }
+          ],
+          "processInstanceKeys": {
+            "processInstanceKey": "2251799813686256",
+            "p2ProcessInstanceKey": "2251799813686317",
+            "p3ProcessInstanceKey": "2251799813686563"
+          }
+        },
+        {
+          "scenario": "run4-newer-evidence-reassessment-release",
+          "shipmentId": "p4live-fd021988-4",
+          "incidentId": "DELAY:risk-p4live-fd021988-4",
+          "trigger": "delay",
+          "evidence": [
+            {
+              "deliveryId": "P4:Assessment:p4live-fd021988-4:DELAY:risk-p4live-fd021988-4:1",
+              "eventType": "DeliveryRiskDetected",
+              "reason": "delivery-risk",
+              "evidenceVersion": 1,
+              "priority": "normal"
+            },
+            {
+              "deliveryId": "P4:Assessment:p4live-fd021988-4:DELAY:risk-p4live-fd021988-4:2",
+              "eventType": "AssessmentRequested",
+              "reason": "temperature-excursion",
+              "evidenceVersion": 2,
+              "priority": "normal"
+            }
+          ],
+          "decision": {
+            "assessedEvidenceVersion": 2,
+            "decidedAt": "2026-11-18T22:59:13.583831Z",
+            "decision": "RELEASE",
+            "officer": "quality-officer",
+            "qualityStatus": "RELEASED",
+            "qualityStatusEventId": "P4:DELAY:risk-p4live-fd021988-4:RELEASE:1",
+            "reason": "P4 live check: evidence assessed"
+          },
+          "unappliedDecisions": [],
+          "reassessedVersions": [],
+          "receiptWhileHeld": {
+            "qualityStatus": "PENDING",
+            "vehicleReleased": true
+          },
+          "monitoringFinalization": "FINALIZED",
+          "qualityStatus": "RELEASED",
+          "p3Status": "ADMITTED",
+          "refusedActions": [
+            {
+              "activity": "CloseInvestigation",
+              "status": 409,
+              "reason": "DCR does not enable CloseInvestigation in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck"
+              ]
+            },
+            {
+              "activity": "DecideRelease",
+              "status": 409,
+              "reason": "DCR does not enable DecideRelease in this investigation now",
+              "enabledAtThatTime": [
+                "AddAlertEvidence",
+                "ReviewTemperatureLog",
+                "ReviewWeatherData",
+                "ReviewRouteAndETA",
+                "RequestCoolingAdjustment",
+                "RequestAdditionalCheck",
+                "AssessEvidence"
+              ]
+            }
+          ],
+          "processInstanceKeys": {
+            "processInstanceKey": "2251799813686732",
+            "p2ProcessInstanceKey": "2251799813686793",
+            "p3ProcessInstanceKey": "2251799813687038"
+          }
+        }
+      ],
+      "replay": {
+        "p4live-fd021988-1/DELAY:risk-p4live-fd021988-1": {
+          "valid": true,
+          "accepting": true,
+          "pending": []
+        },
+        "p4live-fd021988-2/ASSESS:p4live-fd021988-2:CONTAINER:p4live-fd021988-2:journey-p4live-fd021988-2:7": {
+          "valid": true,
+          "accepting": true,
+          "pending": []
+        },
+        "p4live-fd021988-3/DELAY:risk-p4live-fd021988-3": {
+          "valid": true,
+          "accepting": true,
+          "pending": []
+        },
+        "p4live-fd021988-4/DELAY:risk-p4live-fd021988-4": {
+          "valid": true,
+          "accepting": true,
+          "pending": []
+        }
+      },
+      "log": "historical/fd021988-execution-log.xes",
+      "durationSeconds": 455,
+      "environment": {
+        "host": "macOS arm64 (owner's MacBook Pro), Docker Desktop, Docker 29.9.3",
+        "engine": "Zeebe/Operate 8.8.0",
+        "elasticsearch": "8.16.0",
+        "siddhi": "siddhiio/siddhi-runner-alpine:latest (amd64 image on arm64; Compose printed a platform warning; telemetry, commands and container evaluation reported enabled)",
+        "data": "fresh paired version-3 registry and named engine volumes (COMPOSE_PROJECT_NAME=frostflow-p4, VERIFY_DATASET=p4-02)",
+        "inputs": "container readings simulated (monitoring profile CHILLED-DEMO-v1); ETA local-demo-estimate (TOMTOM_API_KEY blank); weather open-meteo-current-model; GPS_TICK_SECONDS=15",
+        "testedCommit": "95e4a85ef65119b7c62432a57e57ec8c44266797"
+      },
+      "notes": "Run 4: the newer temperature evidence (version 2) reached P4 before the officer decided, so DCR refused DecideRelease (Assess pending) and the release was applied with assessed version 2. The registry-side stale-version refusal path (StaleDispositionRefused) is covered by the offline tests, not by this live run.",
+      "scope": "Combined foundation/P4 run on 95e4a85, before the PR #12 review fixes, with the local DCR engine. Historical: not evidence for the fixed code."
+    },
+    "fd021988ProcessDoctor": {
+      "status": "PASS",
+      "provider": "https://processdoctor.compute.dtu.dk/",
+      "checkedDate": "2026-11-19",
+      "performedBy": "Abid Hasan (manual browser check)",
+      "recordedBy": "AI assistant from the owner's screenshots; file identity checked byte-for-byte",
+      "model": "compliance/p4/rules.xml",
+      "modelSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
+      "log": "compliance/p4/execution-log.xes",
+      "logSha256": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f",
+      "liveRunId": "fd021988",
+      "traces": 4,
+      "variants": 4,
+      "variantOccurrences": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "conformingVariants": 4,
+      "partiallyViolatingVariants": 0,
+      "violatingVariants": 0,
+      "structuralViolations": 0,
+      "coverageThreshold": 100,
+      "screenshot": "compliance/p4/screenshots/processdoctor-conforming.png",
+      "screenshotSha256": "039ddca943cae0077921cb553d84d00f6f1616f958b5328a08e24323d50e81b9",
+      "roleFinding": "Against the executed graph with role assignments (dcr/p4_quality_investigation.xml), ProcessDoctor reported all 4 variants violating with cost Infinity, also when the log carried the DCR roles in org:resource and org:role (screenshots/processdoctor-model-with-roles.png). rules.xml is therefore the executed graph without <roles>: same 16 events, 83 relations and initial marking (checked by stage_tests/test_p4.py). Local replay is valid and accepting against both.",
+      "roleFindingScreenshot": "compliance/p4/screenshots/processdoctor-model-with-roles.png",
+      "scope": "Applies to the fd021988 log (now compliance/p4/historical/fd021988-execution-log.xes) against rules.xml; not to the current execution-log.xes."
+    }
   },
   "dcrRepositoryApi": {
     "status": "PASS",
@@ -634,7 +1007,7 @@
     "testedCommit": "9eebc566b4d557fb59c7b35b588def93a94d514c",
     "result": "Release path (9 activities) executed in the dcrgraphs.net Active Repository; after every step the enabled and pending activities equal the local engine on dcr/p4_quality_investigation.xml; an early CloseInvestigation was refused (refused: DCR answered 400: Event `CloseInvestigation` is not executable); final marking accepting.",
     "finding": "The repository also lists nesting groups (A19, A19.A18) as enabled events; fixed in 9eebc56 so repository mode reports only the 16 graph activities.",
-    "scope": "Direct API check of the graph. The full Docker stack has not been run with P4 in repository mode; the combined live run fd021988 used the local engine.",
+    "scope": "Direct API check of the graph (check_dcr_repository.py). The full stack has since run with P4 in repository mode: live run d2558070 (liveExecution).",
     "steps": [
       {
         "activity": "OpenIncident",
@@ -684,32 +1057,9 @@
     ]
   },
   "processDoctor": {
-    "status": "PASS",
-    "provider": "https://processdoctor.compute.dtu.dk/",
-    "checkedDate": "2026-11-19",
-    "performedBy": "Abid Hasan (manual browser check)",
-    "recordedBy": "AI assistant from the owner's screenshots; file identity checked byte-for-byte",
-    "model": "compliance/p4/rules.xml",
-    "modelSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
-    "log": "compliance/p4/execution-log.xes",
-    "logSha256": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f",
-    "liveRunId": "fd021988",
-    "traces": 4,
-    "variants": 4,
-    "variantOccurrences": [
-      1,
-      1,
-      1,
-      1
-    ],
-    "conformingVariants": 4,
-    "partiallyViolatingVariants": 0,
-    "violatingVariants": 0,
-    "structuralViolations": 0,
-    "coverageThreshold": 100,
-    "screenshot": "compliance/p4/screenshots/processdoctor-conforming.png",
-    "screenshotSha256": "039ddca943cae0077921cb553d84d00f6f1616f958b5328a08e24323d50e81b9",
-    "roleFinding": "Against the executed graph with role assignments (dcr/p4_quality_investigation.xml), ProcessDoctor reported all 4 variants violating with cost Infinity, also when the log carried the DCR roles in org:resource and org:role (screenshots/processdoctor-model-with-roles.png). rules.xml is therefore the executed graph without <roles>: same 16 events, 83 relations and initial marking (checked by stage_tests/test_p4.py). Local replay is valid and accepting against both.",
-    "roleFindingScreenshot": "compliance/p4/screenshots/processdoctor-model-with-roles.png"
+    "status": "PENDING",
+    "reason": "The live log changed (run d2558070). Upload compliance/p4/rules.xml and the current compliance/p4/execution-log.xes to ProcessDoctor (Conformance -> Open DCR Solution XML) and record the result. The previous 4/4 result is kept under historical.fd021988ProcessDoctor.",
+    "rulesSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
+    "logSha256": "59de888dfc1ae95f80bfa0907f1023554a90c64ec223256caf3671839b143e82"
   }
 }

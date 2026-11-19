@@ -221,4 +221,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Actual results:** the new regressions fail on the reviewed head `8395f95` and pass after the fix; the full offline suite passes on Python 3.12.3; `docker compose config` resolves `P4_INCIDENT_URL` to the default when unset, `""` when empty and the given value otherwise; `git diff --check` passes.
 
-**Not done / limits:** the combined live run has to be repeated by the owner on the fixed code; `fd021988`, the dcrgraphs.net API check and ProcessDoctor apply to their recorded revisions. The owner must review the changes and be able to explain them.
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac at `3576812` (fresh `p4-03` data): run `d2558070` passed. P4 executed in his dcrgraphs.net graph because `.env` held the `DCR_*` credentials. The AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting) and moved the `fd021988` log and its ProcessDoctor result to the historical section.
+
+**Not done / limits:** ProcessDoctor for the new log is pending. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.
