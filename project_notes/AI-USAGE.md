@@ -223,4 +223,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac at `3576812` (fresh `p4-03` data): run `d2558070` passed. P4 executed in his dcrgraphs.net graph because `.env` held the `DCR_*` credentials. The AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting) and moved the `fd021988` log and its ProcessDoctor result to the historical section.
 
+**Second pass before pushing:** re-read the review comments against the changes; added crash tests (after the DCR decision, after the registry write) and extended the lost-answer recovery to `CloseInvestigation`, the other officer activities and `OpenIncident`/`AddAlertEvidence`. It relies on DCR firing being idempotent, which the AI checked for all 3 425 reachable markings (now a test). Also corrected the remaining stale PR #9 / P4-consumer statements in the run guide, task board and an `app.py` comment.
+
 **Not done / limits:** ProcessDoctor for the new log is pending. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.

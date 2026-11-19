@@ -865,7 +865,8 @@ async def deliver_messages():
         destinations = {
             "p3-http": os.getenv("P3_ARRIVAL_URL"),
             "siddhi-http": os.getenv("SIDDIHI_TELEMETRY_URL"),
-            # Durable P4 investigation handoff; stays PENDING until P4 exists.
+            # Durable P4 investigation handoff; stays PENDING while P4_INCIDENT_URL is
+            # empty or the P4 consumer is unavailable.
             "p4-http": os.getenv("P4_INCIDENT_URL"),
         }
         for destination, url in destinations.items():

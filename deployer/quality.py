@@ -98,6 +98,10 @@ class DecisionPending(RuntimeError):
     """The disposition is durably recorded and will be retried."""
 
 
+class ActivityPending(DecisionPending):
+    """DCR's answer for an officer activity was lost; it is settled on retry."""
+
+
 def ensure_schema(db):
     db.execute(
         "CREATE TABLE IF NOT EXISTS incidents (id TEXT PRIMARY KEY, "
@@ -342,6 +346,14 @@ class QualityService:
                 pending = incident.get("pendingDecision")
                 if pending and pending.get("dcrAttempted") and not pending.get("dcrExecuted"):
                     return incident
+            if incident.get("pendingActivity"):
+                try:
+                    self._finish_activity(incident_id)
+                except (Blocked, ActivityPending, DCRUnavailable):
+                    pass
+                incident = self._read(incident_id)
+                if incident.get("pendingActivity"):
+                    return incident
             try:
                 case = incident.get("dcrCaseId")
                 if not case and incident["status"] != "CLOSED":
@@ -353,14 +365,24 @@ class QualityService:
                 while incident["pendingSystemEvents"]:
                     activity = incident["pendingSystemEvents"][0]
                     enabled = {e["id"] for e in self.dcr.events(case)["events"] if e["enabled"]}
+                    # An attempt whose DCR answer was lost: if DCR no longer enables the
+                    # event, that attempt executed it (e.g. OpenIncident excludes itself).
+                    executed = activity not in enabled and incident.get(
+                        "systemEventAttempt") == activity
                     if activity in enabled:
+                        with self.registry.transaction() as db:
+                            incident = read_incident(db, incident_id)
+                            incident["systemEventAttempt"] = activity
+                            save_incident(db, incident)
                         self.dcr.execute(case, activity)
                     with self.registry.transaction() as db:
                         incident = read_incident(db, incident_id)
                         incident["pendingSystemEvents"].pop(0)
+                        incident["systemEventAttempt"] = None
                         record = Registry.read(db, incident["shipmentId"])
                         journal(db, record, incident,
-                                activity if activity in enabled else "LateAlertEvidenceRecorded")
+                                activity if activity in enabled or executed
+                                else "LateAlertEvidenceRecorded")
                         save_incident(db, incident)
                 if incident["status"] in ("OPENING", "DCR_UNAVAILABLE"):
                     with self.registry.transaction() as db:
@@ -391,7 +413,7 @@ class QualityService:
                 incident["incidentId"]
                 for incident in (json.loads(r[0]) for r in db.execute("SELECT data FROM incidents"))
                 if incident["status"] in ("OPENING", "DCR_UNAVAILABLE")
-                or incident.get("pendingDecision")
+                or incident.get("pendingDecision") or incident.get("pendingActivity")
             ]
         for incident_id in waiting:
             self.sync(incident_id)
@@ -569,6 +591,9 @@ class QualityService:
                 raise Conflict("DCR case is not open yet; retry POST .../sync first")
             if incident.get("pendingDecision"):
                 raise Conflict("a decision is still being applied; retry POST .../sync")
+            if incident.get("pendingActivity"):
+                raise Conflict("an earlier activity is still being confirmed by DCR; "
+                               "retry POST .../sync")
             if activity in ASSESSMENT_GATED and incident.get("pendingSystemEvents"):
                 raise Conflict("new evidence is still being added to the DCR case; "
                                "retry POST .../sync")
@@ -581,25 +606,74 @@ class QualityService:
                 raise Blocked(activity, enabled)
             if activity in DECISIONS:
                 return self._decide(incident, activity, actor, reason, note, journal_id)
-            self.dcr.execute(case, activity)
             with self.registry.transaction() as db:
                 incident = read_incident(db, incident_id)
-                record = Registry.read(db, incident["shipmentId"])
-                payload = {k: v for k, v in (("reason", reason), ("note", note)) if v}
-                if activity == "AssessEvidence":
-                    newer = (incident["evidenceVersion"] != seen_version
-                             or bool(incident["pendingSystemEvents"]))
-                    incident["assessedEvidenceVersion"] = seen_version
-                    incident["reassessmentRequired"] = newer
-                    payload["assessedEvidenceVersion"] = seen_version
-                    if newer:
-                        payload["newerEvidenceArrived"] = True
-                event = journal(db, record, incident, activity, actor, payload,
-                                event_id=journal_id, input_mode="manual")
-                if activity == "CloseInvestigation":
-                    incident.update(status="CLOSED", closedAt=event["occurredAt"])
+                incident["pendingActivity"] = dict(
+                    activity=activity, actor=actor, reason=reason, note=note,
+                    journalId=journal_id, seenVersion=seen_version, dcrCaseId=case)
                 save_incident(db, incident)
+            return self._execute_activity(incident_id, case, activity)
+
+    def _execute_activity(self, incident_id, case, activity, reconciled=False):
+        """Execute the recorded pending activity in DCR, then journal it.
+
+        If DCR's answer is lost the pending activity stays (HTTP 503) and sync settles
+        it: executing a DCR event twice gives the same marking as once (checked for
+        every reachable marking of this graph), so a retry executes it again when DCR
+        still enables it and otherwise records it as already executed.
+        """
+        if not reconciled:
+            try:
+                self.dcr.execute(case, activity)
+            except DCRRefused as error:
+                self._clear_activity(incident_id, error)
+                raise Blocked(activity, [], str(error)) from error
+            except DCRUnavailable as error:
+                with self.registry.transaction() as db:
+                    incident = read_incident(db, incident_id)
+                    incident["lastError"] = f"activity not confirmed by DCR: {error}"
+                    save_incident(db, incident)
+                raise ActivityPending(str(error)) from error
+        with self.registry.transaction() as db:
+            incident = read_incident(db, incident_id)
+            record = Registry.read(db, incident["shipmentId"])
+            pending = incident["pendingActivity"]
+            payload = {k: pending[k] for k in ("reason", "note") if pending.get(k)}
+            if reconciled:
+                payload["reconciledAfterLostResponse"] = True
+            if activity == "AssessEvidence":
+                seen = pending["seenVersion"]
+                newer = (incident["evidenceVersion"] != seen
+                         or bool(incident["pendingSystemEvents"]))
+                incident["assessedEvidenceVersion"] = seen
+                incident["reassessmentRequired"] = newer
+                payload["assessedEvidenceVersion"] = seen
+                if newer:
+                    payload["newerEvidenceArrived"] = True
+            event = journal(db, record, incident, activity, pending["actor"], payload,
+                            event_id=pending["journalId"], input_mode="manual")
+            if activity == "CloseInvestigation":
+                incident.update(status="CLOSED", closedAt=event["occurredAt"])
+            incident.update(pendingActivity=None, lastError=None)
+            save_incident(db, incident)
         return incident, event
+
+    def _finish_activity(self, incident_id):
+        incident = self._read(incident_id)
+        pending = incident["pendingActivity"]
+        case, activity = pending["dcrCaseId"], pending["activity"]
+        try:
+            enabled = self._enabled(case)
+        except DCRUnavailable as error:
+            raise ActivityPending(str(error)) from error
+        return self._execute_activity(incident_id, case, activity,
+                                      reconciled=activity not in enabled)
+
+    def _clear_activity(self, incident_id, error):
+        with self.registry.transaction() as db:
+            incident = read_incident(db, incident_id)
+            incident.update(pendingActivity=None, lastError=str(error))
+            save_incident(db, incident)
 
     def _replay_request(self, incident_id, journal_id, details):
         """Idempotency for officer requests that carry an eventId.
@@ -619,11 +693,12 @@ class QualityService:
                 raise Conflict("eventId reused with a different activity, actor, reason "
                                "or note")
             saved = db.execute("SELECT data FROM events WHERE id=?", (journal_id,)).fetchone()
-        pending = incident.get("pendingDecision")
-        if saved and not (pending and pending.get("journalId") == journal_id):
+        if (incident.get("pendingDecision") or {}).get("journalId") == journal_id:
+            return self._finish_decision(incident_id)  # may already be journalled
+        if saved:
             return incident, json.loads(saved[0])
-        if pending and pending.get("journalId") == journal_id:
-            return self._finish_decision(incident_id)
+        if (incident.get("pendingActivity") or {}).get("journalId") == journal_id:
+            return self._finish_activity(incident_id)
         refused = [d for d in incident["unappliedDecisions"] if d.get("journalId") == journal_id]
         if refused:
             raise StaleDecision(f"this decision was not applied: {refused[-1]['refusal']}",
@@ -715,7 +790,8 @@ def create_blueprint(service):
 
     @bp.errorhandler(DecisionPending)
     def pending(error):
-        return jsonify(error=f"decision recorded, not applied yet: {error}; "
+        what = "activity" if isinstance(error, ActivityPending) else "decision"
+        return jsonify(error=f"{what} recorded, not confirmed yet: {error}; "
                        "it is retried automatically"), 503
 
     @bp.errorhandler(DCRUnavailable)

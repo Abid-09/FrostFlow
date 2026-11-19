@@ -415,6 +415,100 @@ class P4Flow(unittest.TestCase):
         self.assertEqual(self.trace().count("DecideReturn"), 1)
         self.assertTrue(replay(MODEL, self.trace())["accepting"])
 
+    def crash_when_journalling(self, activity):
+        """The service stops right after the preceding call succeeded."""
+        real = quality.journal
+
+        def journal(db, record, incident, name, *args, **kwargs):
+            if name == activity:
+                raise RuntimeError(f"service stopped before journalling {name} (test)")
+            return real(db, record, incident, name, *args, **kwargs)
+        return patch.object(quality, "journal", side_effect=journal)
+
+    def test_crash_after_dcr_decision_before_journalling_is_reconciled(self):
+        """Review: '...or the service crashes before journalling'."""
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        with self.crash_when_journalling("DecideReplace"), self.assertRaises(RuntimeError):
+            service.quality.execute(self.incident_id(), "DecideReplace",
+                                    {"actor": "officer-anna", "reason": "too warm"})
+        pending = self.incident()["pendingDecision"]
+        self.assertEqual((pending["dcrAttempted"], pending["dcrExecuted"]), (True, False))
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        service.quality.retry_unfinished()                 # after restart
+        self.assertIsNone(self.incident()["pendingDecision"])
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "REJECTED")
+        self.run_path(["CloseInvestigation"])
+        self.assertEqual(self.trace().count("DecideReplace"), 1)
+        self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_crash_after_registry_write_finishes_with_the_same_identity(self):
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        with self.crash_when_journalling("DispositionRecorded"), \
+                self.assertRaises(RuntimeError):
+            service.quality.execute(self.incident_id(), "DecideReturn",
+                                    {"actor": "officer-anna", "reason": "too warm"})
+        pending = self.incident()["pendingDecision"]
+        self.assertTrue(pending["dcrExecuted"])
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "REJECTED")  # after DCR
+        service.quality.retry_unfinished()
+        view = self.incident()
+        self.assertIsNone(view["pendingDecision"])
+        self.assertEqual(view["decision"]["qualityStatusEventId"], pending["eventId"])
+        changes = [e for e in self.db.events("S-test") if e["eventType"] == "DispositionRecorded"]
+        self.assertEqual(len(changes), 1)
+
+    def test_lost_dcr_response_for_close_investigation_is_reconciled(self):
+        """Review: retries kept CloseInvestigation blocked; the same holds for closing."""
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence", "DecideReplace"])
+        with self.faulty("CloseInvestigation", lose_response=True):
+            response = self.act("CloseInvestigation", eventId="close-1")
+        self.assertEqual(response.status_code, 503, response.json)
+        self.assertEqual(self.incident()["status"], "OPEN")
+        self.assertEqual(self.act("ReviewWeatherData").status_code, 409)   # still settling
+        again = self.act("CloseInvestigation", eventId="close-1")          # same request
+        self.assertEqual(again.status_code, 200, again.json)
+        self.assertTrue(again.json["event"]["payload"]["reconciledAfterLostResponse"])
+        self.assertEqual(self.incident()["status"], "CLOSED")
+        self.assertEqual(self.trace().count("CloseInvestigation"), 1)
+        self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_lost_dcr_response_for_assessment_is_retried_once_in_the_journal(self):
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog"])
+        with self.faulty("AssessEvidence", lose_response=True):
+            self.assertEqual(self.act("AssessEvidence").status_code, 503)
+        service.quality.retry_unfinished()       # still enabled: executed again (same marking)
+        view = self.incident()
+        self.assertIsNone(view["pendingActivity"])
+        self.assertEqual(view["assessedEvidenceVersion"], 1)
+        self.assertEqual(self.trace().count("AssessEvidence"), 1)
+        self.run_path(["DecideReplace", "CloseInvestigation"])
+        self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_lost_dcr_response_for_open_incident_is_not_logged_as_late_evidence(self):
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        with self.faulty("OpenIncident", lose_response=True):
+            [ack] = self.deliver_p4()
+        self.assertEqual(ack["status"], "accepted")
+        self.assertEqual(self.incident()["status"], "DCR_UNAVAILABLE")
+        service.quality.retry_unfinished()
+        self.assertEqual(self.incident()["status"], "OPEN")
+        self.assertEqual(self.trace(), ["OpenIncident"])
+        self.assertNotIn("LateAlertEvidenceRecorded",
+                         [e["eventType"] for e in self.db.events("S-test")])
+
     def test_definite_dcr_refusal_is_not_taken_as_executed(self):
         self.start_p2_transport()
         self.readings(10, 10, 10)
@@ -758,6 +852,25 @@ class P4Graph(unittest.TestCase):
         self.assertEqual(len(seen), 3425)
         self.assertEqual(set(seen) - can_finish, set())
         self.assertEqual(fired, set(events))
+
+    def test_executing_an_enabled_event_twice_gives_the_same_marking(self):
+        """quality.py relies on this to retry an activity whose DCR answer was lost."""
+        engine = dcr_client.LocalDCR(MODEL, str(Path(tempfile.mkdtemp()) / "x.db"))
+        start = {k: sorted(v) for k, v in engine.initial.items()}
+        key = lambda m: json.dumps(m, sort_keys=True)  # noqa: E731
+        seen, frontier, firings = set(), [start], 0
+        while frontier:
+            marking = frontier.pop()
+            if key(marking) in seen:
+                continue
+            seen.add(key(marking))
+            for event in engine.labels:
+                if engine.blocked_reason(marking, event) is None:
+                    once = engine.fire(marking, event)
+                    self.assertEqual(engine.fire(once, event), once, event)
+                    firings += 1
+                    frontier.append(once)
+        self.assertEqual((len(seen), firings), (3425, 20977))
 
 
 class Evidence(unittest.TestCase):

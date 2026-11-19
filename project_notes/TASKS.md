@@ -7,7 +7,7 @@
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer adaptation remains outstanding |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer in replacement PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; first-review fixes pass offline; combined live run `d2558070` passed on the fixed code with P4 in the dcrgraphs.net repository | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); ProcessDoctor for the new log, review and merge approval |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
