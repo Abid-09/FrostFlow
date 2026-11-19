@@ -111,7 +111,7 @@ Each result applies only to the revision it was produced on; later code changes 
 | Earlier combined live run `fd021988` (local DCR engine) | `95e4a85` (before the review fixes) | `compliance/p4/historical/fd021988-execution-log.xes`, `verification.json` → `historical` | PASS; historical only |
 | PR #10 live run `900821e9` (pre-foundation, unmonitored, pre-v1 contract) | `f9a92ee` (PR #10 code) | `compliance/p4/historical/` | historical only; not evidence for this branch |
 | dcrgraphs.net Active Repository API (`stage_tests/check_dcr_repository.py`) | `9eebc56` | `compliance/p4/verification.json` → `dcrRepositoryApi` | PASS on graph `2015919`, simulation `2109421`: 9 steps match the local engine; early `CloseInvestigation` refused (HTTP 400). Direct API check, not a full-stack run in repository mode |
-| ProcessDoctor (owner, manual) for the current log `ed88d16d` | log hash in `verification.json` → `processDoctor` | — | PENDING |
+| ProcessDoctor (owner, manual) for the current log `ed88d16d` | `35d154a` | `compliance/p4/screenshots/processdoctor-ed88d16d-conforming.png`, `verification.json` → `processDoctor` | PASS: against `rules.xml`, 4/4 conforming variants, 0 violations, coverage 100 |
 | ProcessDoctor for the historical log `fd021988` | `95e4a85` | `compliance/p4/screenshots/processdoctor-conforming.png`, `verification.json` → `historical.fd021988ProcessDoctor` | PASS: against `rules.xml`, 4/4 conforming variants, 0 violations, coverage 100; does not cover the current log |
 
 ```bash

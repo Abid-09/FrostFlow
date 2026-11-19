@@ -18,7 +18,8 @@
     "stage_tests/test_p4.py": "774b676f1df004329f6f28157b98e532852f45f3bd52c608ab11e1c8aefe98c5",
     "stage_tests/check_p4_investigation.py": "3b36036a6d82168ca2d32e9a837ccb9cbacf7cf4e1b3b31ccdb28fd2e6e54c03",
     "compliance/p4/execution-log.xes": "0502a9adf3799ff0cdb4658eecbbc04f0a3bc23d87c53a722eee988d0998d701",
-    "compliance/p4/historical/fd021988-execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f"
+    "compliance/p4/historical/fd021988-execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f",
+    "compliance/p4/screenshots/processdoctor-ed88d16d-conforming.png": "eb5533ea8b158b5f19f10b518aff90663c494d3fb17969db97b54f5352f1d5fc"
   },
   "model": {
     "events": 16,
@@ -1100,9 +1101,32 @@
     ]
   },
   "processDoctor": {
-    "status": "PENDING",
-    "reason": "Upload compliance/p4/rules.xml and the current compliance/p4/execution-log.xes (live run ed88d16d) to ProcessDoctor (Conformance -> Open DCR Solution XML) and record the result. The 4/4 result for the historical log fd021988 is under historical.fd021988ProcessDoctor.",
-    "rulesSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
-    "logSha256": "0502a9adf3799ff0cdb4658eecbbc04f0a3bc23d87c53a722eee988d0998d701"
+    "status": "PASS",
+    "provider": "https://processdoctor.compute.dtu.dk/",
+    "checkedDate": "2026-11-20",
+    "performedBy": "Abid Hasan (manual browser check)",
+    "recordedBy": "AI assistant from the owner's screenshot. The owner's rules.xml and execution-log.xes were compared with the committed files (same SHA-256); the screenshot shows the log name, the model was loaded via Conformance -> Open DCR Solution XML as documented.",
+    "model": "compliance/p4/rules.xml",
+    "modelSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
+    "log": "compliance/p4/execution-log.xes",
+    "logSha256": "0502a9adf3799ff0cdb4658eecbbc04f0a3bc23d87c53a722eee988d0998d701",
+    "liveRunId": "ed88d16d",
+    "testedCommit": "35d154a184c33c7abb68533f61b57aa79e3c5716",
+    "traces": 4,
+    "variants": 4,
+    "variantOccurrences": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "conformingVariants": 4,
+    "partiallyViolatingVariants": 0,
+    "violatingVariants": 0,
+    "structuralViolations": 0,
+    "coverageThreshold": 100,
+    "screenshot": "compliance/p4/screenshots/processdoctor-ed88d16d-conforming.png",
+    "screenshotSha256": "eb5533ea8b158b5f19f10b518aff90663c494d3fb17969db97b54f5352f1d5fc",
+    "roleFinding": "See historical.fd021988ProcessDoctor.roleFinding: rules.xml is the executed graph without <roles>."
   }
 }

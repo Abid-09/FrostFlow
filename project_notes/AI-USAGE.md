@@ -227,4 +227,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Final live run (by the owner):** on `35d154a`, fresh `p4-04` data: run `ed88d16d` passed with P4 in the dcrgraphs.net repository; the AI rebuilt `execution-log.xes`/`verification.json` from it and kept `d2558070` as historical.
 
-**Not done / limits:** ProcessDoctor for the `ed88d16d` log is pending. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.
+**ProcessDoctor (by the owner):** 4/4 conforming variants, 0 violations, for the `ed88d16d` log against `rules.xml`; the AI recorded it from the owner's screenshot after checking that his files match the committed ones (SHA-256).
+
+**Not done / limits:** the registry stale-version refusal, lost DCR answers, failed DCR decisions, crashes and the new-case path are verified offline only. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.

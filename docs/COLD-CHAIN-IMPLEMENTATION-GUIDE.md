@@ -109,7 +109,7 @@ P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns 
 
 ### Abid — P4: Quality incident investigation · DCR
 
-Abid is the confirmed P4 owner. **Status:** restored and adapted to the foundation contract v1 in the replacement PR — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests, the dcrgraphs.net simulation, the dcrgraphs.net API check and the combined live run `ed88d16d` (P4 executing in the dcrgraphs.net repository, on the final PR #12 code) pass. ProcessDoctor for that log is pending; the earlier 4/4 result applies to the historical run `fd021988`. Cooling/recovery inputs are manual until their contracts exist.
+Abid is the confirmed P4 owner. **Status:** restored and adapted to the foundation contract v1 in the replacement PR — [P4 guide](P4-QUALITY-INVESTIGATION.md), [`deployer/quality.py`](../deployer/quality.py), [`dcr/`](../dcr/), [`compliance/p4/`](../compliance/p4/). Offline tests, the dcrgraphs.net simulation, the dcrgraphs.net API check and the combined live run `ed88d16d` (P4 executing in the dcrgraphs.net repository, on the final PR #12 code) pass, and ProcessDoctor reports 4/4 conforming variants (0 violations) for its log. Cooling/recovery inputs are manual until their contracts exist.
 
 **Build:** open incident → review evidence → request/complete additional checks if needed → decide release, replacement, or return → close investigation.
 

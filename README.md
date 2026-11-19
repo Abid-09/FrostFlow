@@ -27,7 +27,7 @@ The [dataset reference](docs/RUNNING.md#demonstration-dataset) lists all product
 | P1 — Shipment preparation | Camunda / Zeebe | Stock wait/cancellation, dispatch handoff and local compliance verification implemented |
 | P2 — Transport and delivery | Camunda / Zeebe | Receipt-gated transport, scripted GPS/ETA, arrival and dispatcher decisions implemented |
 | P3 — Receiving and stock admission | Camunda / Zeebe | P2 arrival integration, physical receipt, inspection, separate receiving inventory and quality hold implemented; four live scenarios and local replay verified; see current external-check status in the run guide |
-| P4 — Quality incident investigation | DCR (local engine by default; dcrgraphs.net repository with `DCR_*` credentials) | Restored and adapted to the foundation contract v1 in replacement PR #12; offline tests and the combined live run `ed88d16d` on the final code (P4 executing in the dcrgraphs.net repository) pass; ProcessDoctor for that log is pending ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
+| P4 — Quality incident investigation | DCR (local engine by default; dcrgraphs.net repository with `DCR_*` credentials) | Restored and adapted to the foundation contract v1 in replacement PR #12; offline tests and the combined live run `ed88d16d` on the final code (P4 executing in the dcrgraphs.net repository) pass; ProcessDoctor reports 4/4 conforming variants for that log ([P4 guide](docs/P4-QUALITY-INVESTIGATION.md)) |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Planned |
 | P6 — Supplier claim resolution | Camunda / Zeebe | Planned |
 
