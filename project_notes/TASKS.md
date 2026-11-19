@@ -9,7 +9,7 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer adaptation remains outstanding |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in the replacement PR; offline tests, combined live run `fd021988`, dcrgraphs.net API check and ProcessDoctor 4/4 conforming pass | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); review and merge approval |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; first-review fixes pass offline; combined live run `fd021988`, dcrgraphs.net API check and ProcessDoctor 4/4 conforming pass on their recorded revisions | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); live re-run on the fixed code, review and merge approval |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -140,7 +140,7 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
 - **Implemented and verified:** the Siddhi persistence rule (three consecutive fresh late ETAs), destination-preserving route changes, Camunda route variables, the P3 receipt gate, and the delivery-risk quality hold.
 - **P2 DCR:** rules and log are delivered; local replay passes. ProcessDoctor needs a re-run for the latest log.
-- **Outstanding:** the P4 consumer of the hold handoff, a TomTom re-check with a valid key, and the external simulator (team decision).
+- **Outstanding:** a TomTom re-check with a valid key and the external simulator (team decision). The P4 consumer of the hold handoff is in replacement PR #12.
 
 See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where). P2/P3 fixes and integration were merged through [#4](https://github.com/ash-01xor/FrostFlow/pull/4) and [#5](https://github.com/ash-01xor/FrostFlow/pull/5); smoke tests/evidence through [#6](https://github.com/ash-01xor/FrostFlow/pull/6). External integration owners and P4–P6 follow-up links still require team coordination. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
 
@@ -167,7 +167,9 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Consume `DeliveryRiskDetected` (legacy and v1) and `AssessmentRequested` (four reasons); persist the full request; acknowledge `{deliveryId, status}`; exact retries are duplicates, conflicting reuse fails; requests not matching the foundation outbox are refused.
 - [x] The foundation holds before the handoff; if DCR is unavailable the request is kept and case opening retried.
 - [x] One incident collects all its evidence versions (`AddAlertEvidence` makes reassessment due); closed/`REJECTED` incidents only record later evidence.
-- [x] `AssessEvidence` records the assessed evidence version; dispositions use it as `expectedEvidenceVersion` before DCR executes the decision; refused (stale) dispositions are recorded unapplied and require reassessment; transient failures keep one durable decision identity.
+- [x] `AssessEvidence` records the evidence version seen before DCR executed it; dispositions use it as `expectedEvidenceVersion`; refused (stale) dispositions are recorded unapplied and require reassessment; transient failures keep one durable decision identity.
+- [x] PR #12 first review (changes requested, 19 November): assessment/version race, release before DCR confirmation, lost-response recovery, conflicting officer retries and the empty `P4_INCIDENT_URL` default fixed with regressions; stale docs reconciled. See [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#first-review-of-pr-12-19-november).
+- [ ] Repeat the combined live run (`stage_tests/check_p4_investigation.py`) on the fixed code; `fd021988` was produced on `95e4a85`, before the review fixes.
 - [x] Enforce requested-check and cooling-answer obligations and prevent premature closure (DCR refuses with 409).
 - [x] Offline proof on new monitored shipments: release after receipt during a hold, replace, return, newer-evidence reassessment, duplicate delivery, DCR outage recovery, handover fixtures in order, legacy messages. CLI 18 temperature / 19 investigation.
 - [x] Combined foundation/P4 live run `fd021988` (`check_p4_investigation.py`, macOS arm64, fresh `p4-02` data, commit `95e4a85`) recorded in `compliance/p4/`; PR #10 run `900821e9` stays historical.

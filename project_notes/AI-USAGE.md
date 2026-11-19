@@ -210,3 +210,15 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 **ProcessDoctor (by the owner):** after all traces showed cost Infinity against the role-assigned graph, the AI diagnosed the roles as the cause. The owner checked a role-free copy and got 4/4 conforming. `compliance/p4/rules.xml` became that role-free graph; the AI recorded the result from the owner's screenshots, with file hashes.
 
 **Not done / limits:** no full-stack run in repository mode. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.
+
+## 2026-11-19 — PR #12 first review fixes (Abid Hasan)
+
+**Tool:** Claude (Anthropic) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** a reviewer requested changes on PR #12; read the review and make the requested changes, then test and push.
+
+**Assistance:** read the review through the GitHub API. Reworked the P4 decision path in `deployer/quality.py`: registry check (new read-only `Registry.check_quality_status`, sharing the existing guard with `accept_quality_status`), then the DCR decision, then the registry write; a new DCR case when the registry refuses after the DCR decision; durable DCR attempts with lost-response reconciliation; `DCRRefused` for definite refusals in `deployer/dcr_client.py`. Also: assessed version captured before the DCR call, assessment and decisions gated while evidence is being added, stored officer request details per `eventId`, and the Compose default changed to `${P4_INCIDENT_URL-…}`. Added regressions for each finding and rewrote the transient-failure test for the new order. The live runner now waits until P4 has received the registry's current evidence version before reassessing. Reconciled the documents the review named.
+
+**Actual results:** the new regressions fail on the reviewed head `8395f95` and pass after the fix; the full offline suite passes on Python 3.12.3; `docker compose config` resolves `P4_INCIDENT_URL` to the default when unset, `""` when empty and the given value otherwise; `git diff --check` passes.
+
+**Not done / limits:** the combined live run has to be repeated by the owner on the fixed code; `fd021988`, the dcrgraphs.net API check and ProcessDoctor apply to their recorded revisions. The owner must review the changes and be able to explain them.

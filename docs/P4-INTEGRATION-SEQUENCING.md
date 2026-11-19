@@ -1,10 +1,10 @@
 # P4 integration sequencing — 18 November 2026
 
-**Current checkpoint:** PR #11 is merged as `f475904` after explicit user approval. Main was merged into the shared foundation branch in `4b09482`. The [handover](P4-FOUNDATION-HANDOVER.md) and contract fixtures are committed in `8d13c3e`; foundation PR #9 still requires separate review/merge approval and merged-main smoke. The restoration checks below describe the earlier revert checkpoint. The [18 November foundation review report](../compliance/foundation-review-18.json) records subsequent live verification and fresh offline reproduction of the three P4 contract failures; DCR calls were substituted in that reproduction.
+**Current checkpoint (19 November 2026):** checkpoint 4. Revert PR #11 is merged as `f475904`, and foundation PR #9 is merged as `ae941cc`. The replacement P4 PR [#12](https://github.com/ash-01xor/FrostFlow/pull/12) (branch `feat/p4-foundation-integration`, from `ae941cc`) is in review. Its first review requested changes; how they were addressed is under [checkpoint 4](#checkpoint-4--replacement-p4-pr). No integrated smoke at `ae941cc` is recorded in the repository: `compliance/merged-main-verification.json` still records `ad47a3c`. The sections before checkpoint 4 describe earlier checkpoints and keep their original scope; the restoration checks below describe the revert checkpoint. The [18 November foundation review report](../compliance/foundation-review-18.json) records subsequent live verification and fresh offline reproduction of the three P4 contract failures; DCR calls were substituted in that reproduction.
 
 Abid owns P4. His executable investigation, DCR models, code and historical evidence are preserved in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10), its head `45f654b` and merge `af3c68c1e98e6d3245cfdea9c7ade36bbae32a5d`. Removing that merge from the active tree defers integration; it does not discard his contribution or imply it never existed.
 
-The agreed order is **revert PR → foundation PR #9 → verified merged main → replacement P4 PR**. Each merge requires a separate explicit user review approval. This revert PR is checkpoint 1 only. No foundation or P4 integration is claimed complete here.
+The agreed order is **revert PR → foundation PR #9 → verified merged main → replacement P4 PR**. Each merge requires a separate explicit user review approval. This plan was written for checkpoint 1 (the revert PR), which claimed no foundation or P4 integration.
 
 ## Why restore the baseline first?
 
@@ -64,3 +64,17 @@ The three findings above are resolved in source and covered by `stage_tests/test
 - legacy delay messages.
 
 `compliance/foundation/review-18/legacy-contract-reproduction.py` reproduces the failures of the historical revision `af3c68c` by design; it is not a check of this branch. The combined live run passed: `stage_tests/check_p4_investigation.py`, run `fd021988`, on the owner's Mac (Docker Desktop, fresh `p4-02` data) against `95e4a85`. All four scenarios reached their expected P3 outcome, receipt released the vehicle while held, monitoring finalized, and forbidden actions were refused; the 4 traces in `compliance/p4/execution-log.xes` are valid and accepting. In run 4 DCR refused the decision until evidence version 2 was reassessed; the registry stale-version refusal is covered offline. `stage_tests/check_dcr_repository.py` then passed against the owner's dcrgraphs.net graph `2015919` (simulation `2109421`): every step of the release path matches the local engine and an early close is refused. It also found that the API lists nesting groups as events; repository mode now ignores them (`9eebc56`). ProcessDoctor reported 4/4 conforming variants (0 violations, coverage 100) for the live log against `compliance/p4/rules.xml`, which is the executed graph without role assignments. Against the role-assigned graph, every variant had cost Infinity even with roles in the log. Recorded in `compliance/p4/verification.json`. Review and explicit merge approval are required.
+
+### First review of PR #12 (19 November)
+
+The review (changes requested) reproduced five defects with fault and race probes. Each now has a regression in `stage_tests/test_p4.py` that fails on the reviewed head `8395f95` and passes after the fix:
+
+| Finding | Fix |
+| --- | --- |
+| Assessment/version race: evidence committed while DCR executed `AssessEvidence` was labelled assessed and released | The assessed version is the one the request saw before the DCR call; newer evidence makes reassessment due. `AssessEvidence` and decisions are refused while evidence is accepted but not yet in DCR. |
+| Release preceded DCR confirmation: a failed DCR decision left quality `RELEASED` and P3 admitted | Order is now registry check (read-only `Registry.check_quality_status`, sharing the guard with `accept_quality_status`) → DCR decision → registry apply. Quality permission is written only after DCR executed the decision. If the registry refuses after that (newer evidence in between), the investigation continues in a new DCR case. |
+| Lost DCR response left `pendingDecision` stuck | The attempt is recorded before the DCR call; a retry that finds the decision no longer enabled records it as executed (`reconciledAfterLostResponse`). An attempted decision is settled before any other DCR change. Definite refusals (`DCRRefused`) are not taken as executed. |
+| Conflicting officer retries returned 200 | The first request's activity, actor, reason and note are stored per `eventId`; different details → 409, identical retries still succeed. |
+| Empty `P4_INCIDENT_URL` still used the default | Compose uses `${P4_INCIDENT_URL-…}` (default only when unset); checked with `docker compose config` unset, empty and custom. |
+
+Documentation: README and run guide no longer call P4 deferred, this file's current checkpoint is updated, the CLI docstring names option 19, and the P4 guide's evidence table gives each result's tested revision. The combined live run `fd021988` and the ProcessDoctor result were produced on `95e4a85`, before these fixes; they are not evidence for the fixed code until the live run is repeated.
