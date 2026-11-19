@@ -1,6 +1,6 @@
 {
-  "verifiedAt": "2026-11-19T22:36:37.208673+00:00",
-  "testedCommit": "35768129b4556758e97d977ec985b556ae2afd73",
+  "verifiedAt": "2026-11-19T22:59:14.907548+00:00",
+  "testedCommit": "35d154a184c33c7abb68533f61b57aa79e3c5716",
   "process": "P4 Quality incident investigation (DCR)",
   "owner": "Abid Hasan",
   "contract": "foundation P4 assessment contract v1 (docs/P4-FOUNDATION-HANDOVER.md)",
@@ -13,11 +13,11 @@
     "dcr/p4_quality_investigation.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
     "compliance/p4/dcrgraphs-simulation-log.xes": "fba330c44a1209470e604ca8472dcfd1f846a567a544d7ecac62dbb5cc4e8fb7",
     "compliance/p4/invalid-traces.json": "336002e3f1259fbc5400acf0a857b00f9a1834bc4621f29198da62474c959cf9",
-    "deployer/quality.py": "911e372d4422ba61553b0441a97f965c3b6516c1902b6165533bf1efe473c7d3",
+    "deployer/quality.py": "bf9ff62dfd4d3f2ee2801e62bacc0e3bc5cd1eb793b5d17a7b96e804aea901bb",
     "deployer/dcr_client.py": "4039649743794aa7ef441bf4a3887d584c9e1b0308054909cef9a6fb97757e75",
-    "stage_tests/test_p4.py": "49e20e698487d2bb4176ac3a08db0d8d53a9f16b3625654ca867ec699027c7df",
+    "stage_tests/test_p4.py": "774b676f1df004329f6f28157b98e532852f45f3bd52c608ab11e1c8aefe98c5",
     "stage_tests/check_p4_investigation.py": "3b36036a6d82168ca2d32e9a837ccb9cbacf7cf4e1b3b31ccdb28fd2e6e54c03",
-    "compliance/p4/execution-log.xes": "59de888dfc1ae95f80bfa0907f1023554a90c64ec223256caf3671839b143e82",
+    "compliance/p4/execution-log.xes": "0502a9adf3799ff0cdb4658eecbbc04f0a3bc23d87c53a722eee988d0998d701",
     "compliance/p4/historical/fd021988-execution-log.xes": "74851a34041f83376c1014cb9b38c2ee3abfc8fc9adbda4114402a58d435539f"
   },
   "model": {
@@ -33,7 +33,7 @@
   "offlineTests": {
     "command": ".venv/bin/python -m unittest discover -s stage_tests -p test_p4.py",
     "result": "PASS",
-    "summary": "Ran 30 tests in 1.346s"
+    "summary": "Ran 36 tests in 1.967s"
   },
   "dcrgraphsSimulation": {
     "status": "PASS",
@@ -80,19 +80,19 @@
   "liveExecution": {
     "status": "PASS",
     "command": "python3 stage_tests/check_p4_investigation.py --base http://localhost:5001",
-    "capturedAt": "2026-11-19T22:30:11.678Z",
-    "runId": "d2558070",
+    "capturedAt": "2026-11-19T22:55:43.490Z",
+    "runId": "ed88d16d",
     "dcrEngine": "dcr-repository",
     "source": "live HTTP run on new monitored shipments; P1/P2/P3 in Zeebe; container evaluation in Siddhi; P4 in dcr-repository",
     "cases": [
       {
         "scenario": "run1-delay-cooling-recovery-release",
-        "shipmentId": "p4live-d2558070-1",
-        "incidentId": "DELAY:risk-p4live-d2558070-1",
+        "shipmentId": "p4live-ed88d16d-1",
+        "incidentId": "DELAY:risk-p4live-ed88d16d-1",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-d2558070-1:DELAY:risk-p4live-d2558070-1:1",
+            "deliveryId": "P4:Assessment:p4live-ed88d16d-1:DELAY:risk-p4live-ed88d16d-1:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
@@ -101,12 +101,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-19T22:24:28.276366Z",
+          "decidedAt": "2026-11-19T22:49:59.615232Z",
           "decision": "RELEASE",
           "note": null,
           "officer": "quality-officer",
           "qualityStatus": "RELEASED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-1:RELEASE:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-ed88d16d-1:RELEASE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -149,17 +149,17 @@
         "processInstanceKeys": {
           "processInstanceKey": "2251799813685318",
           "p2ProcessInstanceKey": "2251799813685377",
-          "p3ProcessInstanceKey": "2251799813685630"
+          "p3ProcessInstanceKey": "2251799813685629"
         }
       },
       {
         "scenario": "run2-temperature-failed-cooling-replace",
-        "shipmentId": "p4live-d2558070-2",
-        "incidentId": "ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6",
+        "shipmentId": "p4live-ed88d16d-2",
+        "incidentId": "ASSESS:p4live-ed88d16d-2:CONTAINER:p4live-ed88d16d-2:journey-p4live-ed88d16d-2:7",
         "trigger": "sustained-excursion",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-d2558070-2:ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6:1",
+            "deliveryId": "P4:Assessment:p4live-ed88d16d-2:ASSESS:p4live-ed88d16d-2:CONTAINER:p4live-ed88d16d-2:journey-p4live-ed88d16d-2:7:1",
             "eventType": "AssessmentRequested",
             "reason": "temperature-excursion",
             "evidenceVersion": 1,
@@ -168,12 +168,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-19T22:26:12.544725Z",
+          "decidedAt": "2026-11-19T22:51:43.174331Z",
           "decision": "REPLACE",
           "note": null,
           "officer": "quality-officer",
           "qualityStatus": "REJECTED",
-          "qualityStatusEventId": "P4:ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6:REPLACE:1",
+          "qualityStatusEventId": "P4:ASSESS:p4live-ed88d16d-2:CONTAINER:p4live-ed88d16d-2:journey-p4live-ed88d16d-2:7:REPLACE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -215,19 +215,19 @@
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813685793",
-          "p2ProcessInstanceKey": "2251799813685853",
-          "p3ProcessInstanceKey": "2251799813686081"
+          "processInstanceKey": "2251799813685798",
+          "p2ProcessInstanceKey": "2251799813685859",
+          "p3ProcessInstanceKey": "2251799813686097"
         }
       },
       {
         "scenario": "run3-delay-additional-check-return",
-        "shipmentId": "p4live-d2558070-3",
-        "incidentId": "DELAY:risk-p4live-d2558070-3",
+        "shipmentId": "p4live-ed88d16d-3",
+        "incidentId": "DELAY:risk-p4live-ed88d16d-3",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-d2558070-3:DELAY:risk-p4live-d2558070-3:1",
+            "deliveryId": "P4:Assessment:p4live-ed88d16d-3:DELAY:risk-p4live-ed88d16d-3:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
@@ -236,12 +236,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 1,
-          "decidedAt": "2026-11-19T22:27:58.044001Z",
+          "decidedAt": "2026-11-19T22:53:29.141169Z",
           "decision": "RETURN",
           "note": null,
           "officer": "quality-officer",
           "qualityStatus": "REJECTED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-3:RETURN:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-ed88d16d-3:RETURN:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -297,26 +297,26 @@
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813686250",
-          "p2ProcessInstanceKey": "2251799813686312",
-          "p3ProcessInstanceKey": "2251799813686560"
+          "processInstanceKey": "2251799813686266",
+          "p2ProcessInstanceKey": "2251799813686335",
+          "p3ProcessInstanceKey": "2251799813686611"
         }
       },
       {
         "scenario": "run4-newer-evidence-reassessment-release",
-        "shipmentId": "p4live-d2558070-4",
-        "incidentId": "DELAY:risk-p4live-d2558070-4",
+        "shipmentId": "p4live-ed88d16d-4",
+        "incidentId": "DELAY:risk-p4live-ed88d16d-4",
         "trigger": "delay",
         "evidence": [
           {
-            "deliveryId": "P4:Assessment:p4live-d2558070-4:DELAY:risk-p4live-d2558070-4:1",
+            "deliveryId": "P4:Assessment:p4live-ed88d16d-4:DELAY:risk-p4live-ed88d16d-4:1",
             "eventType": "DeliveryRiskDetected",
             "reason": "delivery-risk",
             "evidenceVersion": 1,
             "priority": "normal"
           },
           {
-            "deliveryId": "P4:Assessment:p4live-d2558070-4:DELAY:risk-p4live-d2558070-4:2",
+            "deliveryId": "P4:Assessment:p4live-ed88d16d-4:DELAY:risk-p4live-ed88d16d-4:2",
             "eventType": "AssessmentRequested",
             "reason": "temperature-excursion",
             "evidenceVersion": 2,
@@ -325,12 +325,12 @@
         ],
         "decision": {
           "assessedEvidenceVersion": 2,
-          "decidedAt": "2026-11-19T22:30:10.213466Z",
+          "decidedAt": "2026-11-19T22:55:42.085255Z",
           "decision": "RELEASE",
           "note": null,
           "officer": "quality-officer",
           "qualityStatus": "RELEASED",
-          "qualityStatusEventId": "P4:DELAY:risk-p4live-d2558070-4:RELEASE:1",
+          "qualityStatusEventId": "P4:DELAY:risk-p4live-ed88d16d-4:RELEASE:1",
           "reason": "P4 live check: evidence assessed"
         },
         "unappliedDecisions": [],
@@ -372,51 +372,51 @@
           }
         ],
         "processInstanceKeys": {
-          "processInstanceKey": "2251799813686727",
-          "p2ProcessInstanceKey": "2251799813686792",
-          "p3ProcessInstanceKey": "2251799813687047"
+          "processInstanceKey": "2251799813686787",
+          "p2ProcessInstanceKey": "2251799813686849",
+          "p3ProcessInstanceKey": "2251799813687097"
         }
       }
     ],
     "replay": {
-      "p4live-d2558070-1/DELAY:risk-p4live-d2558070-1": {
+      "p4live-ed88d16d-1/DELAY:risk-p4live-ed88d16d-1": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-d2558070-2/ASSESS:p4live-d2558070-2:CONTAINER:p4live-d2558070-2:journey-p4live-d2558070-2:6": {
+      "p4live-ed88d16d-2/ASSESS:p4live-ed88d16d-2:CONTAINER:p4live-ed88d16d-2:journey-p4live-ed88d16d-2:7": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-d2558070-3/DELAY:risk-p4live-d2558070-3": {
+      "p4live-ed88d16d-3/DELAY:risk-p4live-ed88d16d-3": {
         "valid": true,
         "accepting": true,
         "pending": []
       },
-      "p4live-d2558070-4/DELAY:risk-p4live-d2558070-4": {
+      "p4live-ed88d16d-4/DELAY:risk-p4live-ed88d16d-4": {
         "valid": true,
         "accepting": true,
         "pending": []
       }
     },
     "log": "execution-log.xes (org:resource/org:role = DCR role; actor = performer)",
-    "durationSeconds": 453,
+    "durationSeconds": 454,
     "environment": {
-      "testedCommit": "35768129b4556758e97d977ec985b556ae2afd73",
+      "testedCommit": "35d154a184c33c7abb68533f61b57aa79e3c5716",
       "ranBy": "Abid Hasan (owner), on his Mac",
       "host": "macOS arm64, Docker Desktop (Docker 29.9.3)",
-      "stack": "docker-compose.yml + stage_tests/verification.compose.yml, project frostflow-p4, fresh dataset p4-03 (registry runtime/repair/p4-03)",
+      "stack": "docker-compose.yml + stage_tests/verification.compose.yml, project frostflow-p4, fresh dataset p4-04 (registry runtime/repair/p4-04)",
       "settings": "P2_SIMULATOR_ENABLED=true, GPS_TICK_SECONDS=15, TOMTOM_API_KEY= (local ETA estimate), Compose default P4_INCIDENT_URL",
       "p4DcrEngine": "dcr-repository: dcrgraphs.net Active Repository, owner's graph 2015919 (credentials only in the untracked .env)",
       "dcrSimulations": {
-        "run1-delay-cooling-recovery-release": "2110248",
-        "run2-temperature-failed-cooling-replace": "2110249",
-        "run3-delay-additional-check-return": "2110250",
-        "run4-newer-evidence-reassessment-release": "2110251"
+        "run1-delay-cooling-recovery-release": "2110252",
+        "run2-temperature-failed-cooling-replace": "2110253",
+        "run3-delay-additional-check-return": "2110254",
+        "run4-newer-evidence-reassessment-release": "2110255"
       }
     },
-    "notes": "First full-stack run with P4 executing in the dcrgraphs.net repository, and first live run after the PR #12 review fixes. Run 4: newer container evidence (version 2) reached P4 before the decision; DCR refused DecideRelease while AssessEvidence was pending, the officer reassessed and the release was applied with expectedEvidenceVersion 2. The registry's stale-version refusal, lost DCR responses, failed DCR decisions and the new-case path are covered offline only (fault injection)."
+    "notes": "Final head of PR #12 after both review passes, with P4 executing in the dcrgraphs.net repository. Run 4: newer container evidence (version 2) reached P4 before the decision; DCR refused DecideRelease while AssessEvidence was pending, the officer reassessed and the release was applied with expectedEvidenceVersion 2. No DCR answer was lost in this run (no reconciled entries). The registry's stale-version refusal, lost DCR answers, failed DCR decisions, crashes and the new-case path are covered offline only (fault injection)."
   },
   "historical": {
     "pr10LiveExecution": {
@@ -994,6 +994,49 @@
       "roleFinding": "Against the executed graph with role assignments (dcr/p4_quality_investigation.xml), ProcessDoctor reported all 4 variants violating with cost Infinity, also when the log carried the DCR roles in org:resource and org:role (screenshots/processdoctor-model-with-roles.png). rules.xml is therefore the executed graph without <roles>: same 16 events, 83 relations and initial marking (checked by stage_tests/test_p4.py). Local replay is valid and accepting against both.",
       "roleFindingScreenshot": "compliance/p4/screenshots/processdoctor-model-with-roles.png",
       "scope": "Applies to the fd021988 log (now compliance/p4/historical/fd021988-execution-log.xes) against rules.xml; not to the current execution-log.xes."
+    },
+    "d2558070LiveExecution": {
+      "status": "PASS",
+      "runId": "d2558070",
+      "capturedAt": "2026-11-19T22:30:11.678Z",
+      "durationSeconds": 453,
+      "environment": {
+        "testedCommit": "35768129b4556758e97d977ec985b556ae2afd73",
+        "ranBy": "Abid Hasan (owner), on his Mac",
+        "host": "macOS arm64, Docker Desktop (Docker 29.9.3)",
+        "stack": "docker-compose.yml + stage_tests/verification.compose.yml, project frostflow-p4, fresh dataset p4-03 (registry runtime/repair/p4-03)",
+        "settings": "P2_SIMULATOR_ENABLED=true, GPS_TICK_SECONDS=15, TOMTOM_API_KEY= (local ETA estimate), Compose default P4_INCIDENT_URL",
+        "p4DcrEngine": "dcr-repository: dcrgraphs.net Active Repository, owner's graph 2015919 (credentials only in the untracked .env)",
+        "dcrSimulations": {
+          "run1-delay-cooling-recovery-release": "2110248",
+          "run2-temperature-failed-cooling-replace": "2110249",
+          "run3-delay-additional-check-return": "2110250",
+          "run4-newer-evidence-reassessment-release": "2110251"
+        }
+      },
+      "scope": "Run on 3576812 (first review fixes, before the lost-answer handling for non-decision activities), P4 in the dcrgraphs.net repository. Historical; its execution-log.xes is in commit 52f5e6b. No ProcessDoctor check was made of it.",
+      "cases": [
+        {
+          "scenario": "run1-delay-cooling-recovery-release",
+          "qualityStatus": "RELEASED",
+          "p3Status": "ADMITTED"
+        },
+        {
+          "scenario": "run2-temperature-failed-cooling-replace",
+          "qualityStatus": "REJECTED",
+          "p3Status": "REJECTED"
+        },
+        {
+          "scenario": "run3-delay-additional-check-return",
+          "qualityStatus": "REJECTED",
+          "p3Status": "REJECTED"
+        },
+        {
+          "scenario": "run4-newer-evidence-reassessment-release",
+          "qualityStatus": "RELEASED",
+          "p3Status": "ADMITTED"
+        }
+      ]
     }
   },
   "dcrRepositoryApi": {
@@ -1007,7 +1050,7 @@
     "testedCommit": "9eebc566b4d557fb59c7b35b588def93a94d514c",
     "result": "Release path (9 activities) executed in the dcrgraphs.net Active Repository; after every step the enabled and pending activities equal the local engine on dcr/p4_quality_investigation.xml; an early CloseInvestigation was refused (refused: DCR answered 400: Event `CloseInvestigation` is not executable); final marking accepting.",
     "finding": "The repository also lists nesting groups (A19, A19.A18) as enabled events; fixed in 9eebc56 so repository mode reports only the 16 graph activities.",
-    "scope": "Direct API check of the graph (check_dcr_repository.py). The full stack has since run with P4 in repository mode: live run d2558070 (liveExecution).",
+    "scope": "Direct API check of the graph (check_dcr_repository.py). The full stack has since run with P4 in repository mode: live runs d2558070 (historical) and ed88d16d (liveExecution).",
     "steps": [
       {
         "activity": "OpenIncident",
@@ -1058,8 +1101,8 @@
   },
   "processDoctor": {
     "status": "PENDING",
-    "reason": "The live log changed (run d2558070). Upload compliance/p4/rules.xml and the current compliance/p4/execution-log.xes to ProcessDoctor (Conformance -> Open DCR Solution XML) and record the result. The previous 4/4 result is kept under historical.fd021988ProcessDoctor.",
+    "reason": "Upload compliance/p4/rules.xml and the current compliance/p4/execution-log.xes (live run ed88d16d) to ProcessDoctor (Conformance -> Open DCR Solution XML) and record the result. The 4/4 result for the historical log fd021988 is under historical.fd021988ProcessDoctor.",
     "rulesSha256": "91c4d5a7d506c13c264020fdadc02133e8927a4688142aab5ec425d1a9a05acf",
-    "logSha256": "59de888dfc1ae95f80bfa0907f1023554a90c64ec223256caf3671839b143e82"
+    "logSha256": "0502a9adf3799ff0cdb4658eecbbc04f0a3bc23d87c53a722eee988d0998d701"
   }
 }

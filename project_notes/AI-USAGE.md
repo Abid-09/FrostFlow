@@ -225,4 +225,6 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 
 **Second pass before pushing:** re-read the review comments against the changes; added crash tests (after the DCR decision, after the registry write) and extended the lost-answer recovery to `CloseInvestigation`, the other officer activities and `OpenIncident`/`AddAlertEvidence`. It relies on DCR firing being idempotent, which the AI checked for all 3 425 reachable markings (now a test). Also corrected the remaining stale PR #9 / P4-consumer statements in the run guide, task board and an `app.py` comment.
 
-**Not done / limits:** ProcessDoctor for the new log is pending. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.
+**Final live run (by the owner):** on `35d154a`, fresh `p4-04` data: run `ed88d16d` passed with P4 in the dcrgraphs.net repository; the AI rebuilt `execution-log.xes`/`verification.json` from it and kept `d2558070` as historical.
+
+**Not done / limits:** ProcessDoctor for the `ed88d16d` log is pending. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.

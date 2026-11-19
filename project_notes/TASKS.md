@@ -9,7 +9,7 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer in replacement PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; first-review fixes pass offline; combined live run `d2558070` passed on the fixed code with P4 in the dcrgraphs.net repository | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); ProcessDoctor for the new log, review and merge approval |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); ProcessDoctor for the new log, review and merge approval |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -169,14 +169,14 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] One incident collects all its evidence versions (`AddAlertEvidence` makes reassessment due); closed/`REJECTED` incidents only record later evidence.
 - [x] `AssessEvidence` records the evidence version seen before DCR executed it; dispositions use it as `expectedEvidenceVersion`; refused (stale) dispositions are recorded unapplied and require reassessment; transient failures keep one durable decision identity.
 - [x] PR #12 first review (changes requested, 19 November): assessment/version race, release before DCR confirmation, lost-response recovery, conflicting officer retries and the empty `P4_INCIDENT_URL` default fixed with regressions; stale docs reconciled. See [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#first-review-of-pr-12-19-november).
-- [x] Combined live run repeated on the fixed code: `d2558070` (`3576812`, owner's Mac, fresh `p4-03` data) passed with P4 executing in the dcrgraphs.net repository (graph `2015919`, simulations `2110248`–`2110251`).
-- [ ] ProcessDoctor check of the `d2558070` log (`compliance/p4/execution-log.xes`) against `compliance/p4/rules.xml`.
+- [x] Combined live run repeated on the fixed code: `d2558070` (`3576812`, fresh `p4-03` data) and, after the second review pass, `ed88d16d` (`35d154a`, fresh `p4-04` data, owner's Mac) passed with P4 executing in the dcrgraphs.net repository (graph `2015919`, simulations `2110252`–`2110255` for the final run).
+- [ ] ProcessDoctor check of the `ed88d16d` log (`compliance/p4/execution-log.xes`) against `compliance/p4/rules.xml`.
 - [x] Enforce requested-check and cooling-answer obligations and prevent premature closure (DCR refuses with 409).
 - [x] Offline proof on new monitored shipments: release after receipt during a hold, replace, return, newer-evidence reassessment, duplicate delivery, DCR outage recovery, handover fixtures in order, legacy messages. CLI 18 temperature / 19 investigation.
 - [x] Combined foundation/P4 live run `fd021988` (`check_p4_investigation.py`, macOS arm64, fresh `p4-02` data, commit `95e4a85`, local engine); now historical (`compliance/p4/historical/`), like PR #10 run `900821e9`.
 - [x] dcrgraphs.net Active Repository API check (`check_dcr_repository.py`, graph `2015919`, simulation `2109421`): every step matches the local engine; early close refused. Nesting groups listed by the API are now ignored.
 - [x] ProcessDoctor (owner, 19 Nov): live log `fd021988` (now historical) against `compliance/p4/rules.xml` 4/4 conforming, 0 violations, coverage 100. The compliance model is the executed graph without roles: ProcessDoctor reports cost Infinity against the role-assigned graph.
-- [x] Full-stack run with P4 in repository mode: live run `d2558070`.
+- [x] Full-stack run with P4 in repository mode: live runs `d2558070` and `ed88d16d`.
 - [ ] Cooling command through Siddhi and recovery evidence contracts (shared CEP work); P5 consumption of RELEASE/REPLACE/RETURN.
 
 ## P5 — Corrective fulfilment

@@ -477,7 +477,7 @@ The table below preserves the **17 November** evidence and its original tested r
 
 No merge or post-merge smoke is claimed for the foundation branch. Review and explicit merge authorization remain required; repeat the smoke against merged main after an authorised merge. The flat DCR checker does not implement timed/data/hierarchical semantics or a real P4 investigation.
 
-**P4:** Abid’s DCR investigation consumes the durable handoff and applies dispositions with the assessed evidence version. Offline results are in [compliance/p4/verification.json](../compliance/p4/verification.json); the combined live run `d2558070` passed (see [P4 investigation live run](#p4-investigation-live-run)). Earlier runs `fd021988` (before the PR #12 review fixes) and `900821e9` (PR #10, pre-foundation) are kept there as historical evidence only.
+**P4:** Abid’s DCR investigation consumes the durable handoff and applies dispositions with the assessed evidence version. Offline results are in [compliance/p4/verification.json](../compliance/p4/verification.json); the combined live run `ed88d16d` passed on the final PR #12 code (see [P4 investigation live run](#p4-investigation-live-run)). Earlier runs `d2558070` and `fd021988` (earlier PR #12 revisions) and `900821e9` (PR #10, pre-foundation) are kept there as historical evidence only.
 
 ### P2 DCR compliance
 
@@ -518,7 +518,7 @@ The runner needs only the Python standard library. It runs four investigations o
 3. Delay → additional check → return.
 4. Delay → assessed → new container evidence → refused decision → reassessment → release.
 
-Each case checks that physical receipt released the vehicle while quality was held, that monitoring finalized, that forbidden actions were refused (409) and the P3 outcome. It takes roughly 15–20 minutes. The builder writes `compliance/p4/execution-log.xes` and the live section of `compliance/p4/verification.json`. If `.env` holds `DCR_*` credentials, P4 executes in the dcrgraphs.net repository (`/health` → `p4DcrEngine: dcr-repository`); otherwise in the local engine. Recorded result: run `d2558070` passed on 19 November 2026 at `3576812` (453 s, macOS arm64, fresh `p4-03` data, P4 in the dcrgraphs.net repository, graph `2015919`; 4 traces valid and accepting). Earlier run `fd021988` (local engine, `95e4a85`) is historical.
+Each case checks that physical receipt released the vehicle while quality was held, that monitoring finalized, that forbidden actions were refused (409) and the P3 outcome. It takes roughly 15–20 minutes. The builder writes `compliance/p4/execution-log.xes` and the live section of `compliance/p4/verification.json`. If `.env` holds `DCR_*` credentials, P4 executes in the dcrgraphs.net repository (`/health` → `p4DcrEngine: dcr-repository`); otherwise in the local engine. Recorded result: run `ed88d16d` passed on 19 November 2026 at `35d154a` (454 s, macOS arm64, fresh `p4-04` data, P4 in the dcrgraphs.net repository, graph `2015919`; 4 traces valid and accepting). Earlier runs `d2558070` (`3576812`) and `fd021988` (local engine, `95e4a85`) are historical.
 
 ## Persistence, isolated checks and troubleshooting
 

@@ -68,7 +68,7 @@ The registry stays the authority for quality permission and admission. The test 
 
 | Mode (`/health` → `integrations.p4DcrEngine`) | When | Notes |
 | --- | --- | --- |
-| `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. API check passed on graph `2015919` (simulation `2109421`): each step of the release path matches the local engine and an early close is refused. Nesting groups that the API lists as events are ignored. The full stack ran in this mode in live run `d2558070` (simulations `2110248`–`2110251`). |
+| `dcr-repository` | `DCR_GRAPH_ID`, `DCR_USERNAME`, `DCR_PASSWORD` set (untracked `.env`) | Executes in the dcrgraphs.net Active Repository via its REST API. API check passed on graph `2015919` (simulation `2109421`): each step of the release path matches the local engine and an early close is refused. Nesting groups that the API lists as events are ignored. The full stack ran in this mode in live runs `d2558070` and `ed88d16d` (simulations `2110252`–`2110255`). |
 | `local-dcr-engine` | Otherwise (default) | Executes the same XML with flat DCR semantics (identical to `compliance/check.py`); each case's marking is stored in the registry SQLite file. |
 
 To use dcrgraphs.net: import `dcr/p4_quality_investigation.xml` as a new graph, copy `.env.example` to `.env`, fill in the three values and rebuild (`docker compose up --build -d --wait`). Never commit `.env`. Before switching the stack, check API access with `python3 stage_tests/check_dcr_repository.py`. It needs only the standard library and reads `.env`. It starts one repository simulation, walks the release path, compares enabled/pending activities with the local engine after every step, checks that an early `CloseInvestigation` is refused, and writes `runtime/p4-compliance/dcr-repository.json`. The owner's graph is dcrgraphs.net graph `2015919`.
@@ -82,7 +82,7 @@ Compose has exactly one `P4_INCIDENT_URL` entry. It now defaults to this compati
 To repeat the check:
 
 1. On processdoctor.compute.dtu.dk, choose **Conformance → Open Model → Open DCR Solution XML** → `compliance/p4/rules.xml`.
-2. **Upload Log** → `compliance/p4/execution-log.xes` (4 traces, from live run `d2558070`).
+2. **Upload Log** → `compliance/p4/execution-log.xes` (4 traces, from live run `ed88d16d`).
 3. Keep the threshold at 100 and click **Check!**. Expect 4 conforming, 0 violations.
 
 ## HTTP interface and CLI
@@ -106,11 +106,12 @@ Each result applies only to the revision it was produced on; later code changes 
 | Offline tests on new monitored shipments (real registry, Zeebe substituted, local DCR engine) | this branch's head | `stage_tests/test_p4.py` | PASS — release after receipt during a hold, replace, return, newer-evidence reassessment with a refused stale decision, duplicate delivery, DCR outage recovery, transient failures, handover fixtures consumed in order, legacy delay messages. Review fixes (PR #12): evidence arriving during `AssessEvidence`, no assessment/decision while evidence is being added, release not granted when the DCR decision fails, lost DCR response reconciled, definite DCR refusal, registry refusal after the DCR decision (new case), conflicting `eventId` reuse, empty `P4_INCIDENT_URL`, crash after the DCR decision and after the registry write, lost DCR answers for `CloseInvestigation`, `AssessEvidence` and `OpenIncident` |
 | dcrgraphs.net simulator, 4 manual runs + blocked actions | graph only (unchanged) | `compliance/p4/dcrgraphs-simulation-log.xes`, `compliance/p4/screenshots/` | PASS (run 4 intentionally partial) |
 | Synthetic forbidden traces (9) | graph only | `compliance/p4/invalid-traces.json` | all rejected |
-| Combined foundation/P4 live run (4 scenarios on monitored shipments; Zeebe 8.8.0, Siddhi, **P4 in the dcrgraphs.net repository**, graph `2015919`) | `3576812` (with the PR #12 review fixes; the later lost-answer handling for non-decision activities is covered offline) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `d2558070` (453 s, simulations `2110248`–`2110251`): release → admitted (2), replace/return → rejected (2); receipt released the vehicle while held in all four; monitoring finalized; forbidden actions refused; run 4 refused the decision until version 2 was reassessed; 4 traces valid and accepting |
+| Combined foundation/P4 live run (4 scenarios on monitored shipments; Zeebe 8.8.0, Siddhi, **P4 in the dcrgraphs.net repository**, graph `2015919`) | `35d154a` (final PR #12 code, both review passes) | `stage_tests/check_p4_investigation.py` → `compliance/p4/execution-log.xes` | PASS, run `ed88d16d` (454 s, fresh `p4-04` data, simulations `2110252`–`2110255`): release → admitted (2), replace/return → rejected (2); receipt released the vehicle while held in all four; monitoring finalized; forbidden actions refused; run 4 refused the decision until version 2 was reassessed; 4 traces valid and accepting |
+| Earlier live run `d2558070` (P4 in the repository) | `3576812` (before the second review pass) | `verification.json` → `historical`; log in commit `52f5e6b` | PASS; historical only |
 | Earlier combined live run `fd021988` (local DCR engine) | `95e4a85` (before the review fixes) | `compliance/p4/historical/fd021988-execution-log.xes`, `verification.json` → `historical` | PASS; historical only |
 | PR #10 live run `900821e9` (pre-foundation, unmonitored, pre-v1 contract) | `f9a92ee` (PR #10 code) | `compliance/p4/historical/` | historical only; not evidence for this branch |
 | dcrgraphs.net Active Repository API (`stage_tests/check_dcr_repository.py`) | `9eebc56` | `compliance/p4/verification.json` → `dcrRepositoryApi` | PASS on graph `2015919`, simulation `2109421`: 9 steps match the local engine; early `CloseInvestigation` refused (HTTP 400). Direct API check, not a full-stack run in repository mode |
-| ProcessDoctor (owner, manual) for the current log `d2558070` | log hash in `verification.json` → `processDoctor` | — | PENDING |
+| ProcessDoctor (owner, manual) for the current log `ed88d16d` | log hash in `verification.json` → `processDoctor` | — | PENDING |
 | ProcessDoctor for the historical log `fd021988` | `95e4a85` | `compliance/p4/screenshots/processdoctor-conforming.png`, `verification.json` → `historical.fd021988ProcessDoctor` | PASS: against `rules.xml`, 4/4 conforming variants, 0 violations, coverage 100; does not cover the current log |
 
 ```bash
