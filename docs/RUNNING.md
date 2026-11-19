@@ -659,3 +659,23 @@ activity names, preserving their journal identities/times. Failed corrective cas
 valid compliance outcomes when all original collection and negative replacement
 obligations are recorded. Synthetic forbidden traces remain separate. Existing P1–P4
 reports retain their original scope; P5 evidence does not validate P6 or future recovery.
+
+## P6 supplier claims
+
+Rebuild communication on the matching Compose dataset so it deploys [supplier_claim.bpmn](../bpmn/supplier_claim.bpmn) with the other models. Health includes SupplierClaimResolution and retains stage 3 for existing clients. Use a shipment with a recorded qualityIncidentId, such as a quality-rejection case produced by the integrated smoke runner. P6 can run while P4 and P5 integration is pending.
+
+1. POST to /claims with {"incidentId":"<incident>","originalShipmentId":"<shipment>","lossDescription":"One rejected crate","actor":"demo operator","evidenceRefs":["<journal event ID>"]}. Save the returned claimId. HTTP 202 means durably accepted.
+2. Poll GET /claims/<claimId> until status is SUBMITTED.
+3. POST to /claims/<claimId>/supplier-response with {"outcome":"SETTLED","actor":"simulated supplier","reason":"Demo settlement"}. Use REJECTED for the other branch. Poll until CLOSED with the expected outcome.
+
+For verification, use two shipment IDs with distinct recorded quality incidents, the API on port 5001 and the Elasticsearch exporter on port 9200:
+
+```bash
+python -m unittest stage_tests.test_p6_claims -v
+npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/supplier_claim.bpmn
+npx --yes bpmn-to-image@0.10.0 bpmn/supplier_claim.bpmn:bpmn/supplier_claim.pdf
+python stage_tests/check_p6_claims.py SETTLEMENT_SHIPMENT REJECTION_SHIPMENT
+python compliance/check.py runtime/verification-results/p6/execution-log.xes --model compliance/p6/rules.xml
+```
+
+Replace the uppercase arguments with real shipment IDs. The runner checks exported Zeebe end events, replays the actual P6 journal and writes XES for ProcessDoctor. Use a stack built from the revision under test and record the deployed revision and hashes before promoting output to reviewed evidence. Import the P6 rules and XES log together for external conformance. Offline P6 regressions pass. The pinned BPMN lint, PDF export, live Zeebe run and external conformance are pending.

@@ -13,12 +13,13 @@ FrostFlow follows chilled goods from warehouse preparation through transport, re
 | P3 — Receiving and stock admission | Camunda / Zeebe | Arunima Garg |
 | P4 — Quality investigation | DCR | Abid |
 | P5 — Corrective fulfilment | Camunda / Zeebe | Unassigned |
+| P6 - Supplier claims | Camunda / Zeebe | Unassigned |
 
 P1 reserves stock and dispatches shipments. P2 tracks transport and releases the vehicle after physical receipt. P3 inspects goods and admits them into separate receiving inventory. Transport or monitoring risks place goods on hold; P4 investigates and decides release, replacement or return before admission can proceed.
 
 Siddhi evaluates transport and container telemetry. Optional TomTom traffic ETAs and Open-Meteo current conditions provide external context. P4 uses a local DCR engine by default; dcrgraphs.net repository mode is also supported.
 
-P5 consumes applied P4 replacement/return decisions, books original-goods collection and reuses P1–P3 for linked replacements. Replacement success requires collection and stock admission of the new goods; rejection/cancellation produces a failed outcome. P6 supplier claims are planned. Automatic cooling/recovery integration and an external physical simulator remain future work.
+P5 consumes applied P4 replacement/return decisions, books original-goods collection and reuses P1–P3 for linked replacements. Replacement success requires collection and stock admission of the new goods; rejection/cancellation produces a failed outcome. P6 supplier claims are implemented and await live verification. Automatic cooling/recovery integration and an external physical simulator remain future work.
 
 ## Run locally
 

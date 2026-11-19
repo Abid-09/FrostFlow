@@ -19,7 +19,7 @@ one P5 case. P5 requires original collection and, for replacement success, admis
 of a new linked shipment through P1–P3. Rejected/cancelled replacements fail fulfilment.
 Container excursion/combined-risk CEP, independent Open-Meteo current conditions and P3
 monitoring finalization are implemented in the [foundation](PRE-P4-FOUNDATION.md).
-Cooling/recovery automation and P6 claims remain planned. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
+Cooling/recovery automation remains planned. P6 supplier claims are implemented and await live verification. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
 and [verification commands/evidence](RUNNING.md#automated-verification) for tested revisions and limits.
 
 ## 1. What problem are we solving?
@@ -59,7 +59,7 @@ We will not build route optimisation, physical sensors, detailed refrigeration p
 
 ## 3. How the system will work
 
-This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P5 behavior from future cooling/recovery automation and P6 claims.
+This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P5 behavior from future cooling/recovery automation. P6 still needs live verification.
 
 1. The warehouse prepares a shipment and confirms loading before dispatch.
 2. During transport, simulated GPS and temperature data enter Siddhi alongside weather and ETA updates.

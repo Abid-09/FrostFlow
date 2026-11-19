@@ -15,7 +15,7 @@
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED; merged in PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); PR #12 merged as `70d1a1b`; merged-main smoke passed |
 | P5 Corrective fulfilment | Unassigned | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); user review/publishing pending |
-| P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
+| P6 Supplier claim resolution | Unassigned | IMPLEMENTED / VERIFY | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | PARTLY IMPLEMENTED | ETA/container CEP, weather and durable journals implemented; cooling/recovery, external simulator and shared logger pending |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
 

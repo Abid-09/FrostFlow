@@ -45,6 +45,9 @@ JOB_TYPES = [
     "p5-record-dispatch",
     "p5-record-outcome",
     "p5-complete",
+    "p6-assemble-evidence",
+    "p6-submit-claim",
+    "p6-close-claim",
 ]
 app = Flask(__name__)
 registry = Registry(os.getenv("REGISTRY_PATH", "runtime/registry.sqlite"))
@@ -140,7 +143,7 @@ def health():
         status="ready" if ready.is_set() else "starting",
         stage=3,
         processId=PROCESS_ID,
-        processIds=[PROCESS_ID, "ShipmentTransport", "ShipmentReceiving", "CorrectiveFulfilment"],
+        processIds=[PROCESS_ID, "ShipmentTransport", "ShipmentReceiving", "CorrectiveFulfilment", "SupplierClaimResolution"],
         jobTypes=JOB_TYPES,
         integrations={
             "gps": "scripted-demo" if os.getenv("P2_SIMULATOR_ENABLED", "true").lower() == "true" else "disabled",
@@ -155,6 +158,49 @@ def health():
             "p4DcrEngine": current_dcr().mode,
         },
     ), 200 if ready.is_set() else 503
+
+
+@app.post("/claims")
+def create_claim():
+    data = body()
+    refs = data.get("evidenceRefs")
+    if not isinstance(refs, list) or not 1 <= len(refs) <= 50:
+        raise ValueError("evidenceRefs must contain 1 to 50 references")
+    loss = {
+        "incidentId": text_field(data, "incidentId"),
+        "originalShipmentId": text_field(data, "originalShipmentId"),
+        "lossDescription": text_field(data, "lossDescription", 1000),
+        "actor": text_field(data, "actor"),
+        "evidenceRefs": [
+            text_field({"reference": ref}, "reference", 300) for ref in refs
+        ],
+    }
+    return jsonify(registry.accept_claim(loss)), 202
+
+
+@app.get("/claims/<claim_id>")
+def get_claim(claim_id):
+    try:
+        return jsonify(registry.get_claim(claim_id))
+    except KeyError:
+        return jsonify(error="unknown claim"), 404
+
+
+@app.post("/claims/<claim_id>/supplier-response")
+def record_supplier_response(claim_id):
+    data = body()
+    outcome = text_field(data, "outcome")
+    if outcome not in ("SETTLED", "REJECTED"):
+        raise ValueError("outcome must be SETTLED or REJECTED")
+    response = {
+        "outcome": outcome,
+        "reason": text_field(data, "reason", 1000),
+        "actor": text_field(data, "actor"),
+    }
+    try:
+        return jsonify(registry.accept_supplier_response(claim_id, response)), 202
+    except KeyError:
+        return jsonify(error="unknown claim"), 404
 
 
 @app.get("/shipments/<shipment_id>")
@@ -929,6 +975,20 @@ async def deliver_messages():
         await asyncio.sleep(1)
 
 
+async def p6_assemble_evidence(claimId, job: Job):
+    registry.assemble_claim(claimId, job.process_instance_key)
+    return {}
+
+
+async def p6_submit_claim(claimId, job: Job):
+    registry.submit_claim(claimId, job.process_instance_key)
+    return {}
+
+
+async def p6_close_claim(claimId, job: Job):
+    return {"claimOutcome": registry.close_claim(claimId, job.process_instance_key)}
+
+
 async def main():
     global client, event_loop
     event_loop = asyncio.get_running_loop()
@@ -963,6 +1023,9 @@ async def main():
         p5_record_dispatch,
         p5_record_outcome,
         p5_complete,
+        p6_assemble_evidence,
+        p6_submit_claim,
+        p6_close_claim,
     )
     variables_by_job = {
         "p2-start-transport": ["shipmentId", "dispatchEvent"],
@@ -981,7 +1044,10 @@ async def main():
         "p5-record-outcome": ["correctiveId", "replacementOutcomeEvent"],
         "p5-complete": ["correctiveId"],
     }
-    for job_type, handler in zip(JOB_TYPES, handlers):
+    for job_type in JOB_TYPES:
+        if job_type.startswith("p6-"):
+            variables_by_job[job_type] = ["claimId"]
+    for job_type, handler in zip(JOB_TYPES, handlers, strict=True):
         variables = variables_by_job.get(job_type, ["shipmentId"])
         worker.task(task_type=job_type, variables_to_fetch=variables,
                     timeout_ms=60000 if job_type == "p3-finalize-monitoring" else 10000)(handler)
@@ -996,6 +1062,7 @@ async def main():
                     os.getenv("P2_BPMN_FILE", "bpmn/transport.bpmn"),
                     os.getenv("P3_BPMN_FILE", "bpmn/receiving.bpmn"),
                     os.getenv("P5_BPMN_FILE", "bpmn/corrective_fulfilment.bpmn"),
+                    os.getenv("P6_BPMN_FILE", "bpmn/supplier_claim.bpmn"),
                 )
                 break
             except Exception as error:

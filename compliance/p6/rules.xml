@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='utf-8'?>
+<dcrgraph title="P6 supplier claim resolution compliance" dataTypesStatus="hide">
+  <specification>
+    <resources>
+      <events>
+        <event id="ClaimableLossRecorded">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="60" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="ClaimEvidenceAssembled">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="320" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="SupplierClaimSubmitted">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="580" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="SupplierResponseRecorded">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="840" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="SupplierClaimClosed">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1100" yLoc="60" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+      </events>
+      <labels>
+        <label id="ClaimableLossRecorded" />
+        <label id="ClaimEvidenceAssembled" />
+        <label id="SupplierClaimSubmitted" />
+        <label id="SupplierResponseRecorded" />
+        <label id="SupplierClaimClosed" />
+      </labels>
+      <labelMappings>
+        <labelMapping eventId="ClaimableLossRecorded" labelId="ClaimableLossRecorded" />
+        <labelMapping eventId="ClaimEvidenceAssembled" labelId="ClaimEvidenceAssembled" />
+        <labelMapping eventId="SupplierClaimSubmitted" labelId="SupplierClaimSubmitted" />
+        <labelMapping eventId="SupplierResponseRecorded" labelId="SupplierResponseRecorded" />
+        <labelMapping eventId="SupplierClaimClosed" labelId="SupplierClaimClosed" />
+      </labelMappings>
+    </resources>
+    <constraints>
+      <responses>
+        <response sourceId="ClaimableLossRecorded" targetId="ClaimEvidenceAssembled" />
+        <response sourceId="ClaimEvidenceAssembled" targetId="SupplierClaimSubmitted" />
+        <response sourceId="SupplierClaimSubmitted" targetId="SupplierResponseRecorded" />
+        <response sourceId="SupplierResponseRecorded" targetId="SupplierClaimClosed" />
+      </responses>
+      <includes>
+        <include sourceId="ClaimableLossRecorded" targetId="ClaimEvidenceAssembled" />
+        <include sourceId="ClaimEvidenceAssembled" targetId="SupplierClaimSubmitted" />
+        <include sourceId="SupplierClaimSubmitted" targetId="SupplierResponseRecorded" />
+        <include sourceId="SupplierResponseRecorded" targetId="SupplierClaimClosed" />
+      </includes>
+      <excludes>
+        <exclude sourceId="ClaimableLossRecorded" targetId="ClaimableLossRecorded" />
+        <exclude sourceId="ClaimEvidenceAssembled" targetId="ClaimEvidenceAssembled" />
+        <exclude sourceId="SupplierClaimSubmitted" targetId="SupplierClaimSubmitted" />
+        <exclude sourceId="SupplierResponseRecorded" targetId="SupplierResponseRecorded" />
+        <exclude sourceId="SupplierClaimClosed" targetId="SupplierClaimClosed" />
+      </excludes>
+    </constraints>
+  </specification>
+  <runtime>
+    <marking>
+      <executed />
+      <included>
+        <event id="ClaimableLossRecorded" />
+      </included>
+      <pendingResponses>
+        <event id="ClaimableLossRecorded" />
+      </pendingResponses>
+    </marking>
+  </runtime>
+</dcrgraph>

@@ -273,3 +273,9 @@ Codex used the Playwright skill to access ProcessDoctor. The CLI's default insta
 ## 21 November 2026 — P5 documentation and local review handover
 
 Codex reviewed and updated README, RUNNING, the implementation/integration guides, P4 handover/investigation guides, the P5 guide, TASKS and AGENTS. Current capability claims now include P5; historical evidence remains scoped to its original revisions, unconfirmed owners stay unassigned, and P6/cooling/recovery/external simulation remain explicit future work. Split mixed completed/pending tasks and documented the exact API fields, durable acceptance/processed states, parent-link contract, fresh paired datasets, finite-retention recovery limits, CLI walkthrough and reproducible checks. All 166 local documentation link paths and 30 Markdown anchors passed consistency checks; `git diff --check` passes. Read-only scripted terminal use of the real CLI verified option 20 case viewing and replacement selection by existing shipment ID. Rechecked recorded source/model/log/PDF hashes against the actual files. Documentation-impact notes are in the P5 guide for the eventual user-created PR. No push, publication, PR creation or merge was performed; all work is committed locally for user review. The healthy final `p5-02` stack and both consumed matched datasets are retained.
+
+## P6 supplier claims
+
+Codex added the P6 Camunda model, claim API and transactional registry, offline regressions, DCR rules, live runner and documentation. Offline checks exercised registry methods and local DCR replay. Live Zeebe and ProcessDoctor were unavailable and no live execution evidence was generated.
+
+Integrated P6 onto P5 at 8a05f85 in an isolated checkout. Three P6 offline checks, Python compilation and Compose validation passed. Full discovery reported four missing grpc errors and two weather-test errors. Docker engine verification remains pending.
