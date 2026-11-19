@@ -110,7 +110,17 @@ class Case:
         return http(self.base, incident_path(self.incident_id, f"/activities/{step}"), data)
 
     def ensure_current_assessment(self):
-        """Newer evidence (e.g. evaluation-unavailable at closure) requires reassessment."""
+        """Newer evidence (e.g. evaluation-unavailable at closure) requires reassessment.
+
+        Waits until P4 has received the registry's current evidence version, so the
+        assessment covers it (the outbox delivers the handoff asynchronously).
+        """
+        def delivered():
+            view = self.incident()
+            current = view["registry"]["evidenceVersion"]
+            return (not view["pendingSystemEvents"]
+                    and (current is None or (view["evidenceVersion"] or 0) >= current))
+        wait_for("current evidence delivered to P4", delivered, timeout=180)
         view = self.incident()
         due = [e["id"] for e in (view.get("dcr") or {}).get("events", [])
                if e["pending"] and e["included"]]

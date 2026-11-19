@@ -1605,6 +1605,48 @@ class Registry(MonitoringRegistry):
             self.save(db, record)
             return {"admissionOutcome": "ADMITTED"}
 
+    @staticmethod
+    def quality_status_guard(record, status, incident_id, expected_evidence_version=None):
+        """Raise if a quality status change is not allowed for this shipment now."""
+        if "monitoringProfile" in record and status in ("RELEASED", "REJECTED"):
+            if type(expected_evidence_version) is not int or expected_evidence_version != record.get("evidenceVersion", 0):
+                raise Conflict("disposition requires current expectedEvidenceVersion")
+        previous = record.get("qualityStatus", "CLEAR")
+        allowed = {
+            "CLEAR": {"PENDING"},
+            "RELEASED": {"PENDING"},
+            "PENDING": {"RELEASED", "REJECTED"},
+        }
+        if status not in allowed.get(previous, set()):
+            raise Conflict(
+                f"quality status cannot change from {previous} to {status}"
+            )
+        if record.get("admissionStatus") == "ADMITTED":
+            raise Conflict("quality disposition must precede stock admission")
+        if status == "PENDING" and not incident_id:
+            raise ValueError("incidentId is required for a PENDING quality status")
+        if status in ("RELEASED", "REJECTED") and incident_id != record.get(
+            "qualityIncidentId"
+        ):
+            raise Conflict("quality disposition does not match the active incident")
+
+    def check_quality_status(
+        self, shipment_id, event_id, status, incident_id, expected_evidence_version=None
+    ):
+        """Read-only check that accept_quality_status would accept this change now.
+
+        Returns True when the same eventId was already accepted. Changes nothing, so a
+        caller (P4) can validate a disposition before executing it in DCR and apply it
+        only afterwards; accept_quality_status re-checks under its own transaction.
+        """
+        with self.transaction() as db:
+            record = self.read(db, shipment_id)
+            if db.execute("SELECT 1 FROM results WHERE id=?",
+                          (f"p4-quality:{shipment_id}:{event_id}",)).fetchone():
+                return True
+            self.quality_status_guard(record, status, incident_id, expected_evidence_version)
+            return False
+
     def accept_quality_status(
         self, shipment_id, event_id, occurred_at, status, incident_id, expected_evidence_version=None
     ):
@@ -1628,27 +1670,7 @@ class Registry(MonitoringRegistry):
                     raise Conflict("eventId reused with different quality data")
                 return accepted
 
-            if "monitoringProfile" in record and status in ("RELEASED", "REJECTED"):
-                if type(expected_evidence_version) is not int or expected_evidence_version != record.get("evidenceVersion", 0):
-                    raise Conflict("disposition requires current expectedEvidenceVersion")
-            previous = record.get("qualityStatus", "CLEAR")
-            allowed = {
-                "CLEAR": {"PENDING"},
-                "RELEASED": {"PENDING"},
-                "PENDING": {"RELEASED", "REJECTED"},
-            }
-            if status not in allowed.get(previous, set()):
-                raise Conflict(
-                    f"quality status cannot change from {previous} to {status}"
-                )
-            if record.get("admissionStatus") == "ADMITTED":
-                raise Conflict("quality disposition must precede stock admission")
-            if status == "PENDING" and not incident_id:
-                raise ValueError("incidentId is required for a PENDING quality status")
-            if status in ("RELEASED", "REJECTED") and incident_id != record.get(
-                "qualityIncidentId"
-            ):
-                raise Conflict("quality disposition does not match the active incident")
+            self.quality_status_guard(record, status, incident_id, expected_evidence_version)
 
             event = {
                 "eventId": event_id,

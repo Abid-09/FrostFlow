@@ -197,7 +197,7 @@ def wait_for_action(base, shipment_id, action, old_wait_key=None, target_route_i
 def release_quality_hold(base, shipment_id):
     """Test stand-in: release the shipment's CURRENT quality incident.
 
-    This bypasses the P4 DCR investigation (option 18) and is kept for P3-only
+    This bypasses the P4 DCR investigation (option 19) and is kept for P3-only
     checks. A later P4 decision for that incident is then recorded as stale.
     """
     status, record = http(base, f"/shipments/{shipment_id}")

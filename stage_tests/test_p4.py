@@ -43,6 +43,31 @@ class DownDCR:
         return fail
 
 
+class FaultyDCR:
+    """The real local engine with one injected fault around executing `activity`.
+
+    lose_response: DCR executes the event, but the caller sees a timeout.
+    before: called just before DCR executes the event (to interleave other work).
+    """
+    def __init__(self, real, activity, lose_response=False, fail=False, before=None):
+        self.real, self.activity = real, activity
+        self.lose_response, self.fail, self.before = lose_response, fail, before
+
+    def __getattr__(self, name):
+        return getattr(self.real, name)
+
+    def execute(self, case, event, role=None):
+        if event != self.activity:
+            return self.real.execute(case, event)
+        if self.before:
+            self.before()
+        if self.fail:
+            raise dcr_client.DCRUnavailable("DCR timed out (test)")
+        self.real.execute(case, event)
+        if self.lose_response:
+            raise dcr_client.DCRUnavailable("response lost (test)")
+
+
 class P4Flow(unittest.TestCase):
     """New monitored shipments; no guard is bypassed and monitoringProfile is kept."""
 
@@ -298,28 +323,230 @@ class P4Flow(unittest.TestCase):
         self.assertEqual(self.incident()["status"], "OPEN")
         self.assertEqual(self.trace(), ["OpenIncident"])
 
+    def faulty(self, activity, **kwargs):
+        real = service.quality.dcr
+        return patch.object(service.quality, "get_dcr",
+                            lambda: FaultyDCR(real, activity, **kwargs))
+
+    def case_trace(self, case):
+        return [e["eventType"] for e in self.db.events("S-test")
+                if e.get("processInstanceKey") == case and e["eventType"] in quality.ROLES]
+
     def test_transient_failures_keep_a_durable_decision_with_one_identity(self):
         self.start_p2_transport()
         self.readings(10, 10, 10)
         self.deliver_p4()
         self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
-        with patch.object(self.db, "accept_quality_status",
+        with patch.object(self.db, "check_quality_status",
                           side_effect=RuntimeError("database is locked")):
             response = self.act("DecideReplace", reason="too warm")
         self.assertEqual(response.status_code, 503, response.json)
-        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
         pending = self.incident()["pendingDecision"]
-        self.assertFalse(pending["registryApplied"])
+        self.assertFalse(pending["dcrAttempted"])
         with patch.object(service.quality, "get_dcr", DownDCR):
-            service.quality.retry_unfinished()           # registry applied, DCR still down
-        self.assertEqual(self.db.get("S-test")["qualityStatus"], "REJECTED")
-        self.assertTrue(self.incident()["pendingDecision"]["registryApplied"])
-        service.quality.retry_unfinished()               # DCR back: decision executed
+            service.quality.retry_unfinished()           # checked, but DCR is down
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        self.assertNotIn("DecideReplace", self.trace())
+        with patch.object(self.db, "accept_quality_status",
+                          side_effect=RuntimeError("database is locked")):
+            service.quality.retry_unfinished()           # DCR executed, registry write fails
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        self.assertTrue(self.incident()["pendingDecision"]["dcrExecuted"])
+        service.quality.retry_unfinished()               # registry applied
         view = self.incident()
         self.assertIsNone(view["pendingDecision"])
         self.assertEqual(view["decision"]["qualityStatusEventId"], pending["eventId"])
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "REJECTED")
+        self.run_path(["CloseInvestigation"])
+        self.assertEqual(self.trace().count("DecideReplace"), 1)
+        self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_release_is_not_granted_when_the_dcr_decision_fails(self):
+        """Review: quality was RELEASED and P3 admitted although DCR returned 503."""
+        self.start_p2_transport()
+        self.readings(3, 3, 3)
+        self.risk_at_index(2)
+        self.deliver_p4()
+        self.arrive_and_receive()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        with self.faulty("DecideRelease", fail=True):
+            response = self.act("DecideRelease", reason="evidence reviewed")
+        self.assertEqual(response.status_code, 503, response.json)
+        record = self.db.get("S-test")
+        self.assertEqual(record["qualityStatus"], "PENDING")
+        self.assertFalse(any(m["name"] == "QualityStatusChanged"
+                             for m in self.db.pending_messages(destination="zeebe")))
+        self.assertEqual(self.db.admit_p3_stock("S-test", self.p3_key),
+                         {"admissionOutcome": "HELD"})
+        self.assertNotIn("DecideRelease", self.trace())
+        self.assertEqual(self.act("CloseInvestigation").status_code, 409)
+        service.quality.retry_unfinished()               # DCR back: executed, then applied
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "RELEASED")
+        self.assertEqual(self.resume_p3(), {"admissionOutcome": "ADMITTED"})
         self.run_path(["CloseInvestigation"])
         self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_lost_dcr_response_is_reconciled_and_the_case_can_close(self):
+        """Review: DCR executed the decision but the response was lost; retries stuck."""
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        with self.faulty("DecideReturn", lose_response=True):
+            response = self.act("DecideReturn", reason="too warm", eventId="officer-d1")
+        self.assertEqual(response.status_code, 503, response.json)
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        pending = self.incident()["pendingDecision"]
+        self.assertTrue(pending["dcrAttempted"])
+        self.assertFalse(pending["dcrExecuted"])
+        self.assertEqual(self.act("CloseInvestigation").status_code, 409)   # still pending
+        service.quality.retry_unfinished()
+        view = self.incident()
+        self.assertIsNone(view["pendingDecision"])
+        self.assertEqual(view["decision"]["decision"], "RETURN")
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "REJECTED")
+        [event] = [e for e in self.db.events("S-test") if e["eventType"] == "DecideReturn"]
+        self.assertTrue(event["payload"]["reconciledAfterLostResponse"])
+        again = self.act("DecideReturn", reason="too warm", eventId="officer-d1")
+        self.assertEqual((again.status_code, again.json["event"]["eventId"]),
+                         (200, event["eventId"]))
+        self.run_path(["CloseInvestigation"])
+        self.assertEqual(self.incident()["status"], "CLOSED")
+        self.assertEqual(self.trace().count("DecideReturn"), 1)
+        self.assertTrue(replay(MODEL, self.trace())["accepting"])
+
+    def test_definite_dcr_refusal_is_not_taken_as_executed(self):
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+
+        def refuse(*args, **kwargs):
+            raise dcr_client.DCRRefused("DCR answered 400: not enabled (test)")
+        real = service.quality.dcr
+        with patch.object(service.quality, "get_dcr", lambda: FaultyDCR(real, "DecideReplace")), \
+                patch.object(FaultyDCR, "execute", side_effect=refuse):
+            response = self.act("DecideReplace", reason="too warm")
+        self.assertEqual(response.status_code, 409, response.json)
+        view = self.incident()
+        self.assertIsNone(view["pendingDecision"])
+        self.assertFalse(view["unappliedDecisions"][-1]["executedInDcr"])
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+
+    def test_registry_refusal_after_dcr_decision_continues_in_a_new_case(self):
+        """Newer evidence reaches the registry while DCR executes the decision."""
+        self.start_p2_transport()
+        self.readings(3, 3, 3)
+        self.risk_at_index(2)
+        self.deliver_p4()
+        first_case = self.incident()["dcrCaseId"]
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        with self.faulty("DecideRelease", before=lambda: self.readings(10, 10, 10)):
+            response = self.act("DecideRelease", reason="looks fine")
+        self.assertEqual(response.status_code, 409, response.json)
+        self.assertTrue(response.json["reassessmentRequired"])
+        record = self.db.get("S-test")
+        self.assertEqual((record["qualityStatus"], record["evidenceVersion"]), ("PENDING", 2))
+        view = self.incident()
+        self.assertEqual(view["previousDcrCases"], [first_case])
+        self.assertNotEqual(view["dcrCaseId"], first_case)
+        self.assertEqual(view["status"], "OPEN")
+        self.assertTrue(view["unappliedDecisions"][-1]["executedInDcr"])
+        self.assertIn("DecideRelease", self.case_trace(first_case))
+        [newer] = self.deliver_p4()
+        self.assertEqual(newer["effect"], "evidence-added")
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence", "DecideRelease",
+                       "CloseInvestigation"])
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "RELEASED")
+        self.assertEqual(self.incident()["decision"]["assessedEvidenceVersion"], 2)
+        self.assertTrue(replay(MODEL, self.case_trace(view["dcrCaseId"]))["accepting"])
+
+    def test_evidence_arriving_during_assessment_is_not_labelled_assessed(self):
+        """Review: v2 committed after DCR ran AssessEvidence was labelled assessed."""
+        import threading
+
+        self.start_p2_transport()
+        self.readings(3, 3, 3)
+        self.risk_at_index(2)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog"])
+        incident_id = self.incident_id()
+        intake = []
+
+        def newer_evidence_meanwhile():
+            self.readings(10, 10, 10)                # registry evidence version 2
+            [message] = self.db.pending_messages(destination="p4-http")
+            worker = threading.Thread(target=lambda: intake.append(
+                service.quality.accept_handoff(message["variables"], message["messageId"])))
+            worker.start()                           # intake commits, then waits for the lock
+            for _ in range(200):
+                if service.quality._read(incident_id)["evidenceVersion"] == 2:
+                    break
+                worker.join(0.01)
+            self.assertEqual(service.quality._read(incident_id)["evidenceVersion"], 2)
+            intake.append(worker)
+
+        with self.faulty("AssessEvidence", before=newer_evidence_meanwhile):
+            assessed = self.act("AssessEvidence")
+        self.assertEqual(assessed.status_code, 200, assessed.json)
+        self.assertEqual(assessed.json["event"]["payload"]["assessedEvidenceVersion"], 1)
+        self.assertTrue(assessed.json["event"]["payload"]["newerEvidenceArrived"])
+        intake[0].join(5)                            # intake's sync runs AddAlertEvidence
+        self.assertEqual(intake[1]["effect"], "evidence-added")
+        view = self.incident()
+        self.assertEqual((view["assessedEvidenceVersion"], view["evidenceVersion"]), (1, 2))
+        self.assertTrue(view["reassessmentRequired"])
+        self.assertEqual(self.act("DecideRelease", reason="x").status_code, 409)
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        self.run_path(["AssessEvidence", "DecideRelease"])
+        self.assertEqual(self.incident()["decision"]["assessedEvidenceVersion"], 2)
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "RELEASED")
+
+    def test_no_assessment_or_decision_while_evidence_is_being_added(self):
+        self.start_p2_transport()
+        self.readings(3, 3, 3)
+        self.risk_at_index(2)
+        self.deliver_p4()
+        self.run_path(["ReviewTemperatureLog", "AssessEvidence"])
+        self.readings(10, 10, 10)
+        with patch.object(service.quality, "get_dcr", DownDCR):
+            [ack] = self.deliver_p4()                # accepted; AddAlertEvidence not in DCR
+        self.assertEqual(ack["effect"], "evidence-added")
+        self.assertEqual(self.incident()["pendingSystemEvents"], ["AddAlertEvidence"])
+        with patch.object(service.quality, "get_dcr", DownDCR):
+            for activity in ("AssessEvidence", "DecideRelease"):
+                response = self.act(activity, reason="x")
+                self.assertEqual(response.status_code, 409, (activity, response.json))
+        self.assertEqual(self.db.get("S-test")["qualityStatus"], "PENDING")
+        self.assertIsNone(self.incident()["pendingDecision"])
+
+    def test_officer_event_id_reuse_with_different_details_is_a_conflict(self):
+        """Review: a changed note under the same eventId returned 200."""
+        self.start_p2_transport()
+        self.readings(10, 10, 10)
+        self.deliver_p4()
+        first = self.act("ReviewTemperatureLog", eventId="r1", note="log ok")
+        same = self.act("ReviewTemperatureLog", eventId="r1", note="log ok")
+        self.assertEqual((first.status_code, same.status_code), (200, 200))
+        self.assertEqual(first.json["event"], same.json["event"])
+        for changed in (dict(note="different"), dict(actor="officer-bo", note="log ok"),
+                        dict(note="log ok", reason="added")):
+            body = {"actor": "officer-anna", "eventId": "r1", **changed}
+            response = self.http.post(
+                f"/quality/incidents/{self.incident_id()}/activities/ReviewTemperatureLog",
+                json=body)
+            self.assertEqual(response.status_code, 409, changed)
+        self.assertEqual(self.act("ReviewWeatherData", eventId="r1",
+                                  note="log ok").status_code, 409)
+        self.assertEqual(self.trace().count("ReviewTemperatureLog"), 1)
+        self.run_path(["AssessEvidence"])
+        decided = self.act("DecideReplace", eventId="d1", reason="too warm")
+        again = self.act("DecideReplace", eventId="d1", reason="too warm")
+        self.assertEqual((decided.status_code, again.status_code), (200, 200))
+        self.assertEqual(decided.json["event"]["eventId"], again.json["event"]["eventId"])
+        self.assertEqual(self.act("DecideReplace", eventId="d1",
+                                  reason="other").status_code, 409)
+        self.assertEqual(self.trace().count("DecideReplace"), 1)
 
     def test_demo_option_19_executes_an_enabled_activity(self):
         from tools import demo
@@ -346,6 +573,18 @@ class P4Flow(unittest.TestCase):
               patch("builtins.print") as printed):
             demo.perform("http://example.test", "19")
         self.assertEqual(self.trace(), ["OpenIncident", "ReviewTemperatureLog"])
+
+    def test_compose_empty_incident_url_disables_delivery(self):
+        """Review: `${P4_INCIDENT_URL:-default}` turned an explicit empty value into the
+        default. Only a missing variable may get the default (verified with
+        `P4_INCIDENT_URL= docker compose config`)."""
+        lines = [line.strip() for line in (ROOT / "docker-compose.yml").read_text().splitlines()
+                 if line.strip().startswith("P4_INCIDENT_URL:")]
+        self.assertEqual(lines, ["P4_INCIDENT_URL: ${P4_INCIDENT_URL-"
+                                 "http://communication:5001/integrations/p4/incident}"])
+        with patch.dict("os.environ", {"P4_INCIDENT_URL": ""}):
+            health = self.http.get("/health").json["integrations"]
+        self.assertEqual(health["p4IncidentHandoff"], "queued-awaiting-p4")
 
     def test_health_reports_dcr_engine_and_consumer(self):
         health = self.http.get("/health").json["integrations"]

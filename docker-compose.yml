@@ -18,7 +18,7 @@ services:
       SIDDIHI_CONTAINER_URL: ${SIDDIHI_CONTAINER_URL:-http://siddhi:8008/container}
       MONITORING_PROFILE_JSON: ${MONITORING_PROFILE_JSON:-{}}
       P3_ARRIVAL_URL: ${P3_ARRIVAL_URL:-http://communication:5001/integrations/p3/arrival}
-      P4_INCIDENT_URL: ${P4_INCIDENT_URL:-http://communication:5001/integrations/p4/incident}
+      P4_INCIDENT_URL: ${P4_INCIDENT_URL-http://communication:5001/integrations/p4/incident}
       # P4 DCR engine: dcrgraphs.net repository when all three DCR_* values are set
       # (put them in an untracked .env), otherwise the local engine on the same graph.
       DCR_MODE: ${DCR_MODE:-auto}

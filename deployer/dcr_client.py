@@ -32,6 +32,13 @@ class DCRUnavailable(Exception):
     """DCR could not be reached or answered unexpectedly; retry later."""
 
 
+class DCRRefused(DCRUnavailable):
+    """DCR answered and definitely did not execute the event (e.g. not enabled).
+
+    Distinct from a lost or failed call, after which the event may have been executed.
+    """
+
+
 class DCRClient:
     mode = "dcr-repository"
 
@@ -72,7 +79,8 @@ class DCRClient:
                 return response.status, dict(response.headers), response.read()
         except HTTPError as error:
             detail = error.read().decode(errors="replace")[:300]
-            raise DCRUnavailable(f"DCR answered {error.code}: {detail}") from error
+            kind = DCRRefused if error.code in (400, 409, 422) else DCRUnavailable
+            raise kind(f"DCR answered {error.code}: {detail}") from error
         except (URLError, TimeoutError, OSError) as error:
             raise DCRUnavailable(f"DCR unreachable: {error}") from error
 
@@ -233,7 +241,7 @@ class LocalDCR:
             case = self._read(db, sim_id)
             reason = self.blocked_reason(case, event_id)
             if reason:
-                raise DCRUnavailable(f"local DCR refused {event_id}: {reason}")
+                raise DCRRefused(f"local DCR refused {event_id}: {reason}")
             case.update(self.fire(case, event_id), trace=case["trace"] + [event_id])
             db.execute("UPDATE dcr_local_cases SET data=? WHERE id=?",
                        (json.dumps(case), sim_id))
