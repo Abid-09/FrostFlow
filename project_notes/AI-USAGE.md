@@ -230,3 +230,8 @@ Codex preserved four user-supplied screenshots and recorded manual external conf
 **ProcessDoctor (by the owner):** 4/4 conforming variants, 0 violations, for the `ed88d16d` log against `rules.xml`; the AI recorded it from the owner's screenshot after checking that his files match the committed ones (SHA-256).
 
 **Not done / limits:** the registry stale-version refusal, lost DCR answers, failed DCR decisions, crashes and the new-case path are verified offline only. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.
+
+
+## 20 November 2026 — final PR #12 review and documentation reconciliation
+
+Codex independently rechecked revision `c91ef78`: all 118 offline tests passed, Compose validation passed, and temporary fault/race probes confirmed the five original findings were fixed. The five review threads were resolved. Corrected the remaining sequencing-table decision order and clarified the historical live-log reference; reconciled the PR description with the current decision protocol, test count and repository-mode live evidence. No application, model or evidence-log changes were made in this documentation commit. Live merged-main verification is a subsequent step and is not claimed here.
