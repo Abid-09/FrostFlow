@@ -240,6 +240,48 @@ class CorrectiveEffects(unittest.TestCase):
                 self.db.queue_corrective_input(self.cid, "ReturnCollected", "c1", p4.iso(self.clock), {**payload, **change})
         self.collect()
 
+    def test_api_validates_arrangements_and_preserves_identity_on_retry(self):
+        case = self.authorize()
+        self.register(case)
+        path = f"/corrective-fulfilments/{self.cid}/arrange"
+        data = dict(eventId="arrange-api", occurredAt=p4.iso(self.clock), **self.arrangement(case))
+        for replacement in (None, {}, {**data["replacement"], "quantity": 1},
+                            {**data["replacement"], "vehicleId": "V-99"},
+                            {**data["replacement"], "shipmentId": "../invalid"},
+                            {**data["replacement"], "deliveryDeadline": "2026-12-01T12:00:00"}):
+            self.assertEqual(self.http.post(path, json={**data, "replacement": replacement}).status_code, 400)
+        response = self.http.post(path, json=data)
+        self.assertEqual(response.status_code, 202, response.json)
+        self.assertEqual(self.http.post(path, json=data).json, response.json)
+        self.assertEqual(self.http.post(path, json={**data, "collector": "other"}).status_code, 409)
+        self.assertEqual(self.http.get("/corrective-fulfilments?originalShipmentId=S-test").json[0]["correctiveId"], self.cid)
+        self.assertEqual(self.http.get("/corrective-fulfilments?originalShipmentId=unrelated").json, [])
+        self.assertEqual(self.http.get("/corrective-fulfilments/unknown").status_code, 404)
+        service.ready.clear()
+        self.assertEqual(self.http.post(path, json=data).status_code, 503)
+
+    def test_api_collection_requires_processed_booking_and_valid_quantity(self):
+        case = self.authorize("RETURN")
+        self.arrange(case)
+        path = f"/corrective-fulfilments/{self.cid}/collect"
+        data = dict(eventId="collect-api", occurredAt=p4.iso(self.clock), actor="receiver", collector="demo-collector",
+                    bookingReference="BOOK-1", quantityCollected=3)
+        for quantity in (True, 0, -1, 1.5, "3"):
+            self.assertEqual(self.http.post(path, json={**data, "quantityCollected": quantity}).status_code, 400)
+        self.assertEqual(self.http.post(path, json={**data, "quantityCollected": 1}).status_code, 409)
+        self.assertEqual(self.http.post(path, json={**data, "occurredAt": "2026-12-01T08:00:00Z"}).status_code, 409)
+        self.assertEqual(self.http.post(path, json=data).status_code, 202)
+        self.assertEqual(self.db.get_corrective(self.cid)["originalGoodsStatus"], "AWAITING_COLLECTION")
+
+    def test_api_return_refuses_replacement_and_both_paths_require_authorization(self):
+        case = self.authorize("RETURN")
+        self.register(case)
+        data = dict(eventId="a-api", occurredAt=p4.iso(self.clock), **self.arrangement(case))
+        data["replacement"] = self.arrangement({"action": "REPLACE"})["replacement"]
+        self.assertEqual(self.http.post(f"/corrective-fulfilments/{self.cid}/arrange", json=data).status_code, 400)
+        self.assertEqual(self.http.post("/corrective-fulfilments/unknown/arrange", json=data).status_code, 404)
+        self.assertEqual(self.db.inventory()["shipmentCount"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

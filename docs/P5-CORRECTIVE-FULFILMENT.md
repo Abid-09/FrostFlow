@@ -38,5 +38,12 @@ identity in the parent process.
 - Eight new offline tests cover monitored P1–P4 authorization, replacement admission and
   rejection, shortage cancellation, retry/restart, concurrent arrangement, forged input
   and P4 transaction rollback/recovery. These substitute Zeebe; live checks remain pending.
-- BPMN/API/menu wiring, live verification and final documentation: pending.
+- BPMN/API/menu wiring implemented. The model lints with zero issues; its exported PDF
+  was rendered and visually inspected. Three API regressions bring the offline suite
+  to 129 passing tests. CLI option 20 manages P5, and existing shipment IDs can be used
+  for replacement loading/dispatch/receipt/inspection.
+- Live verification, compliance evidence and final documentation: pending.
+
+See the [wire/API contract](COLD-CHAIN-INTEGRATION-AGREEMENT.md#p5-corrective-fulfilment-contract)
+and [BPMN](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf).
 - ProcessDoctor external conformance: pending new real execution evidence and manual check.

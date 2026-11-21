@@ -77,7 +77,7 @@ The Python integration service delivers these messages to the relevant engine or
 | `TemperatureExcursionDetected` | Siddhi → P4 integration | Pattern start/end, temperature evidence | Establish hold, then open/update investigation. |
 | `DeliveryRiskDetected` | Siddhi → P2 and P4 integration | Latest ETA, deadline, supporting updates | Request dispatcher decision and establish quality assessment/hold. |
 | `RecoveryVerified` | Siddhi → P4 | Incident, cooling command, stable-reading interval | Add evidence; do not automatically release goods. |
-| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | P3 receives `QualityStatusChanged` through `accept_quality_status`. On branch `P5`, journalling the applied `REPLACE`/`RETURN` decision also atomically creates one corrective case and queues `P5DispositionRecorded`; engine/API wiring follows. `RELEASE` and the quality-status test stand-in create no corrective work. |
+| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | P3 receives `QualityStatusChanged` through `accept_quality_status`. On branch `P5`, journalling the applied `REPLACE`/`RETURN` decision also atomically creates one corrective case and queues `P5DispositionRecorded`; the deployed P5 message-start consumer checks that authorization. `RELEASE` and the quality-status test stand-in create no corrective work. |
 | `StockAdmitted` | P3 → shared log; P5 when replacement | Admission time and receiver; original link if applicable | Record stock admission; allow replacement fulfilment to progress. |
 | `GoodsRejected` | P3 → shared log; P5 when replacement | Incident and reason | Record rejection; a rejected replacement cannot count as successful fulfilment. |
 | `ReturnCollected` | Manual/simulated collection → P5 | Incident, collector, collection time | Complete acknowledged return after matching the authorised booking. |
@@ -289,3 +289,57 @@ The [foundation specification](PRE-P4-FOUNDATION.md) defines the approved profil
 Loading verification starts a session with an immutable profile. Physical receipt closes it at a final sequence and promptly sends P2 acknowledgement. `p3-finalize-monitoring` keeps P3 at an explicit service task until evaluation reaches closure, or a 20-second timeout establishes a durable uncertainty hold. Admission rechecks closed/finalized monitoring and current quality permission in one transaction. Legacy shipments without a snapshot are labelled legacy/unmonitored and retain their original engine model.
 
 See [Abid’s P4 foundation handover](P4-FOUNDATION-HANDOVER.md) for intake, durable acknowledgements, assessed evidence versions, fixtures and reintegration requirements. The replacement P4 PR implements that boundary; its behaviour is summarised in the [P4 guide](P4-QUALITY-INVESTIGATION.md#contract-v1-behaviour-enforced-by-the-service).
+
+## P5 corrective fulfilment contract
+
+Branch `P5` adds `CorrectiveFulfilment` to the single communication service. An applied
+P4 `REPLACE` or `RETURN` decision creates one `correctiveId` per incident and queues
+`P5DispositionRecorded` in the same transaction as `DispositionRecorded` and the saved
+P4 decision. The message carries `correctiveId` and the exact `authorizationEvent`.
+P5 registers one engine instance and validates the durable authorization. P4 closure
+is independent of P5 completion. Releases and `/integrations/p4/quality-status` test
+inputs do not authorize P5. Previously finalized P4 decisions are not backfilled.
+
+- `GET /corrective-fulfilments?originalShipmentId=<id>` lists cases (filter optional).
+  `GET /corrective-fulfilments/<correctiveId>` shows the durable case, booking, accepted
+  inputs, original-goods status, replacement result and engine key.
+- `POST /corrective-fulfilments/<id>/arrange`: `eventId`, UTC `occurredAt`, `actor`,
+  `collector`, `bookingReference`, UTC `scheduledAt`. For `REPLACE`, also send a
+  `replacement` object containing only new `shipmentId`, new `journeyId`, `vehicleId`,
+  `routeId` and UTC `deliveryDeadline`. P5 copies the original product, batch, complete
+  crate quantity and recipient; substitutes, partial replacements and new batches are
+  outside scope. `RETURN` refuses replacement fields. The transaction reserves the
+  replacement identity and vehicle, creates the linked shipment, and queues
+  `P5ArrangementRequested` with `correctiveId`/`correctiveInput`. No stock is allocated
+  until P1 checks it. Ordinary `/shipments` rejects replacement links.
+- P5's arrangement worker records `CollectionBooked` and, for replacement,
+  `ReplacementRequested`. A parallel branch calls the co-deployed `ShipmentPreparation`
+  using deployment binding and an explicit child `shipmentId` mapping. Child variables
+  do not overwrite parent variables. P1 keeps its loading/dispatch/stock-wait guards;
+  P2 and P3 use their existing durable handoffs. Cancellation records a failed
+  replacement result; dispatch records `ReplacementDispatched` and starts the wait for
+  P3. P3 admission/rejection atomically queues `P5ReplacementOutcome` with the actual
+  journal event. P5 checks that durable event and records `ReplacementAdmitted` or
+  `ReplacementRejected`. Arrival, physical receipt and dispatch alone cannot fulfil it.
+- `POST /corrective-fulfilments/<id>/collect`: `eventId`, UTC `occurredAt`, `actor`,
+  `collector`, `bookingReference`, integer `quantityCollected`. It must match the
+  processed booking and full original quantity. P3 must have physically received and
+  rejected the original. Collection cannot precede booking or receipt. The receiver
+  queues `P5ReturnCollected`; only its P5 worker records `ReturnCollected` and sets
+  `originalGoodsStatus: COLLECTED`. This is a manual/simulated confirmation, not an
+  external collection service or inventory credit.
+
+Case states: `START_REQUESTED` → `AWAITING_ARRANGEMENT` → `ARRANGEMENT_REQUESTED` →
+`IN_PROGRESS` → `COMPLETED` or `FAILED`. The BPMN parallel join requires original
+collection and the replacement branch. Return needs no replacement. Replacement
+success requires `ADMITTED`; `REJECTED`/`CANCELLED` produces
+`CorrectiveFulfilmentFailed`, never `CorrectiveFulfilmentCompleted`. Both final outcomes
+retain original collection evidence. Failed replacement follow-up remains explicit
+future work; P5 creates no second replacement or supplier claim automatically.
+
+Both POSTs return **202 after durable acceptance**. Poll the case for processed effects.
+Each action is accepted once per case: identical event ID/time/payload retries reuse
+its original message, including after completion; conflicting action/ID reuse returns
+409. Invalid fields return 400; unknown cases return 404; not-ready returns 503.
+Outbox identities and 24-hour Zeebe message retention follow the existing recovery
+limits; do not retry uncertain engine starts by deleting case/shipment records.
