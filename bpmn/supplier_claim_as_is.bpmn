@@ -1,7 +1,7 @@
-<?xml version='1.0' encoding='utf-8'?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P6_AsIs" targetNamespace="https://frostflow.example/bpmn">
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P6_AsIs" targetNamespace="http://cold-chain.example/bpmn">
   <bpmn:process id="ManualSupplierClaim" name="P6 AS-IS - Manual supplier claim handling" isExecutable="false">
-    <bpmn:documentation>Owner: Sai Shashank Maktala. Assumed coursework baseline from the claims handler perspective. A reported incident is reviewed for claimable loss. Email and a manually maintained claim register are modeling assumptions. Evidence gathering, supplier follow-up and closure depend on the handler.</bpmn:documentation>
+    <bpmn:documentation>Assumed coursework baseline from the claims handler perspective. A reported incident is reviewed for claimable loss. Email and a manually maintained claim register are modeling assumptions. Evidence gathering, supplier follow-up and closure depend on the handler.</bpmn:documentation>
     <bpmn:startEvent id="Loss" name="Loss reported">
       <bpmn:outgoing>Loss_Review</bpmn:outgoing>
     </bpmn:startEvent>
@@ -57,13 +57,13 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Loss_Review" sourceRef="Loss" targetRef="Review" />
     <bpmn:sequenceFlow id="Review_Eligible" sourceRef="Review" targetRef="Eligible" />
-    <bpmn:sequenceFlow id="Eligible_Skip" sourceRef="Eligible" targetRef="Skip" name="No" />
-    <bpmn:sequenceFlow id="Eligible_Gather" sourceRef="Eligible" targetRef="Gather" name="Yes" />
+    <bpmn:sequenceFlow id="Eligible_Skip" name="No" sourceRef="Eligible" targetRef="Skip" />
+    <bpmn:sequenceFlow id="Eligible_Gather" name="Yes" sourceRef="Eligible" targetRef="Gather" />
     <bpmn:sequenceFlow id="Gather_Send" sourceRef="Gather" targetRef="Send" />
     <bpmn:sequenceFlow id="Send_Reply" sourceRef="Send" targetRef="Reply" />
     <bpmn:sequenceFlow id="Reply_Outcome" sourceRef="Reply" targetRef="Outcome" />
-    <bpmn:sequenceFlow id="Outcome_Settle" sourceRef="Outcome" targetRef="Settle" name="Settled" />
-    <bpmn:sequenceFlow id="Outcome_Reject" sourceRef="Outcome" targetRef="Reject" name="Rejected" />
+    <bpmn:sequenceFlow id="Outcome_Settle" name="Settled" sourceRef="Outcome" targetRef="Settle" />
+    <bpmn:sequenceFlow id="Outcome_Reject" name="Rejected" sourceRef="Outcome" targetRef="Reject" />
     <bpmn:sequenceFlow id="Settle_Merge" sourceRef="Settle" targetRef="Merge" />
     <bpmn:sequenceFlow id="Reject_Merge" sourceRef="Reject" targetRef="Merge" />
     <bpmn:sequenceFlow id="Merge_File" sourceRef="Merge" targetRef="File" />
