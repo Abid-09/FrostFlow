@@ -145,7 +145,7 @@ one structural violation (expected). External results and exact input hashes are
 | Final-code verification | `9347c2c8`, four scenarios/five P5 completions; exact source/image/data identities in the verification report |
 
 Documentation impact: README, run guide, implementation guide, integration agreement,
-this P5 guide, task board, AGENTS.md and AI-use record are updated. The full P1–P6 target
+this P5 guide, P4 investigation/handover guides, task board, AGENTS.md and AI-use record are updated. The full P1–P6 target
 and unconfirmed ownership remain explicit. Earlier reviewed evidence is unchanged.
 The branch is committed locally; review, publishing and any subsequent PR/merge remain
 with the user.

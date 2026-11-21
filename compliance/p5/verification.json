@@ -1210,7 +1210,8 @@
     "modelPdf": "exported with bpmn-to-image@0.10.0; rendered with Poppler and visually inspected",
     "pdfHash": "dc45ef784bf9bae7403dd902185a44de3f044bc8cb99785810abe07ab8e51ef3",
     "localReplay": "compliance/p5/local-replay.json",
-    "runningApplicationModelCatalogueHashes": "16/16 match; environment.json"
+    "runningApplicationModelCatalogueHashes": "16/16 match; environment.json",
+    "cli": "passed: real CLI option 20 selected/viewed the completed original case; existing-ID option 2 selected/viewed its replacement (read-only scripted terminal input)"
   },
   "developmentRun": {
     "runId": "649b1605",
