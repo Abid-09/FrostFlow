@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='utf-8'?>
+<dcrgraph title="P4 quality incident investigation" dataTypesStatus="hide">
+  <specification>
+    <resources>
+      <events>
+        <event id="OpenIncident">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="40" yLoc="360" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="AddAlertEvidence">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="300" yLoc="620" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="ReviewTemperatureLog">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="300" yLoc="80" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="ReviewWeatherData">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="300" yLoc="260" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="ReviewRouteAndETA">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="300" yLoc="440" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="RequestCoolingAdjustment">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="560" yLoc="80" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="RecordCoolingAcknowledgement">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="820" yLoc="40" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="RecordCoolingFailure">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="820" yLoc="220" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="RecordRecoveryEvidence">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1080" yLoc="40" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="RequestAdditionalCheck">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="560" yLoc="620" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="CompleteAdditionalCheck">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="820" yLoc="620" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="AssessEvidence">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1080" yLoc="360" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="DecideRelease">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1340" yLoc="220" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="DecideReplace">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1340" yLoc="400" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="DecideReturn">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1340" yLoc="580" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+        <event id="CloseInvestigation">
+          <custom>
+            <eventData />
+            <visualization>
+              <location xLoc="1620" yLoc="360" />
+              <size width="130" height="150" />
+            </visualization>
+          </custom>
+        </event>
+      </events>
+      <labels>
+        <label id="OpenIncident" />
+        <label id="AddAlertEvidence" />
+        <label id="ReviewTemperatureLog" />
+        <label id="ReviewWeatherData" />
+        <label id="ReviewRouteAndETA" />
+        <label id="RequestCoolingAdjustment" />
+        <label id="RecordCoolingAcknowledgement" />
+        <label id="RecordCoolingFailure" />
+        <label id="RecordRecoveryEvidence" />
+        <label id="RequestAdditionalCheck" />
+        <label id="CompleteAdditionalCheck" />
+        <label id="AssessEvidence" />
+        <label id="DecideRelease" />
+        <label id="DecideReplace" />
+        <label id="DecideReturn" />
+        <label id="CloseInvestigation" />
+      </labels>
+      <labelMappings>
+        <labelMapping eventId="OpenIncident" labelId="OpenIncident" />
+        <labelMapping eventId="AddAlertEvidence" labelId="AddAlertEvidence" />
+        <labelMapping eventId="ReviewTemperatureLog" labelId="ReviewTemperatureLog" />
+        <labelMapping eventId="ReviewWeatherData" labelId="ReviewWeatherData" />
+        <labelMapping eventId="ReviewRouteAndETA" labelId="ReviewRouteAndETA" />
+        <labelMapping eventId="RequestCoolingAdjustment" labelId="RequestCoolingAdjustment" />
+        <labelMapping eventId="RecordCoolingAcknowledgement" labelId="RecordCoolingAcknowledgement" />
+        <labelMapping eventId="RecordCoolingFailure" labelId="RecordCoolingFailure" />
+        <labelMapping eventId="RecordRecoveryEvidence" labelId="RecordRecoveryEvidence" />
+        <labelMapping eventId="RequestAdditionalCheck" labelId="RequestAdditionalCheck" />
+        <labelMapping eventId="CompleteAdditionalCheck" labelId="CompleteAdditionalCheck" />
+        <labelMapping eventId="AssessEvidence" labelId="AssessEvidence" />
+        <labelMapping eventId="DecideRelease" labelId="DecideRelease" />
+        <labelMapping eventId="DecideReplace" labelId="DecideReplace" />
+        <labelMapping eventId="DecideReturn" labelId="DecideReturn" />
+        <labelMapping eventId="CloseInvestigation" labelId="CloseInvestigation" />
+      </labelMappings>
+      <subProcesses />
+    </resources>
+    <constraints>
+      <conditions>
+        <condition sourceId="AssessEvidence" targetId="DecideRelease" />
+        <condition sourceId="AssessEvidence" targetId="DecideReplace" />
+        <condition sourceId="AssessEvidence" targetId="DecideReturn" />
+        <condition sourceId="DecideRelease" targetId="CloseInvestigation" />
+        <condition sourceId="DecideReplace" targetId="CloseInvestigation" />
+        <condition sourceId="DecideReturn" targetId="CloseInvestigation" />
+        <condition sourceId="OpenIncident" targetId="AddAlertEvidence" />
+        <condition sourceId="OpenIncident" targetId="AssessEvidence" />
+        <condition sourceId="OpenIncident" targetId="CloseInvestigation" />
+        <condition sourceId="OpenIncident" targetId="CompleteAdditionalCheck" />
+        <condition sourceId="OpenIncident" targetId="DecideRelease" />
+        <condition sourceId="OpenIncident" targetId="DecideReplace" />
+        <condition sourceId="OpenIncident" targetId="DecideReturn" />
+        <condition sourceId="OpenIncident" targetId="RecordCoolingAcknowledgement" />
+        <condition sourceId="OpenIncident" targetId="RecordCoolingFailure" />
+        <condition sourceId="OpenIncident" targetId="RecordRecoveryEvidence" />
+        <condition sourceId="OpenIncident" targetId="RequestAdditionalCheck" />
+        <condition sourceId="OpenIncident" targetId="RequestCoolingAdjustment" />
+        <condition sourceId="OpenIncident" targetId="ReviewRouteAndETA" />
+        <condition sourceId="OpenIncident" targetId="ReviewTemperatureLog" />
+        <condition sourceId="OpenIncident" targetId="ReviewWeatherData" />
+        <condition sourceId="RecordCoolingAcknowledgement" targetId="RecordRecoveryEvidence" />
+        <condition sourceId="ReviewTemperatureLog" targetId="AssessEvidence" />
+      </conditions>
+      <responses>
+        <response sourceId="AddAlertEvidence" targetId="AssessEvidence" />
+        <response sourceId="OpenIncident" targetId="AssessEvidence" />
+        <response sourceId="OpenIncident" targetId="CloseInvestigation" />
+        <response sourceId="RecordCoolingFailure" targetId="AssessEvidence" />
+        <response sourceId="RecordRecoveryEvidence" targetId="AssessEvidence" />
+        <response sourceId="RequestAdditionalCheck" targetId="AssessEvidence" />
+        <response sourceId="RequestAdditionalCheck" targetId="CompleteAdditionalCheck" />
+        <response sourceId="RequestCoolingAdjustment" targetId="RecordCoolingAcknowledgement" />
+      </responses>
+      <includes>
+        <include sourceId="RecordCoolingAcknowledgement" targetId="RecordRecoveryEvidence" />
+        <include sourceId="RequestAdditionalCheck" targetId="CompleteAdditionalCheck" />
+        <include sourceId="RequestCoolingAdjustment" targetId="RecordCoolingAcknowledgement" />
+        <include sourceId="RequestCoolingAdjustment" targetId="RecordCoolingFailure" />
+      </includes>
+      <excludes>
+        <exclude sourceId="CloseInvestigation" targetId="AddAlertEvidence" />
+        <exclude sourceId="CloseInvestigation" targetId="AssessEvidence" />
+        <exclude sourceId="CloseInvestigation" targetId="CloseInvestigation" />
+        <exclude sourceId="CloseInvestigation" targetId="CompleteAdditionalCheck" />
+        <exclude sourceId="CloseInvestigation" targetId="DecideRelease" />
+        <exclude sourceId="CloseInvestigation" targetId="DecideReplace" />
+        <exclude sourceId="CloseInvestigation" targetId="DecideReturn" />
+        <exclude sourceId="CloseInvestigation" targetId="RecordCoolingAcknowledgement" />
+        <exclude sourceId="CloseInvestigation" targetId="RecordCoolingFailure" />
+        <exclude sourceId="CloseInvestigation" targetId="RecordRecoveryEvidence" />
+        <exclude sourceId="CloseInvestigation" targetId="RequestAdditionalCheck" />
+        <exclude sourceId="CloseInvestigation" targetId="RequestCoolingAdjustment" />
+        <exclude sourceId="CloseInvestigation" targetId="ReviewRouteAndETA" />
+        <exclude sourceId="CloseInvestigation" targetId="ReviewTemperatureLog" />
+        <exclude sourceId="CloseInvestigation" targetId="ReviewWeatherData" />
+        <exclude sourceId="CompleteAdditionalCheck" targetId="CompleteAdditionalCheck" />
+        <exclude sourceId="DecideRelease" targetId="AssessEvidence" />
+        <exclude sourceId="DecideRelease" targetId="DecideRelease" />
+        <exclude sourceId="DecideRelease" targetId="DecideReplace" />
+        <exclude sourceId="DecideRelease" targetId="DecideReturn" />
+        <exclude sourceId="DecideRelease" targetId="RequestAdditionalCheck" />
+        <exclude sourceId="DecideRelease" targetId="RequestCoolingAdjustment" />
+        <exclude sourceId="DecideReplace" targetId="AssessEvidence" />
+        <exclude sourceId="DecideReplace" targetId="DecideRelease" />
+        <exclude sourceId="DecideReplace" targetId="DecideReplace" />
+        <exclude sourceId="DecideReplace" targetId="DecideReturn" />
+        <exclude sourceId="DecideReplace" targetId="RequestAdditionalCheck" />
+        <exclude sourceId="DecideReplace" targetId="RequestCoolingAdjustment" />
+        <exclude sourceId="DecideReturn" targetId="AssessEvidence" />
+        <exclude sourceId="DecideReturn" targetId="DecideRelease" />
+        <exclude sourceId="DecideReturn" targetId="DecideReplace" />
+        <exclude sourceId="DecideReturn" targetId="DecideReturn" />
+        <exclude sourceId="DecideReturn" targetId="RequestAdditionalCheck" />
+        <exclude sourceId="DecideReturn" targetId="RequestCoolingAdjustment" />
+        <exclude sourceId="OpenIncident" targetId="OpenIncident" />
+        <exclude sourceId="RecordCoolingAcknowledgement" targetId="RecordCoolingAcknowledgement" />
+        <exclude sourceId="RecordCoolingAcknowledgement" targetId="RecordCoolingFailure" />
+        <exclude sourceId="RecordCoolingFailure" targetId="RecordCoolingAcknowledgement" />
+        <exclude sourceId="RecordCoolingFailure" targetId="RecordCoolingFailure" />
+      </excludes>
+      <milestones>
+        <milestone sourceId="AssessEvidence" targetId="DecideRelease" />
+        <milestone sourceId="AssessEvidence" targetId="DecideReplace" />
+        <milestone sourceId="AssessEvidence" targetId="DecideReturn" />
+        <milestone sourceId="CompleteAdditionalCheck" targetId="AssessEvidence" />
+        <milestone sourceId="CompleteAdditionalCheck" targetId="CloseInvestigation" />
+        <milestone sourceId="CompleteAdditionalCheck" targetId="DecideRelease" />
+        <milestone sourceId="CompleteAdditionalCheck" targetId="DecideReplace" />
+        <milestone sourceId="CompleteAdditionalCheck" targetId="DecideReturn" />
+        <milestone sourceId="RecordCoolingAcknowledgement" targetId="CloseInvestigation" />
+      </milestones>
+    </constraints>
+  </specification>
+  <runtime>
+    <marking>
+      <executed />
+      <included>
+        <event id="OpenIncident" />
+        <event id="AddAlertEvidence" />
+        <event id="ReviewTemperatureLog" />
+        <event id="ReviewWeatherData" />
+        <event id="ReviewRouteAndETA" />
+        <event id="RequestCoolingAdjustment" />
+        <event id="RequestAdditionalCheck" />
+        <event id="AssessEvidence" />
+        <event id="DecideRelease" />
+        <event id="DecideReplace" />
+        <event id="DecideReturn" />
+        <event id="CloseInvestigation" />
+      </included>
+      <pendingResponses>
+        <event id="OpenIncident" />
+      </pendingResponses>
+    </marking>
+  </runtime>
+</dcrgraph>

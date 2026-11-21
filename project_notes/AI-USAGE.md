@@ -178,3 +178,64 @@ Separate actual Open-Meteo and TomTom HTTP 200 calls succeeded; deterministic su
 ## 2026-11-18 — user-performed ProcessDoctor checks
 
 Codex preserved four user-supplied screenshots and recorded manual external conformance for the review-18 logs: P1 3/3 variants (4 traces), P2 3/3 (3), P3 4/4 (4), container 5/5 (6), all with zero violations at coverage 100. The user confirmed P2/P3 input identity despite generic displayed filenames; the corrected P1 screenshot matches the current log's 2/1/1 occurrences. Recorded model/log/screenshot hashes, updated the review report and current documentation, and updated PR #9. Codex did not operate ProcessDoctor or claim a fresh external negative-trace check. Historical logs/reports remain unchanged. Documentation/evidence checks only; no runtime changes or merge performed.
+
+## 2026-11-04 to 2026-11-18 — P4 quality investigation in DCR (Abid Hasan)
+
+**Tool:** Claude (Anthropic, Claude Opus 5.5) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** read the course material, proposal and repository; plan P4 and write its AS-IS/TO-BE, rules and DCR graph step by step with the owner; check the owner's dcrgraphs.net drawing and simulation; then align P4 with the merged P1–P3 code and finish it to the same standard (code, diagrams, compliance evidence, documentation) for a PR.
+
+**Assistance:** generated `dcr/p4_quality_investigation.xml` from a reviewed rule list (the owner drew and simulated the same graph in dcrgraphs.net); wrote `deployer/quality.py` (consumer of P2's `DeliveryRiskIncident` handoff, temperature-alert intake, DCR-gated activities, decisions through `Registry.accept_quality_status`, background retries), `deployer/dcr_client.py` (dcrgraphs.net REST client and a local engine on the same graph), demo option 18, `stage_tests/test_p4.py`, `stage_tests/check_p4_investigation.py`, `compliance/p4/` (rules, builder, forbidden traces, simulation log transcribed from the owner's trace screenshots) and the documentation updates listed in the PR. The `dcr/` PDFs are the owner's dcrgraphs.net screenshot and the owner's AS-IS BPMN figure.
+
+**Actual results:** the full offline suite (81 tests, including the P1–P3 suite unchanged) passes with Python 3.12.3 (and 3.13); the exhaustive marking search finds 3 425 reachable markings with no deadlock and no dead activity; dcrgraphs.net runs 1–3 replay as valid and accepting, run 4 as an intentionally unfinished case; all 9 synthetic forbidden traces are rejected. See `compliance/p4/verification.json`.
+
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh dataset): run `900821e9` passed; the AI then built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
+
+**Not done / limits:** no dcrgraphs.net API execution (team credentials not used by the AI; export blocked on our subscription) and no ProcessDoctor check. Siddhi temperature/recovery patterns and the cooling-command bridge are not implemented; those inputs are manual/simulated. The owner must review and be able to explain the changes, run the live check and record its result.
+
+## 2026-11-18 — P4 replacement PR on the merged foundation (Abid Hasan)
+
+**Tool:** Claude (Anthropic) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** after PR #10 was reverted (PR #11) and foundation PR #9 merged, create a branch from the updated main, restore P4 by reverting the removal commit, resolve conflicts, follow the P4 foundation handover (keep CLI 18 temperature, 19 investigation) and prepare a reviewable PR.
+
+**Assistance:** reverted `31ad23b` on `ae941cc` and resolved conflicts (team docs kept, one Compose URL, CLI 18/19); rewrote `deployer/quality.py` intake, acknowledgement, evidence-version and disposition handling for the v1 contract; removed the temperature-specific P4 route; rewrote `stage_tests/test_p4.py` on new monitored shipments plus handover fixtures and legacy messages; rewrote `stage_tests/check_p4_investigation.py` for monitored live scenarios; moved PR #10 live evidence to `compliance/p4/historical/`; updated the P4 guide and the shared documentation listed in the sequencing checkpoint.
+
+**Actual results:** full offline suite (103 tests including the foundation and handover contract tests) passes on Python 3.12.3; `docker compose config --quiet` and `git diff --check` pass; dcrgraphs.net simulation replay and 9 forbidden traces unchanged. See `compliance/p4/verification.json`.
+
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac (Docker Desktop, fresh `p4-02` data): run `fd021988` passed; the AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting).
+
+**dcrgraphs.net API (by the owner):** Abid ran `stage_tests/check_dcr_repository.py` with his own account (credentials only in the untracked `.env`): graph `2015919`, simulation `2109421` passed after the AI fixed the nesting-group finding.
+
+**ProcessDoctor (by the owner):** after all traces showed cost Infinity against the role-assigned graph, the AI diagnosed the roles as the cause. The owner checked a role-free copy and got 4/4 conforming. `compliance/p4/rules.xml` became that role-free graph; the AI recorded the result from the owner's screenshots, with file hashes.
+
+**Not done / limits:** no full-stack run in repository mode. Cooling/recovery contracts and P5/P6 are not implemented. The owner must review the changes and be able to explain them.
+
+## 2026-11-19 — PR #12 first review fixes (Abid Hasan)
+
+**Tool:** Claude (Anthropic) in a cloud workspace with a clone of the repository; no sub-agents.
+
+**Prompt summary (paraphrase):** a reviewer requested changes on PR #12; read the review and make the requested changes, then test and push.
+
+**Assistance:** read the review through the GitHub API. Reworked the P4 decision path in `deployer/quality.py`: registry check (new read-only `Registry.check_quality_status`, sharing the existing guard with `accept_quality_status`), then the DCR decision, then the registry write; a new DCR case when the registry refuses after the DCR decision; durable DCR attempts with lost-response reconciliation; `DCRRefused` for definite refusals in `deployer/dcr_client.py`. Also: assessed version captured before the DCR call, assessment and decisions gated while evidence is being added, stored officer request details per `eventId`, and the Compose default changed to `${P4_INCIDENT_URL-…}`. Added regressions for each finding and rewrote the transient-failure test for the new order. The live runner now waits until P4 has received the registry's current evidence version before reassessing. Reconciled the documents the review named.
+
+**Actual results:** the new regressions fail on the reviewed head `8395f95` and pass after the fix; the full offline suite passes on Python 3.12.3; `docker compose config` resolves `P4_INCIDENT_URL` to the default when unset, `""` when empty and the given value otherwise; `git diff --check` passes.
+
+**Live run (by the owner):** Abid ran `stage_tests/check_p4_investigation.py` on his Mac at `3576812` (fresh `p4-03` data): run `d2558070` passed. P4 executed in his dcrgraphs.net graph because `.env` held the `DCR_*` credentials. The AI built `execution-log.xes`/`verification.json` from that output (4 traces valid and accepting) and moved the `fd021988` log and its ProcessDoctor result to the historical section.
+
+**Second pass before pushing:** re-read the review comments against the changes; added crash tests (after the DCR decision, after the registry write) and extended the lost-answer recovery to `CloseInvestigation`, the other officer activities and `OpenIncident`/`AddAlertEvidence`. It relies on DCR firing being idempotent, which the AI checked for all 3 425 reachable markings (now a test). Also corrected the remaining stale PR #9 / P4-consumer statements in the run guide, task board and an `app.py` comment.
+
+**Final live run (by the owner):** on `35d154a`, fresh `p4-04` data: run `ed88d16d` passed with P4 in the dcrgraphs.net repository; the AI rebuilt `execution-log.xes`/`verification.json` from it and kept `d2558070` as historical.
+
+**ProcessDoctor (by the owner):** 4/4 conforming variants, 0 violations, for the `ed88d16d` log against `rules.xml`; the AI recorded it from the owner's screenshot after checking that his files match the committed ones (SHA-256).
+
+**Not done / limits:** the registry stale-version refusal, lost DCR answers, failed DCR decisions, crashes and the new-case path are verified offline only. The registry stale-version refusal, failed or lost DCR decision calls and the new-case path are covered by offline fault injection only. The owner must review the changes and be able to explain them.
+
+
+## 20 November 2026 — final PR #12 review and documentation reconciliation
+
+Codex independently rechecked revision `c91ef78`: all 118 offline tests passed, Compose validation passed, and temporary fault/race probes confirmed the five original findings were fixed. The five review threads were resolved. Corrected the remaining sequencing-table decision order and clarified the historical live-log reference; reconciled the PR description with the current decision protocol, test count and repository-mode live evidence. No application, model or evidence-log changes were made in this documentation commit. Live merged-main verification is a subsequent step and is not claimed here.
+
+## 21 November 2026 — independent P4 live verification and final documentation
+
+Codex reran all 118 offline tests and replayed the unchanged P1/P2/P3/P4 logs successfully. The interrupted review20 run was preserved; a fresh matched review21 stack passed all four P4 live cases (`ccd5079d`) with Zeebe, Siddhi and the local DCR engine, GPS tick 15 seconds and local demo ETAs. Running application hashes matched the reviewed source. Corrected stale handover/foundation status and the task board’s already-completed ProcessDoctor dependency; linked current PR outcomes from the shared guides. Exact commands, source hashes, modes and limitations are in `compliance/p4/integration-review21.json`. No application/model/log changes or new external conformance claims. The user authorized merging after verification; exact merged-main smoke follows and is recorded on PR #12.

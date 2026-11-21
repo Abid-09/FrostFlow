@@ -1,8 +1,8 @@
-# Running and testing P1, P2 and P3
+# Running and testing P1, P2, P3 and P4
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12) restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](P4-FOUNDATION-HANDOVER.md); see [sequencing](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](P4-QUALITY-INVESTIGATION.md). Review, merge and post-merge verification outcomes are recorded on PR #12.
 
-Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. TomTom is optional; current deterministic verification uses local demo ETAs. The physical/external simulator and P4 investigation remain team integration work.
+Run commands from the repository root. P1 responsible student: **Ashvanth**. The implemented scope includes shipment preparation, scripted P2 GPS/ETA and dispatcher decisions, P2-to-P3 arrival handoff, P3 receipt/inspection and separate receiving inventory, and the P1 stock shortage/cancellation paths. TomTom is optional; current deterministic verification uses local demo ETAs. P4's quality investigation runs as a DCR case ([P4 guide](P4-QUALITY-INVESTIGATION.md)); the physical/external simulator remains team integration work.
 
 ## Demonstration dataset
 
@@ -100,7 +100,7 @@ Operate displays engine execution. The terminal represents the person submitting
 
 The dataset must be prepared before recording/presenting. The menu preserves existing data and does not reset containers or reservations. A used dataset may have unavailable vehicles even if stock remains; use the isolated-dataset instructions below to rehearse again.
 
-For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving is implemented; Abid’s PR #10 P4 investigation awaits foundation adaptation, while P5/P6 and the complete cross-process corrective workflow remain planned.
+For the final **three-minute** project demo, reserve roughly 25 seconds for preparation. Build one connected story as later parts become available: dispatch → arrival/receipt → temperature incident → investigation/hold → authorised resolution → corrective work/claim → compliance results. Show process behaviour and evidence at each transition. P3 receiving and Abid’s P4 investigation (CLI **19**) are implemented; P5/P6 and the complete cross-process corrective workflow remain planned.
 
 ### P3 compliance evidence
 
@@ -272,7 +272,7 @@ curl -s 'http://localhost:5001/receiving-stock?recipientId=C-02'
 curl -s http://localhost:5001/stock
 ```
 
-For clear goods and a passing inspection, P3 reaches `ADMITTED` and C-02 receives ten milk crates. Warehouse availability remains 80; receiving never credits warehouse stock. A risk shipment remains `ON_HOLD` until release of its current incident through the labelled P4 stand-in; rejection never adds receiving stock. See the risk walkthrough for hold/release and `check_p3_compliance.py` for all four admission/rejection scenarios.
+For clear goods and a passing inspection, P3 reaches `ADMITTED` and C-02 receives ten milk crates. Warehouse availability remains 80; receiving never credits warehouse stock. A risk shipment remains `ON_HOLD` until the P4 investigation (CLI **19**) releases its current incident with the assessed evidence version (option **17** is a stand-in that bypasses P4); rejection never adds receiving stock. See the risk walkthrough for hold/release and `check_p3_compliance.py` for all four admission/rejection scenarios.
 
 An exact retry of an accepted receipt or inspection returns **202** without repeating stock or journal effects. Changed content under the accepted identity returns **409**. The optional `/arrive` endpoint remains a manual/test input for simulator-off runs; automatic arrival is used in this walkthrough. P2's durable arrival notification and P3 receipt acknowledgement are distinct messages, and damaged-packaging loading exceptions remain outside this increment.
 
@@ -414,7 +414,7 @@ After merging, smoke-test an existing healthy default-port stack with free vehic
 .venv/bin/python stage_tests/check_integration_smoke.py
 ```
 
-This creates two new shipments and checks admission and quality hold/rejection, Zeebe end events and exact warehouse/receiving deltas. It writes `runtime/verification-results/main-smoke.json`. It deliberately supports consumed inventory and does not rerun the fresh-data suites. The quality disposition still comes from the P4 test stand-in.
+This creates two new shipments and checks admission and quality hold/rejection, Zeebe end events and exact warehouse/receiving deltas. It writes `runtime/verification-results/main-smoke.json`. It deliberately supports consumed inventory and does not rerun the fresh-data suites. The quality disposition comes from the test stand-in endpoint, so P4 cases opened by this smoke stay open; use `check_p4_investigation.py` for P4.
 
 P1 writes `runtime/verification-results/{execution-log.xes,verification.json,p2-completion.json}`. P2 writes `runtime/verification-results/p2-siddhi.json`. P3 writes `runtime/p3-compliance/evidence.json`. Copy reviewed evidence and regenerate logs only after successful execution. Raw histories stay under ignored `runtime/`.
 
@@ -436,7 +436,7 @@ python tools/demo.py --deadline-minutes 1
 
 In the CLI, create a shipment with **1**, verify loading with **3**, then dispatch with **4**. Use **2** to poll the shipment. After the third consecutive late ETA reaches Siddhi, its `COLD-CHAIN-RISK` log and P2 `DeliveryRiskDetected` activity should appear, option **2** shows `Quality status: PENDING`, and the instance waits at the dispatcher decision. Choose **13** and select a route different from the current route. A successful decision records the simulator acknowledgement before updating `routeId`. The new route starts at the vehicle's current position and ends at the **same destination**; Operate's `routeId`/`routeRevision` variables match the shipment API. In Operate, confirm P2 still waits for receipt after automatic arrival, then use **14** to confirm physical receipt in P3. P3's acknowledgement completes P2 and releases the vehicle. After inspection (**15**), a risk shipment stays `ON_HOLD`; release its current incident with **17** (P4 stand-in) to admit it. `docker compose logs -f siddhi` shows telemetry and risk events; `docker compose logs -f communication` shows message delivery and worker errors.
 
-Option **11** remains a manual test alert and bypasses Siddhi's risk detection; do not use it for this walkthrough. A local route-command acknowledgement verifies the Siddhi-to-scripted-simulator path only. It does not prove integration with a physical/external simulator. P3 receiving is integrated: arrival starts P3, and P3's receipt is the only way to complete P2. **P4 is deferred from this baseline pending foundation adaptation.** The hold and the queued P4 handoff are real; the release is a stand-in (`POST /integrations/p4/quality-status`, CLI option 17) until P4's DCR investigation consumes the handoff. Its health status reads `p4IncidentHandoff: queued-awaiting-p4`.
+Option **11** remains a manual test alert and bypasses Siddhi's risk detection; do not use it for this walkthrough. A local route-command acknowledgement verifies the Siddhi-to-scripted-simulator path only. It does not prove integration with a physical/external simulator. P3 receiving is integrated: arrival starts P3, and P3's receipt is the only way to complete P2. **P4** consumes the hold's durable handoff by default and decides in a DCR case (CLI option 19; see [P4 investigation live run](#p4-investigation-live-run)). Health reads `p4IncidentHandoff: enabled`; with `P4_INCIDENT_URL=` the handoff stays queued (`queued-awaiting-p4`). The stand-in `POST /integrations/p4/quality-status` / CLI option 17 bypasses P4 and remains for P3-only checks.
 
 **Decide before the truck arrives.** While a decision is pending, the scripted truck keeps moving. Each route has seven GPS ticks and the alert comes on the third, leaving about four ticks: roughly 60 s at `GPS_TICK_SECONDS=15`, or 4 minutes at 60. If it reaches its destination first, P2 takes the **Arrived before decision** branch. The alert is closed (`DeliveryRiskClosedAtArrival`), the route is unchanged, and a later option **12**/**13** is refused with *vehicle has already arrived*. That is the intended outcome, not a failure. After an approved route change, the deadline has usually already passed, so expect a second alert on the new route revision and answer it too.
 
@@ -477,7 +477,7 @@ The table below preserves the **17 November** evidence and its original tested r
 
 No merge or post-merge smoke is claimed for the foundation branch. Review and explicit merge authorization remain required; repeat the smoke against merged main after an authorised merge. The flat DCR checker does not implement timed/data/hierarchical semantics or a real P4 investigation.
 
-**Deferred from this baseline:** Abid’s P4 DCR investigation from PR #10. The delivery-risk hold and the durable P4 handoff exist, and admission stays blocked until the current incident is released, but the release is a stand-in until P4 consumes the handoff (tracked on the task board).
+**P4:** Abid’s DCR investigation consumes the durable handoff and applies dispositions with the assessed evidence version. Offline results are in [compliance/p4/verification.json](../compliance/p4/verification.json); the combined live run `ed88d16d` passed on the final PR #12 code (see [P4 investigation live run](#p4-investigation-live-run)). Earlier runs `d2558070` and `fd021988` (earlier PR #12 revisions) and `900821e9` (PR #10, pre-foundation) are kept there as historical evidence only.
 
 ### P2 DCR compliance
 
@@ -497,6 +497,28 @@ npx --yes bpmn-to-image@0.10.0 --title='P1 Shipment preparation' bpmn/shipment_p
 npx --yes bpmn-to-image@0.10.0 bpmn/transport.bpmn:bpmn/transport.pdf
 npx --yes bpmn-to-image@0.10.0 --title='P3 Receiving and stock admission' bpmn/receiving.bpmn:bpmn/receiving.pdf
 ```
+
+### P4 investigation live run
+
+Use a fresh paired dataset (new suffix), the simulator on and local Siddhi. `GPS_TICK_SECONDS=15` gives the runner time to raise a delay risk while the vehicle is in transit; container sampling continues after GPS arrival until physical receipt.
+
+```bash
+export COMPOSE_PROJECT_NAME=frostflow-p4 VERIFY_DATASET=p4-02 REGISTRY_DIR=./runtime/repair/p4-02
+export P2_SIMULATOR_ENABLED=true GPS_TICK_SECONDS=15 TOMTOM_API_KEY=
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up --build -d --wait --wait-timeout 300
+.venv/bin/python stage_tests/check_p4_investigation.py --base http://localhost:5001
+.venv/bin/python compliance/p4/build_p4_evidence.py --live runtime/p4-compliance/evidence.json
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml stop
+```
+
+The runner needs only the Python standard library. It runs four investigations on new monitored shipments:
+
+1. Delay → cooling acknowledged, recovery evidence → release → admitted.
+2. Container excursion (`AssessmentRequested`) → failed cooling → replace.
+3. Delay → additional check → return.
+4. Delay → assessed → new container evidence → refused decision → reassessment → release.
+
+Each case checks that physical receipt released the vehicle while quality was held, that monitoring finalized, that forbidden actions were refused (409) and the P3 outcome. It takes roughly 15–20 minutes. The builder writes `compliance/p4/execution-log.xes` and the live section of `compliance/p4/verification.json`. If `.env` holds `DCR_*` credentials, P4 executes in the dcrgraphs.net repository (`/health` → `p4DcrEngine: dcr-repository`); otherwise in the local engine. Recorded result: run `ed88d16d` passed on 19 November 2026 at `35d154a` (454 s, macOS arm64, fresh `p4-04` data, P4 in the dcrgraphs.net repository, graph `2015919`; 4 traces valid and accepting). Earlier runs `d2558070` (`3576812`) and `fd021988` (local engine, `95e4a85`) are historical.
 
 ## Persistence, isolated checks and troubleshooting
 
@@ -535,7 +557,7 @@ For disposable data only, `docker compose down -v` removes that project's engine
 - **502 on creation:** engine-start outcome uncertain; inspect engine/logs before retrying. The registry entry is retained.
 - **A pending command/handoff does not advance:** check `docker compose logs communication` and Operate for publication/worker incidents. Published messages expire after 24 hours if unconsumed; recovery is manual.
 
-One communication instance is supported. Authenticated users, stock procurement, the shared logger, real P4 investigation and cooling/recovery remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
+One communication instance is supported. Authenticated users, stock procurement, the shared logger and cooling/recovery contracts remain outside this increment. P3 receipt/admission and the durable delivery-risk quality hold are implemented. P1 external conformance checking is recorded above.
 
 
 ## Container monitoring foundation
@@ -558,7 +580,7 @@ Shipment views show monitoring session/profile, sequence/evaluation cursor, clos
 
 Open-Meteo requests current temperature, precipitation, wind speed and weather code at the simulated position. Responses retain requested/provider coordinates, UTC model-data time, retrieval time, units and model-based provenance; sanitized JSONL is saved beside the ignored registry. Success caches for 10 minutes by 0.05° grid; at most one refresh attempt per journey per minute. Combined risk requires data age ≤30 minutes and distance ≤10 km, ≥30°C outdoors, current-revision qualified and still-fresh late ETA, plus three rising fresh container readings spanning 10 s and rising ≥0.5°C. Failed/stale data is unavailable. Repeated/cached provider observations retain their identity, and weather alone cannot hold/reject goods.
 
-P3 receipt releases the vehicle independently of assessment. Admission waits for closing evaluation or a durable timeout hold. Unavailable Siddhi or silence cannot silently permit admission. Test dispositions must name `expectedEvidenceVersion` as well as the current incident; CLI option 17 fetches these. New material evidence invalidates older dispositions. No `P4_INCIDENT_URL` leaves immutable handoffs pending and the hold intact.
+P3 receipt releases the vehicle independently of assessment. Admission waits for closing evaluation or a durable timeout hold. Unavailable Siddhi or silence cannot silently permit admission. Dispositions must name `expectedEvidenceVersion` as well as the current incident; P4 sends the version the officer assessed, and CLI option 17 (stand-in) fetches the current one. New material evidence invalidates older dispositions and requires reassessment in P4. Compose sends handoffs to the local P4 consumer by default; an empty `P4_INCIDENT_URL` leaves immutable handoffs pending and the hold intact.
 
 ```bash
 # Existing healthy stack, simulator enabled; four milk crates and a free vehicle:
@@ -587,4 +609,4 @@ docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up 
 curl http://localhost:5001/health
 ```
 
-Use new paired suffixes for any future fresh-data suite. Foundation PR #9 still needs separate review and explicit merge approval. After its approved merge, rebuild from merged main using the same paired-dataset variables plus `up --build`, run `stage_tests/check_integration_smoke.py` with sufficient salad/chicken stock and free vehicles, and record the exact merged revision. Until that smoke passes, this is branch verification, not the final handover readiness claim. See [Abid's P4 handover](P4-FOUNDATION-HANDOVER.md).
+Use new paired suffixes for any future fresh-data suite. Foundation PR #9 is merged as `ae941cc`; no integrated smoke at a merged revision since then is recorded (`compliance/merged-main-verification.json` still records `ad47a3c`). After each approved merge, rebuild from merged main using the same paired-dataset variables plus `up --build`, run `stage_tests/check_integration_smoke.py` with sufficient salad/chicken stock and free vehicles, and record the exact merged revision. Until that smoke passes, this is branch verification, not the final handover readiness claim. See [Abid's P4 handover](P4-FOUNDATION-HANDOVER.md).

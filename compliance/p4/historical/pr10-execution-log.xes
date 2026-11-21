@@ -1,0 +1,347 @@
+<?xml version='1.0' encoding='utf-8'?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <trace>
+    <string key="concept:name" value="p4comp-900821e9-1/DELAY:risk-p4comp-900821e9-1" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="OpenIncident" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:001:OpenIncident" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:02.218468Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewWeatherData" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-ReviewWeatherData-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.648597Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RequestCoolingAdjustment" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-RequestCoolingAdjustment-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.655433Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewTemperatureLog" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-ReviewTemperatureLog-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.661066Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RecordCoolingAcknowledgement" />
+      <string key="org:resource" value="vehicle-simulator" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-RecordCoolingAcknowledgement-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.665803Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RecordRecoveryEvidence" />
+      <string key="org:resource" value="siddhi-recovery" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-RecordRecoveryEvidence-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.670930Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AssessEvidence" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-AssessEvidence-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.675923Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="DecideRelease" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-DecideRelease-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.684699Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="CloseInvestigation" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-1:ext:p4comp-900821e9-1-CloseInvestigation-2-0" />
+      <string key="processInstanceKey" value="local-f8d0d1796c02" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:38.692408Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p4comp-900821e9-2/DELAY:risk-p4comp-900821e9-2" />
+    <string key="productId" value="PRD-002" />
+    <string key="productName" value="Plain yoghurt" />
+    <string key="batchId" value="DEMO-YOGHURT-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="OpenIncident" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:001:OpenIncident" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:19:44.262836Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewTemperatureLog" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-ReviewTemperatureLog-1-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.305054Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RequestCoolingAdjustment" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-RequestCoolingAdjustment-1-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.312444Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RecordCoolingFailure" />
+      <string key="org:resource" value="vehicle-simulator" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-RecordCoolingFailure-1-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.320514Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AssessEvidence" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-AssessEvidence-2-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.327976Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="DecideReplace" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-DecideReplace-2-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.333191Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="CloseInvestigation" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-2:ext:p4comp-900821e9-2-CloseInvestigation-2-0" />
+      <string key="processInstanceKey" value="local-78b625825c7e" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:23.342482Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p4comp-900821e9-3/DELAY:risk-p4comp-900821e9-3" />
+    <string key="productId" value="PRD-003" />
+    <string key="productName" value="Fresh cheese" />
+    <string key="batchId" value="DEMO-CHEESE-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="OpenIncident" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:001:OpenIncident" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:20:29.357251Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewRouteAndETA" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-ReviewRouteAndETA-1-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:08.959594Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewTemperatureLog" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-ReviewTemperatureLog-1-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:08.974307Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="RequestAdditionalCheck" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-RequestAdditionalCheck-1-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:08.987067Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="CompleteAdditionalCheck" />
+      <string key="org:resource" value="cafeteria-receiver" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-CompleteAdditionalCheck-3-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:09.006771Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AssessEvidence" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-AssessEvidence-3-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:09.015052Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="DecideReturn" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-DecideReturn-3-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:09.023834Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="CloseInvestigation" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-3:ext:p4comp-900821e9-3-CloseInvestigation-3-0" />
+      <string key="processInstanceKey" value="local-38342c03ca57" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:09.036629Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="p4comp-900821e9-4/DELAY:risk-p4comp-900821e9-4" />
+    <string key="productId" value="PRD-005" />
+    <string key="productName" value="Prepared salad" />
+    <string key="batchId" value="DEMO-SALAD-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="OpenIncident" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:001:OpenIncident" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:14.504383Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ReviewTemperatureLog" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:ext:p4comp-900821e9-4-ReviewTemperatureLog-1-0" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.649748Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AssessEvidence" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:ext:p4comp-900821e9-4-AssessEvidence-1-0" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.660541Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AddAlertEvidence" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:002:AddAlertEvidence" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.672761Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="AssessEvidence" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:ext:p4comp-900821e9-4-AssessEvidence-2-1" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.684305Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="DecideRelease" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:ext:p4comp-900821e9-4-DecideRelease-2-1" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.690074Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="CloseInvestigation" />
+      <string key="org:resource" value="quality-officer" />
+      <string key="eventId" value="P4:DELAY:risk-p4comp-900821e9-4:ext:p4comp-900821e9-4-CloseInvestigation-2-1" />
+      <string key="processInstanceKey" value="local-6407dfbe559f" />
+      <string key="productId" value="PRD-005" />
+      <string key="batchId" value="DEMO-SALAD-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-18T11:21:53.699804Z" />
+    </event>
+  </trace>
+</log>

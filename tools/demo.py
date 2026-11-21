@@ -9,6 +9,7 @@ import json
 import time
 from datetime import datetime, timedelta, timezone
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 CASES = {
@@ -194,10 +195,10 @@ def wait_for_action(base, shipment_id, action, old_wait_key=None, target_route_i
 
 
 def release_quality_hold(base, shipment_id):
-    """P4 stand-in: release the shipment's CURRENT quality incident.
+    """Test stand-in: release the shipment's CURRENT quality incident.
 
-    P4 (the DCR investigation) is not implemented yet; this demo control plays
-    the quality officer's authorised RELEASE so P3 can admit held stock.
+    This bypasses the P4 DCR investigation (option 19) and is kept for P3-only
+    checks. A later P4 decision for that incident is then recorded as stale.
     """
     status, record = http(base, f"/shipments/{shipment_id}")
     if status != 200:
@@ -228,6 +229,63 @@ def release_quality_hold(base, shipment_id):
             break
         time.sleep(0.5)
     show(record)
+
+
+def investigate_quality(base, shipment_id):
+    """P4: show the current DCR investigation and execute one enabled activity."""
+    status, quality = http(base, f"/shipments/{shipment_id}/quality")
+    if status != 200:
+        print("Not available:", quality.get("error"))
+        return
+    incident_id = quality.get("qualityIncidentId")
+    print(f"Quality status: {quality.get('qualityStatus')} | incident: {incident_id}")
+    if not incident_id:
+        print("No quality incident for this shipment.")
+        return
+    status, incident = http(base, f"/quality/incidents/{quote(incident_id, safe='')}")
+    if status != 200:
+        print("The investigation has not reached P4 yet:", incident.get("error"))
+        return
+    print(f"Investigation: {incident['status']} ({incident['dcrMode']}, case "
+          f"{incident.get('dcrCaseId')})")
+    if incident.get("decision"):
+        print(f"Decision: {incident['decision']['decision']} by "
+              f"{incident['decision']['officer']}")
+    dcr = incident.get("dcr") or {}
+    if dcr.get("unavailable"):
+        print("DCR unavailable:", dcr["unavailable"])
+        return
+    enabled = [e["id"] for e in dcr.get("events", []) if e["enabled"]]
+    pending = [e["id"] for e in dcr.get("events", []) if e["pending"] and e["included"]]
+    if pending:
+        print("Still required:", ", ".join(pending))
+    choices = [e for e in enabled if e not in ("OpenIncident", "AddAlertEvidence")]
+    if not choices:
+        print("No officer activity is enabled now.")
+        return
+    for number, activity in enumerate(choices, start=1):
+        print(f"  {number} {activity}")
+    picked = input("Activity number (Enter = none): ").strip()
+    if not picked:
+        return
+    if not picked.isdigit() or not 1 <= int(picked) <= len(choices):
+        raise ValueError("Choose one of the listed activity numbers.")
+    activity = choices[int(picked) - 1]
+    data = {"actor": input("Actor [quality-officer]: ").strip() or "quality-officer"}
+    if activity.startswith("Decide"):
+        data["reason"] = input("Reason for the decision: ").strip()
+    status, response = http(
+        base,
+        f"/quality/incidents/{quote(incident_id, safe='')}/activities/{activity}",
+        data,
+    )
+    if status != 200:
+        print(f"\nDCR refused (HTTP {status}): {response.get('error', response)}")
+        if response.get("enabled"):
+            print("Enabled now:", ", ".join(response["enabled"]))
+        return
+    print(f"{activity} executed in DCR.")
+    show(http(base, f"/shipments/{shipment_id}")[1])
 
 
 def choose_case():
@@ -288,6 +346,9 @@ def perform(base, choice, deadline_minutes=60):
         return
     if choice == "17":
         release_quality_hold(base, shipment_id)
+        return
+    if choice == "19":
+        investigate_quality(base, shipment_id)
         return
     if choice in ("2", "7"):
         status, record = http(base, path if choice == "2" else path + "/events")
@@ -501,13 +562,14 @@ def main():
             print("9 Force manual arrival 10 P2 test receipt (bypasses P3) 0 Exit")
             print("11 Simulate delivery risk 12 Accept delay 13 Approve route change")
             print("14 Confirm physical receipt 15 Inspect goods 16 Show receiving stock")
-            print("17 Release quality hold (P4 stand-in)")
+            print("17 Release quality hold (test stand-in, bypasses P4)")
             print("18 Change simulated temperature scenario")
+            print("19 Quality investigation (P4, executed in DCR)")
             choice = input("Action: ").strip()
             if choice == "0":
                 return 0
-            if choice not in {str(value) for value in range(1, 19)}:
-                print("Choose an action from 0 to 18.")
+            if choice not in {str(value) for value in range(1, 20)}:
+                print("Choose an action from 0 to 19.")
                 continue
             try:
                 perform(base, choice, args.deadline_minutes)

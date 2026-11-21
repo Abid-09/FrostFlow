@@ -1,10 +1,10 @@
 # Cold-chain: shared integration agreement
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12) restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](P4-FOUNDATION-HANDOVER.md); see [sequencing](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](P4-QUALITY-INVESTIGATION.md). Review, merge and post-merge verification outcomes are recorded on PR #12.
 
 **Purpose:** define how the six processes exchange information before their owners implement the connections. Read the [team implementation guide](COLD-CHAIN-IMPLEMENTATION-GUIDE.md) for scope, assignments, and stages.
 
-**Status:** shared contract for implemented P1–P3 and planned P4–P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
+**Status:** shared contract for implemented P1–P4 and planned P5–P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
 
 ## 1. Common identifiers
 
@@ -77,7 +77,7 @@ The Python integration service delivers these messages to the relevant engine or
 | `TemperatureExcursionDetected` | Siddhi → P4 integration | Pattern start/end, temperature evidence | Establish hold, then open/update investigation. |
 | `DeliveryRiskDetected` | Siddhi → P2 and P4 integration | Latest ETA, deadline, supporting updates | Request dispatcher decision and establish quality assessment/hold. |
 | `RecoveryVerified` | Siddhi → P4 | Incident, cooling command, stable-reading interval | Add evidence; do not automatically release goods. |
-| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | P3 updates admission permission; P5 starts only for replacement/return. |
+| `DispositionRecorded` | P4 → P3 and P5 | Incident, decision, officer, reason, evidence references | Implemented for P3 through `accept_quality_status` (current incident, assessed `expectedEvidenceVersion`) → `QualityStatusChanged`, plus a `DispositionRecorded` journal entry; P5 consumption is planned. |
 | `StockAdmitted` | P3 → shared log; P5 when replacement | Admission time and receiver; original link if applicable | Record stock admission; allow replacement fulfilment to progress. |
 | `GoodsRejected` | P3 → shared log; P5 when replacement | Incident and reason | Record rejection; a rejected replacement cannot count as successful fulfilment. |
 | `ReturnCollected` | Manual/simulated collection → P5 | Incident, collector, collection time | Complete acknowledged return after matching the authorised booking. |
@@ -103,7 +103,8 @@ The P2 manual/test routes remain `POST /shipments/<shipmentId>/arrive` and `POST
 | `POST /shipments/<id>/receiving/receipt` | `eventId`, UTC `occurredAt`, `recipientId`, integer `quantityReceived`, `receiver` | Record physical receipt and queue P2 acknowledgement |
 | `POST /shipments/<id>/receiving/inspection` | `eventId`, UTC `occurredAt`, `inspector`, boolean `passed` | Record inspection and continue to admission/hold/rejection |
 | `GET /receiving-stock` | Optional `recipientId` query parameter | View the separate admitted receiving inventory |
-| `POST /integrations/p4/quality-status` | `shipmentId`, `eventId`, UTC `occurredAt`, `qualityStatus`, `incidentId` | Apply P4 `PENDING`, `RELEASED` or `REJECTED` disposition; resumes P3 when held |
+| `POST /integrations/p4/quality-status` | `shipmentId`, `eventId`, UTC `occurredAt`, `qualityStatus`, `incidentId`, `expectedEvidenceVersion` (monitored dispositions) | Apply `PENDING`, `RELEASED` or `REJECTED`; resumes P3 when held. P4 uses the same registry operation in-process; the endpoint itself is the test stand-in |
+| `POST /integrations/p4/incident` | Foundation outbox envelope `{"event": ...}`, `Idempotency-Key` = `event.deliveryId` | P4 consumer: persists the request, answers `{deliveryId, status: accepted\|duplicate}`; opens or updates the DCR case (see the [P4 guide](P4-QUALITY-INVESTIGATION.md)) |
 
 Receipt acknowledgement and stock admission are separate milestones. P2 may release the vehicle after recorded physical receipt, while P3 continues to wait for inspection. P1's warehouse stock is not credited when goods arrive or are admitted at the recipient. The P4 integration endpoint is an unauthenticated internal demo interface and must not be exposed outside the trusted local stack.
 
@@ -201,7 +202,7 @@ P2/P3 integration was merged through [PR #4](https://github.com/ash-01xor/FrostF
 | --- | --- | --- |
 | ProcessDoctor refresh | Completed manually by the user for review-18 logs | P2 3/3 and P3 4/4 conforming variants; zero violations. See `compliance/foundation/review-18/processdoctor.json` |
 | Current live TomTom recheck | P2 owner; valid key and connectivity | Retain provider provenance and sanitized responses; failure must yield unavailable ETA. Earlier live provider evidence remains historical |
-| Real P4 investigation consumer and authorised dispositions | Abid; foundation-compatible executable DCR service | Consume the durable handoff, preserve the hold on delivery failure and issue dispositions for the current incident; test releases are stand-ins |
+| P4 review and merge (consumer, dispositions, API check, full-stack repository-mode live run `ed88d16d` and ProcessDoctor 4/4 conforming done) | Abid; reviewers | PR #12 review approval and merge |
 | External physical simulator and cooling/recovery CEP | Shared owners to be assigned | Remain future work. The foundation implements simulated container assessment and Open-Meteo current conditions; see the contract below |
 
 The local P3 receiver contract is implemented and tested. If replacing it with an external receiver, repeat the delivery-ID retry, envelope validation and receipt-gate checks against that receiver. Offline tests stub external services; they do not establish a new provider or consumer connection.
@@ -227,7 +228,7 @@ Delivery progress and quality permission are separate. Goods may be physically r
 
 A small persistent shared registry holds shipment mappings and quality status. Camunda and DCR retain their own workflow state. P3 checks current permission transactionally at the admission action rather than trusting an old screen or process variable.
 
-P3's internal quality-status receiver persists a hold/disposition in the shared registry and resumes a held P3 process after a current-incident release or rejection. The P4 incident handler that creates the DCR case and owns those decisions remains to be implemented. The registry serializes hold changes and admission decisions per shipment so two competing requests cannot bypass the rule.
+P3's internal quality-status receiver persists a hold/disposition in the shared registry and resumes a held P3 process after a current-incident release or rejection. The P4 incident handler (`deployer/quality.py`) that creates the DCR case and owns those decisions remains to be implemented. The registry serializes hold changes and admission decisions per shipment so two competing requests cannot bypass the rule.
 
 There is at most one active investigation per shipment. Further alerts add evidence to that investigation. After closure and a newly qualifying pattern, create a new incident. Only a confirmed decision for the current incident can change its hold; a delayed release from an older incident cannot clear a newer one.
 
@@ -287,4 +288,4 @@ The [foundation specification](PRE-P4-FOUNDATION.md) defines the approved profil
 
 Loading verification starts a session with an immutable profile. Physical receipt closes it at a final sequence and promptly sends P2 acknowledgement. `p3-finalize-monitoring` keeps P3 at an explicit service task until evaluation reaches closure, or a 20-second timeout establishes a durable uncertainty hold. Admission rechecks closed/finalized monitoring and current quality permission in one transaction. Legacy shipments without a snapshot are labelled legacy/unmonitored and retain their original engine model.
 
-See [Abid’s P4 foundation handover](P4-FOUNDATION-HANDOVER.md) for intake, durable acknowledgements, assessed evidence versions, fixtures and reintegration requirements.
+See [Abid’s P4 foundation handover](P4-FOUNDATION-HANDOVER.md) for intake, durable acknowledgements, assessed evidence versions, fixtures and reintegration requirements. The replacement P4 PR implements that boundary; its behaviour is summarised in the [P4 guide](P4-QUALITY-INVESTIGATION.md#contract-v1-behaviour-enforced-by-the-service).

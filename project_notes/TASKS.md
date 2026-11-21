@@ -1,15 +1,17 @@
 # Team task board
 
-**18 November sequencing decision:** Abid’s P4 implementation exists in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and Git history. The pre-P4 baseline was restored by PR #11 while foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) is reviewed. P4 integration is deferred until that foundation is merged and smoke-tested; references below to outstanding P4 work mean adaptation and reintegration. See [sequencing and verification](../docs/P4-INTEGRATION-SEQUENCING.md). PR #11 is merged; PR #9 still requires separate review and explicit merge approval.
+**Independent review — 21 November 2026:** all 118 offline tests and four live P4 scenarios passed (run `ccd5079d`, local DCR, Zeebe/Siddhi, fresh matched `review21` data). See [verification record](../compliance/p4/integration-review21.json). Repository-mode and ProcessDoctor evidence remains separately scoped to the owner’s recorded runs. Review, merge and exact merged-main smoke outcomes are recorded on [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12). Earlier checkpoints below retain their original dates and scope.
+
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12) restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](../docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md). Review, merge and post-merge verification outcomes are recorded on PR #12.
 
 **Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
 | Work | Owner | Status | Main dependency |
 | --- | --- | --- | --- |
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
-| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer adaptation remains outstanding |
+| P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer in replacement PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED IN PR #10 / INTEGRATION DEFERRED | Merge and verify foundation #9, then adapt in a new PR |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); final review, approved merge and merged-main smoke |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
@@ -24,8 +26,8 @@
 - [x] Merge main into the shared foundation branch (`4b09482`), retaining history and Arunima's screenshots; add the [P4 handover](../docs/P4-FOUNDATION-HANDOVER.md) and eight producer-checked fixtures (`8d13c3e`). One empty-default P4 URL; temperature remains CLI 18.
 - [x] Fresh verification at `8d13c3e`: 82 offline regressions; sequential P1/P2/P3; four container scenarios; six local Siddhi weather comparisons; closing outage/restore; 21-second restart; exact inventory/end states and local replay. Three legacy P4 contract failures reproduced offline with substituted DCR. See [18 November report](../compliance/foundation-review-18.json).
 - [x] User completed manual ProcessDoctor checks for the review-18 logs: P1 3/3, P2 3/3, P3 4/4 and container 5/5 conforming variants; zero violations, coverage 100. [Screenshots and model/log hashes](../compliance/foundation/review-18/processdoctor.json) recorded.
-- [ ] Review PR #9; merge only after its own explicit approval. This checkpoint does not authorize that merge.
-- [ ] After approved foundation merge, rebuild merged main and record integrated smoke at its exact revision. Abid then adapts P4 in a replacement PR, preserving option 18 for temperature simulation and using option 19 for investigation.
+- [x] PR #9 reviewed and merged as `ae941cc`.
+- [ ] After approved foundation merge, rebuild merged main and record integrated smoke at its exact revision. Abid's replacement PR (below) restores and adapts P4, preserving option 18 for temperature simulation and using option 19 for investigation.
 
 P4’s original models, implementation and evidence remain accessible in [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) at `45f654b` / merge `af3c68c`. They are historical evidence, not verification of the combined foundation/P4 system. P5/P6 remain later work. Pre-existing registries and named engine volumes are retained; fresh matched `p1-18`, `p2-18` and `p3-18` datasets hold this review execution. The final stack uses consumed `p3-18` data; see the run guide before resuming.
 
@@ -39,7 +41,7 @@ P4’s original models, implementation and evidence remain accessible in [PR #10
 - [x] Complete integrated foundation verification and local replay; record exact revisions, input modes, images and artifact hashes in the [verification report](../compliance/foundation-verification.json).
 - [x] Review-18 foundation external conformance completed manually by the user; see the current checkpoint above. Earlier agent browser access failed.
 - [ ] Review integration PR, then merge only with explicit authorization; smoke-test merged main afterward.
-- [ ] Abid adapts his existing PR #10 consumer/investigation only after foundation review, authorised merge and merged-main smoke. P5/P6 remain later work.
+- [x] Abid restores and adapts the PR #10 consumer/investigation in the replacement PR after the foundation merge (`ae941cc`). P5/P6 remain later work.
 
 The repair checkpoint below is historical; its reports identify the original revisions. Foundation results and external pending work are recorded separately.
 
@@ -53,7 +55,7 @@ The repair checkpoint below is historical; its reports identify the original rev
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
 - [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
-- [ ] Abid: adapt the existing PR #10 DCR investigation to the verified foundation in a new PR. Test-harness quality dispositions do not implement P4.
+- [x] Abid: PR #10 DCR investigation restored and adapted to the foundation in the replacement PR (see P4 section). Test-harness quality dispositions remain stand-ins.
 
 Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
 
@@ -134,13 +136,13 @@ The catalogue and scope assumptions are documented in [the run guide](../docs/RU
 - [x] PR review (b): the decision worker returns `routeId`/`routeRevision`; the live check confirms Operate's exported variables match the shipment API.
 - [x] PR review (d), extended by the duplicate-event repair: Siddhi alerts only after three distinct consecutive fresh late ETAs within 180 s; `check_siddhi_risk_rule.py` covers isolated, stale and gap-broken readings.
 - [x] PR review (c), P2 side: accepting a delivery risk persists a `PENDING` quality hold and a durable P4 handoff in one transaction; admission stays blocked until the current incident is released (offline and live).
-- [ ] **P4 dependency (Abid; adaptation deferred):** consume the queued `DeliveryRiskIncident` handoff (`p4-http` outbox, `P4_INCIDENT_URL`) into the DCR investigation and issue the authorised release. Until then, release is the stand-in `POST /integrations/p4/quality-status` / CLI option 17.
+- [x] **P4 dependency (Abid):** the queued handoff (`p4-http` outbox, `P4_INCIDENT_URL`) is consumed by the P4 DCR investigation in the replacement PR, which issues dispositions with the assessed evidence version. The stand-in `POST /integrations/p4/quality-status` / CLI option 17 remains for P3-only checks.
 - [x] Current foundation TomTom request succeeds (HTTP 200, 17 November 2026); earlier HTTP 401 observations remain historical.
 
 Historical state (commit `d613960`; superseded by the repair checkpoint above):
 - **Implemented and verified:** the Siddhi persistence rule (three consecutive fresh late ETAs), destination-preserving route changes, Camunda route variables, the P3 receipt gate, and the delivery-risk quality hold.
 - **P2 DCR:** rules and log are delivered; local replay passes. ProcessDoctor needs a re-run for the latest log.
-- **Outstanding:** the P4 consumer of the hold handoff, a TomTom re-check with a valid key, and the external simulator (team decision).
+- **Outstanding:** a TomTom re-check with a valid key and the external simulator (team decision). The P4 consumer of the hold handoff is in replacement PR #12.
 
 See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where). P2/P3 fixes and integration were merged through [#4](https://github.com/ash-01xor/FrostFlow/pull/4) and [#5](https://github.com/ash-01xor/FrostFlow/pull/5); smoke tests/evidence through [#6](https://github.com/ash-01xor/FrostFlow/pull/6). External integration owners and P4–P6 follow-up links still require team coordination. See the [file-by-file handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover).
 
@@ -161,13 +163,23 @@ See the [evidence table](../docs/RUNNING.md#evidence-what-was-verified-and-where
 
 ## P4 — Quality investigation (knowledge-intensive DCR process)
 
-- [ ] Author a real DCR graph with flexible evidence order and required assessment/disposition.
-- [ ] Persist hold before creating the DCR case; keep it if DCR creation fails.
-- [ ] Coalesce repeated alerts into one active incident; create a new episode after closure.
-- [ ] Enforce requested-check obligations and prevent premature closure.
-- [ ] Send cooling command through Siddhi; collect acknowledgement and recovery evidence.
-- [ ] Record authorised RELEASE/REPLACE/RETURN and notify P3/P5 for the current incident.
-- [ ] Prove blocked DCR actions, alternative evidence order and the stock-admission gate.
+Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = revert of `31ad23b` on `ae941cc`). Details: [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md).
+
+- [x] DCR graph (16 activities, 3 groups, 83 flat relations) with flexible evidence order and required assessment/disposition; 3 425 reachable markings, no deadlock, no dead activity.
+- [x] Consume `DeliveryRiskDetected` (legacy and v1) and `AssessmentRequested` (four reasons); persist the full request; acknowledge `{deliveryId, status}`; exact retries are duplicates, conflicting reuse fails; requests not matching the foundation outbox are refused.
+- [x] The foundation holds before the handoff; if DCR is unavailable the request is kept and case opening retried.
+- [x] One incident collects all its evidence versions (`AddAlertEvidence` makes reassessment due); closed/`REJECTED` incidents only record later evidence.
+- [x] `AssessEvidence` records the evidence version seen before DCR executed it; dispositions use it as `expectedEvidenceVersion`; refused (stale) dispositions are recorded unapplied and require reassessment; transient failures keep one durable decision identity.
+- [x] PR #12 first review (changes requested, 19 November): assessment/version race, release before DCR confirmation, lost-response recovery, conflicting officer retries and the empty `P4_INCIDENT_URL` default fixed with regressions; stale docs reconciled. See [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#first-review-of-pr-12-19-november).
+- [x] Combined live run repeated on the fixed code: `d2558070` (`3576812`, fresh `p4-03` data) and, after the second review pass, `ed88d16d` (`35d154a`, fresh `p4-04` data, owner's Mac) passed with P4 executing in the dcrgraphs.net repository (graph `2015919`, simulations `2110252`–`2110255` for the final run).
+- [x] ProcessDoctor (owner, 20 Nov): `ed88d16d` log against `compliance/p4/rules.xml` 4/4 conforming, 0 violations, coverage 100.
+- [x] Enforce requested-check and cooling-answer obligations and prevent premature closure (DCR refuses with 409).
+- [x] Offline proof on new monitored shipments: release after receipt during a hold, replace, return, newer-evidence reassessment, duplicate delivery, DCR outage recovery, handover fixtures in order, legacy messages. CLI 18 temperature / 19 investigation.
+- [x] Combined foundation/P4 live run `fd021988` (`check_p4_investigation.py`, macOS arm64, fresh `p4-02` data, commit `95e4a85`, local engine); now historical (`compliance/p4/historical/`), like PR #10 run `900821e9`.
+- [x] dcrgraphs.net Active Repository API check (`check_dcr_repository.py`, graph `2015919`, simulation `2109421`): every step matches the local engine; early close refused. Nesting groups listed by the API are now ignored.
+- [x] ProcessDoctor (owner, 19 Nov): live log `fd021988` (now historical) against `compliance/p4/rules.xml` 4/4 conforming, 0 violations, coverage 100. The compliance model is the executed graph without roles: ProcessDoctor reports cost Infinity against the role-assigned graph.
+- [x] Full-stack run with P4 in repository mode: live runs `d2558070` and `ed88d16d`.
+- [ ] Cooling command through Siddhi and recovery evidence contracts (shared CEP work); P5 consumption of RELEASE/REPLACE/RETURN.
 
 ## P5 — Corrective fulfilment
 
