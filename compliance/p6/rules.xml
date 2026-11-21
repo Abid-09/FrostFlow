@@ -1,99 +1,260 @@
-<?xml version='1.0' encoding='utf-8'?>
-<dcrgraph title="P6 supplier claim resolution compliance" dataTypesStatus="hide">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dcrgraph>
   <specification>
     <resources>
       <events>
-        <event id="ClaimableLossRecorded">
+        <event id="Event_1">
           <custom>
-            <eventData />
             <visualization>
-              <location xLoc="60" yLoc="60" />
-              <size width="130" height="150" />
+              <location xLoc="12" yLoc="22"/>
+              <size width="130" height="150"/>
             </visualization>
           </custom>
         </event>
-        <event id="ClaimEvidenceAssembled">
+        <event id="Event_2">
           <custom>
-            <eventData />
             <visualization>
-              <location xLoc="320" yLoc="60" />
-              <size width="130" height="150" />
+              <location xLoc="192" yLoc="22"/>
+              <size width="130" height="150"/>
             </visualization>
           </custom>
         </event>
-        <event id="SupplierClaimSubmitted">
+        <event id="Event_3">
           <custom>
-            <eventData />
             <visualization>
-              <location xLoc="580" yLoc="60" />
-              <size width="130" height="150" />
+              <location xLoc="372" yLoc="22"/>
+              <size width="130" height="150"/>
             </visualization>
           </custom>
         </event>
-        <event id="SupplierResponseRecorded">
+        <event id="Event_4">
           <custom>
-            <eventData />
             <visualization>
-              <location xLoc="840" yLoc="60" />
-              <size width="130" height="150" />
+              <location xLoc="552" yLoc="22"/>
+              <size width="130" height="150"/>
             </visualization>
           </custom>
         </event>
-        <event id="SupplierClaimClosed">
+        <event id="Event_5">
           <custom>
-            <eventData />
             <visualization>
-              <location xLoc="1100" yLoc="60" />
-              <size width="130" height="150" />
+              <location xLoc="732" yLoc="22"/>
+              <size width="130" height="150"/>
             </visualization>
           </custom>
         </event>
       </events>
+      <subProcesses/>
       <labels>
-        <label id="ClaimableLossRecorded" />
-        <label id="ClaimEvidenceAssembled" />
-        <label id="SupplierClaimSubmitted" />
-        <label id="SupplierResponseRecorded" />
-        <label id="SupplierClaimClosed" />
+        <label id="ClaimableLossRecorded"/>
+        <label id="ClaimEvidenceAssembled"/>
+        <label id="SupplierClaimSubmitted"/>
+        <label id="SupplierResponseRecorded"/>
+        <label id="SupplierClaimClosed"/>
       </labels>
       <labelMappings>
-        <labelMapping eventId="ClaimableLossRecorded" labelId="ClaimableLossRecorded" />
-        <labelMapping eventId="ClaimEvidenceAssembled" labelId="ClaimEvidenceAssembled" />
-        <labelMapping eventId="SupplierClaimSubmitted" labelId="SupplierClaimSubmitted" />
-        <labelMapping eventId="SupplierResponseRecorded" labelId="SupplierResponseRecorded" />
-        <labelMapping eventId="SupplierClaimClosed" labelId="SupplierClaimClosed" />
+        <labelMapping eventId="Event_1" labelId="ClaimableLossRecorded"/>
+        <labelMapping eventId="Event_2" labelId="ClaimEvidenceAssembled"/>
+        <labelMapping eventId="Event_3" labelId="SupplierClaimSubmitted"/>
+        <labelMapping eventId="Event_4" labelId="SupplierResponseRecorded"/>
+        <labelMapping eventId="Event_5" labelId="SupplierClaimClosed"/>
       </labelMappings>
+      <variables/>
+      <expressions/>
+      <variableAccesses>
+        <readAccessess/>
+        <writeAccessess/>
+      </variableAccesses>
     </resources>
     <constraints>
+      <conditions>
+        <condition sourceId="Event_1" targetId="Event_2">
+          <custom>
+            <waypoints>
+              <waypoint x="142" y="134.5"/>
+              <waypoint x="192" y="134.5"/>
+            </waypoints>
+            <id id="Relation_1"/>
+          </custom>
+        </condition>
+        <condition sourceId="Event_2" targetId="Event_3">
+          <custom>
+            <waypoints>
+              <waypoint x="322" y="134.5"/>
+              <waypoint x="372" y="134.5"/>
+            </waypoints>
+            <id id="Relation_2"/>
+          </custom>
+        </condition>
+        <condition sourceId="Event_3" targetId="Event_4">
+          <custom>
+            <waypoints>
+              <waypoint x="502" y="134.5"/>
+              <waypoint x="552" y="134.5"/>
+            </waypoints>
+            <id id="Relation_3"/>
+          </custom>
+        </condition>
+        <condition sourceId="Event_4" targetId="Event_5">
+          <custom>
+            <waypoints>
+              <waypoint x="682" y="134.5"/>
+              <waypoint x="732" y="134.5"/>
+            </waypoints>
+            <id id="Relation_4"/>
+          </custom>
+        </condition>
+      </conditions>
       <responses>
-        <response sourceId="ClaimableLossRecorded" targetId="ClaimEvidenceAssembled" />
-        <response sourceId="ClaimEvidenceAssembled" targetId="SupplierClaimSubmitted" />
-        <response sourceId="SupplierClaimSubmitted" targetId="SupplierResponseRecorded" />
-        <response sourceId="SupplierResponseRecorded" targetId="SupplierClaimClosed" />
+        <response sourceId="Event_1" targetId="Event_2">
+          <custom>
+            <waypoints>
+              <waypoint x="142" y="97"/>
+              <waypoint x="192" y="97"/>
+            </waypoints>
+            <id id="Relation_5"/>
+          </custom>
+        </response>
+        <response sourceId="Event_2" targetId="Event_3">
+          <custom>
+            <waypoints>
+              <waypoint x="322" y="97"/>
+              <waypoint x="372" y="97"/>
+            </waypoints>
+            <id id="Relation_6"/>
+          </custom>
+        </response>
+        <response sourceId="Event_3" targetId="Event_4">
+          <custom>
+            <waypoints>
+              <waypoint x="502" y="97"/>
+              <waypoint x="552" y="97"/>
+            </waypoints>
+            <id id="Relation_7"/>
+          </custom>
+        </response>
+        <response sourceId="Event_4" targetId="Event_5">
+          <custom>
+            <waypoints>
+              <waypoint x="682" y="97"/>
+              <waypoint x="732" y="97"/>
+            </waypoints>
+            <id id="Relation_8"/>
+          </custom>
+        </response>
       </responses>
-      <includes>
-        <include sourceId="ClaimableLossRecorded" targetId="ClaimEvidenceAssembled" />
-        <include sourceId="ClaimEvidenceAssembled" targetId="SupplierClaimSubmitted" />
-        <include sourceId="SupplierClaimSubmitted" targetId="SupplierResponseRecorded" />
-        <include sourceId="SupplierResponseRecorded" targetId="SupplierClaimClosed" />
-      </includes>
+      <coresponces/>
       <excludes>
-        <exclude sourceId="ClaimableLossRecorded" targetId="ClaimableLossRecorded" />
-        <exclude sourceId="ClaimEvidenceAssembled" targetId="ClaimEvidenceAssembled" />
-        <exclude sourceId="SupplierClaimSubmitted" targetId="SupplierClaimSubmitted" />
-        <exclude sourceId="SupplierResponseRecorded" targetId="SupplierResponseRecorded" />
-        <exclude sourceId="SupplierClaimClosed" targetId="SupplierClaimClosed" />
+        <exclude sourceId="Event_1" targetId="Event_1">
+          <custom>
+            <waypoints>
+              <waypoint x="55.333333333333336" y="22"/>
+              <waypoint x="55.333333333333336" y="12"/>
+              <waypoint x="98.66666666666667" y="12"/>
+              <waypoint x="98.66666666666667" y="22"/>
+            </waypoints>
+            <id id="Relation_9"/>
+          </custom>
+        </exclude>
+        <exclude sourceId="Event_2" targetId="Event_2">
+          <custom>
+            <waypoints>
+              <waypoint x="235.33333333333334" y="22"/>
+              <waypoint x="235.33333333333334" y="12"/>
+              <waypoint x="278.6666666666667" y="12"/>
+              <waypoint x="278.6666666666667" y="22"/>
+            </waypoints>
+            <id id="Relation_10"/>
+          </custom>
+        </exclude>
+        <exclude sourceId="Event_3" targetId="Event_3">
+          <custom>
+            <waypoints>
+              <waypoint x="415.3333333333333" y="22"/>
+              <waypoint x="415.3333333333333" y="12"/>
+              <waypoint x="458.6666666666667" y="12"/>
+              <waypoint x="458.6666666666667" y="22"/>
+            </waypoints>
+            <id id="Relation_11"/>
+          </custom>
+        </exclude>
+        <exclude sourceId="Event_4" targetId="Event_4">
+          <custom>
+            <waypoints>
+              <waypoint x="595.3333333333334" y="22"/>
+              <waypoint x="595.3333333333334" y="12"/>
+              <waypoint x="638.6666666666666" y="12"/>
+              <waypoint x="638.6666666666666" y="22"/>
+            </waypoints>
+            <id id="Relation_12"/>
+          </custom>
+        </exclude>
+        <exclude sourceId="Event_5" targetId="Event_5">
+          <custom>
+            <waypoints>
+              <waypoint x="775.3333333333334" y="22"/>
+              <waypoint x="775.3333333333334" y="12"/>
+              <waypoint x="818.6666666666666" y="12"/>
+              <waypoint x="818.6666666666666" y="22"/>
+            </waypoints>
+            <id id="Relation_13"/>
+          </custom>
+        </exclude>
       </excludes>
+      <includes>
+        <include sourceId="Event_1" targetId="Event_2">
+          <custom>
+            <waypoints>
+              <waypoint x="142" y="59.5"/>
+              <waypoint x="192" y="59.5"/>
+            </waypoints>
+            <id id="Relation_14"/>
+          </custom>
+        </include>
+        <include sourceId="Event_2" targetId="Event_3">
+          <custom>
+            <waypoints>
+              <waypoint x="322" y="59.5"/>
+              <waypoint x="372" y="59.5"/>
+            </waypoints>
+            <id id="Relation_15"/>
+          </custom>
+        </include>
+        <include sourceId="Event_3" targetId="Event_4">
+          <custom>
+            <waypoints>
+              <waypoint x="502" y="59.5"/>
+              <waypoint x="552" y="59.5"/>
+            </waypoints>
+            <id id="Relation_16"/>
+          </custom>
+        </include>
+        <include sourceId="Event_4" targetId="Event_5">
+          <custom>
+            <waypoints>
+              <waypoint x="682" y="59.5"/>
+              <waypoint x="732" y="59.5"/>
+            </waypoints>
+            <id id="Relation_17"/>
+          </custom>
+        </include>
+      </includes>
+      <milestones/>
+      <updates/>
+      <spawns/>
     </constraints>
   </specification>
   <runtime>
     <marking>
-      <executed />
+      <globalStore/>
+      <executed/>
       <included>
-        <event id="ClaimableLossRecorded" />
+        <event id="Event_1"/>
+        <event id="Event_2"/>
       </included>
       <pendingResponses>
-        <event id="ClaimableLossRecorded" />
+        <event id="Event_1"/>
+        <event id="Event_2"/>
       </pendingResponses>
     </marking>
   </runtime>
