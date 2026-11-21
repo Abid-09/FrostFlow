@@ -63,7 +63,7 @@ class CorrectiveEffects(unittest.TestCase):
         self.db.record_corrective_collection(self.cid, 555, accepted["event"])
         return accepted
 
-    def child_outcome(self, passed=True):
+    def child_outcome(self, passed=True, quality_rejected=False):
         """Run actual P1/P2/P3 registry effects on the linked monitored replacement."""
         sid, key, p2key, p3key = "S-replacement", 666, 888, 9999
         self.db.check_stock(sid, key, 66601)
@@ -88,12 +88,23 @@ class CorrectiveEffects(unittest.TestCase):
             self.db.acknowledge_container({**{k: observation[k] for k in ("shipmentId", "journeyId", "eventId", "sequence")},
                                           "evaluatedAtMillis": int(seconds(observation["occurredAt"]) * 1000),
                                           "excursion": excursion, "combined": False})
+        if quality_rejected:
+            record = self.db.get(sid)
+            self.db.queue_delivery_risk(sid, "risk-child", dict(eta="2026-12-03T14:00:00Z",
+                deliveryDeadline=record["deliveryDeadline"], occurredAt=p4.iso(self.clock),
+                reason="test replacement quality hold"))
+            self.deliver_p4()
         arrival = self.db.queue_transport_event(sid, "ShipmentArrived", "arr-child", p4.iso(self.clock),
                                                {"recipientId": "C-01"}, source="p2-simulator")
         self.db.record_arrival(sid, p2key, arrival["event"])
         notification = next(m["variables"]["event"] for m in self.db.pending_messages("p3-http")
                             if m["variables"]["event"]["shipmentId"] == sid)
-        self.db.accept_p3_arrival(notification)
+        self.assertEqual(notification["replacementForCorrectiveId"], self.cid)
+        with self.assertRaises(Conflict):
+            self.db.accept_p3_arrival({**notification, "replacementForCorrectiveId": "forged"})
+        response = self.http.post("/integrations/p3/arrival", json={"event": notification},
+                                  headers={"Idempotency-Key": notification["deliveryId"]})
+        self.assertEqual(response.status_code, 202, response.json)
         self.db.record_p3_arrival(sid, p3key, notification)
         receipt = self.db.queue_p3_input(sid, "GoodsReceived", "receipt-child", p4.iso(self.clock),
                                           dict(recipientId="C-01", quantityReceived=3, receiver="receiver"))
@@ -103,6 +114,13 @@ class CorrectiveEffects(unittest.TestCase):
         self.db.record_p3_inspection(sid, p3key, inspection["event"])
         if passed:
             self.db.finalize_monitoring(sid)
+            self.db.admit_p3_stock(sid, p3key)
+        if quality_rejected:
+            incident = self.db.get(sid)["qualityIncidentId"]
+            self.run_path(["ReviewTemperatureLog", "AssessEvidence", "DecideReturn"], incident=incident)
+            status = next(m["variables"]["qualityStatusEvent"] for m in self.db.pending_messages()
+                          if m["name"] == "QualityStatusChanged" and m["correlationKey"] == sid)
+            self.db.record_p3_quality_status(sid, p3key, status)
             self.db.admit_p3_stock(sid, p3key)
         return next(m["variables"]["replacementOutcomeEvent"] for m in self.db.pending_messages()
                     if m["name"] == "P5ReplacementOutcome")
@@ -183,6 +201,20 @@ class CorrectiveEffects(unittest.TestCase):
         self.assertEqual(self.db.get_corrective(self.cid)["status"], "FAILED")
         self.assertEqual(self.db.receiving_inventory()["available"], 0)
 
+    def test_replacement_own_p4_return_preserves_parent_fulfilment_link(self):
+        case = self.authorize()
+        self.arrange(case)
+        outcome = self.child_outcome(quality_rejected=True)
+        child = self.db.get("S-replacement")
+        self.assertEqual(child["replacementForCorrectiveId"], self.cid)
+        self.assertNotEqual(child["correctiveId"], self.cid)
+        self.assertEqual(len(self.db.corrective_cases()), 2)
+        self.db.record_replacement_dispatch(self.cid, 555)
+        self.db.record_replacement_outcome(self.cid, 555, outcome)
+        self.collect()
+        self.assertEqual(self.db.complete_corrective(self.cid, 555), {"correctiveSucceeded": False})
+        self.assertEqual(self.db.get_corrective(child["correctiveId"])["originalShipmentId"], "S-replacement")
+
     def test_cancelled_shortage_replacement_is_failed_and_releases_vehicle(self):
         case = self.authorize()
         self.arrange(case)
@@ -210,6 +242,24 @@ class CorrectiveEffects(unittest.TestCase):
             self.db.queue_corrective_input(self.cid, "ArrangementRequested", "a1", p4.iso(self.clock), {**payload, "collector": "other"})
         with self.assertRaises(Conflict):
             self.db.queue_corrective_input(self.cid, "ReturnCollected", "a1", p4.iso(self.clock), payload)
+
+    def test_refused_arrangement_rolls_back_child_and_does_not_reserve_input(self):
+        case = self.authorize(received=False)
+        self.register(case)
+        payload = self.arrangement(case)
+        from datetime import datetime, timedelta
+        before_authorization = p4.iso(datetime.fromisoformat(case["authorization"]["occurredAt"].replace("Z", "+00:00")) - timedelta(seconds=1))
+        with self.assertRaises(Conflict):
+            self.db.queue_corrective_input(self.cid, "ArrangementRequested", "a1", before_authorization, payload)
+        payload["replacement"]["vehicleId"] = "V-01"  # still reserved by the moving original
+        with self.assertRaises(Conflict):
+            self.db.queue_corrective_input(self.cid, "ArrangementRequested", "a1", p4.iso(self.clock), payload)
+        self.assertEqual(self.db.inventory()["shipmentCount"], 1)
+        self.assertEqual(self.db.get_corrective(self.cid)["inputs"], {})
+        self.assertEqual(self.db.get_corrective(self.cid)["status"], "AWAITING_ARRANGEMENT")
+        payload["replacement"]["vehicleId"] = "V-02"
+        self.db.queue_corrective_input(self.cid, "ArrangementRequested", "a1", p4.iso(self.clock), payload)
+        self.assertEqual(self.db.inventory()["shipmentCount"], 2)
 
     def test_p4_transaction_failure_rolls_back_authorization_and_retry_recovers(self):
         self.start_p2_transport()

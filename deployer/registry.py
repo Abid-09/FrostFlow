@@ -200,7 +200,7 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
                 ),
             },
         )
-        for optional in ("originalShipmentId", "incidentId", "correctiveId"):
+        for optional in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId"):
             if optional in record:
                 event[optional] = record[optional]
         if producer_event_id is not None:
@@ -334,7 +334,7 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
 
     def create(self, data):
         with self.transaction() as db:
-            if any(field in data for field in ("originalShipmentId", "incidentId", "correctiveId")):
+            if any(field in data for field in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId")):
                 raise Conflict("linked replacements must be arranged through P5")
             return self.create_in_transaction(db, data)
 
@@ -1197,7 +1197,7 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
                 "occurredAt": accepted["occurredAt"],
                 "recordedAt": accepted["recordedAt"],
             }
-            for ref in ("originalShipmentId", "incidentId"):
+            for ref in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId"):
                 if ref in record:
                     notification[ref] = record[ref]
             self.enqueue(db, notification_id, "ShipmentArrivalNotification", shipment_id,
@@ -1244,6 +1244,8 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
                 or arrival.get("producerEventId") != notification["sourceEventId"]
                 or arrival.get("occurredAt") != notification["occurredAt"]
                 or arrival.get("recordedAt") != notification["recordedAt"]
+                or any(arrival.get(ref) != notification.get(ref) for ref in (
+                    "originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId"))
                 or any(
                     arrival.get("payload", {}).get(field) != value
                     for field, value in notification["arrival"].items()

@@ -42,13 +42,16 @@ def engine_end(es, key, element):
     return wait_for(f"exported engine end {key}/{element}", lambda: engine_record(es, key, element))
 
 
-def load_and_dispatch(base, sid):
+def load_and_dispatch(base, sid, excursion=False):
     path = "/shipments/" + sid
     wait_for("loading ready", lambda: (r := http(base, path)[1]).get("state") == "AWAITING_LOADING"
              and not r.get("pendingCommand"))
     require(http(base, path + "/verify-loading", dict(actor="p5-runner", quantityChecked=True,
                                                        packagingChecked=True, vehicleReady=True)), 202, "replacement loading")
     wait_for("replacement loading processed", lambda: http(base, path)[1].get("state") == "AWAITING_DISPATCH")
+    if excursion:
+        require(http(base, path + "/simulation/temperature", dict(commandId="temperature-" + sid,
+                     actor="p5-runner", scenario="sustained-excursion")), 202, "replacement excursion")
     require(http(base, path + "/dispatch", {"actor": "p5-runner"}), 202, "replacement dispatch")
 
 
@@ -116,23 +119,33 @@ def run_case(base, es, run_id, index, scenario, definition):
     wait_for("arrangement worker", lambda: get_case()["status"] == "IN_PROGRESS")
     collection["occurredAt"] = timestamp()
     refuse("/collect", {**collection, "bookingReference": "WRONG"})
-    replacement, child_ends = None, {}
+    replacement, child_ends, followup = None, {}, None
     if action == "REPLACE":
         if outcome == "CANCELLED":
             wait_for("replacement P1 shortage wait", lambda: http(base, "/shipments/" + replacement_id)[1].get("state") == "WAITING_STOCK")
             require(http(base, "/shipments/" + replacement_id + "/cancel", {"actor": "p5-runner"}), 202, "cancel shortage replacement")
             wait_for("P5 cancellation processed", lambda: get_case()["replacementOutcome"] == "CANCELLED")
         else:
-            load_and_dispatch(base, replacement_id)
+            load_and_dispatch(base, replacement_id, excursion=outcome == "REJECTED")
             wait_for("P5 dispatched replacement", lambda: get_case()["replacementOutcome"] == "AWAITING_RECEIVING")
             assert get_case()["status"] == "IN_PROGRESS", "dispatch cannot complete corrective work"
-            receive(base, replacement_id, quantity, passed=outcome == "ADMITTED")
+            if outcome == "REJECTED":
+                child_case = Case(base, replacement_id)
+                child_case.incident_id = wait_for("replacement Siddhi hold", lambda: child_case.get().get("qualityIncidentId"))
+                wait_for("replacement P4 opened", lambda: child_case.incident().get("status") == "OPEN")
+                receive(base, replacement_id, quantity)
+                wait_for("replacement P3 on hold", lambda: child_case.get().get("p3Status") == "ON_HOLD")
+                for step in ("ReviewTemperatureLog", "AssessEvidence", "DecideReturn", "CloseInvestigation"):
+                    child_case.step(step)
+            else:
+                receive(base, replacement_id, quantity)
             wait_for("P5 receiving outcome", lambda: get_case()["replacementOutcome"] == outcome)
         assert get_case()["status"] == "IN_PROGRESS", "replacement outcome cannot replace original collection"
         replacement = require(http(base, "/shipments/" + replacement_id), 200, "replacement view")
         assert replacement["originalShipmentId"] == sid and replacement["incidentId"] == original.incident_id
         for field in ("productId", "batchId", "recipientId", "quantity"):
             assert replacement[field] == original.get()[field], field
+        assert replacement["replacementForCorrectiveId"] == cid
         child_ends["p1"] = engine_end(es, replacement["processInstanceKey"],
                                      "ShipmentCancelled" if outcome == "CANCELLED" else "PreparationCompleted")
         activated = wait_for("P1 called child export", lambda: engine_record(es, replacement["processInstanceKey"],
@@ -142,6 +155,27 @@ def run_case(base, es, run_id, index, scenario, definition):
         if outcome != "CANCELLED":
             child_ends["p3"] = engine_end(es, replacement["p3ProcessInstanceKey"], "StockAdmitted" if outcome == "ADMITTED" else "GoodsRejected")
             child_ends["p2"] = engine_end(es, replacement["p2ProcessInstanceKey"], "TransportCompleted")
+        if outcome == "REJECTED":
+            # P4's return for the replacement creates its own corrective case. Finish
+            # that collection too, while proving the parent receives its failed result.
+            nested_id = replacement["correctiveId"]
+            assert nested_id != cid
+            nested_path = "/corrective-fulfilments/" + nested_id
+            nested_view = lambda: http(base, nested_path)[1]
+            wait_for("follow-up return registered", lambda: nested_view()["status"] == "AWAITING_ARRANGEMENT")
+            booking = dict(eventId="nested-arrange-" + sid, occurredAt=timestamp(), actor="p5-planner",
+                           collector="demo-collector", bookingReference="NESTED-" + sid,
+                           scheduledAt=iso(datetime.now(timezone.utc) + timedelta(minutes=5)))
+            require(http(base, nested_path + "/arrange", booking), 202, "book rejected replacement return")
+            wait_for("follow-up return booked", lambda: nested_view()["status"] == "IN_PROGRESS")
+            require(http(base, nested_path + "/collect", dict(eventId="nested-collect-" + sid,
+                         occurredAt=timestamp(), actor="p5-receiver", collector="demo-collector",
+                         bookingReference="NESTED-" + sid, quantityCollected=quantity)), 202, "collect rejected replacement")
+            nested = wait_for("follow-up return complete", lambda: c if (c := nested_view())["status"] == "COMPLETED" else None)
+            followup = dict(scenario="replacement-rejected-followup-return", correctiveId=nested_id, case=nested,
+                            investigation=child_case.incident(),
+                            events=require(http(base, child_case.url + "/events"), 200, "follow-up journal"),
+                            engineRecords=dict(p5=engine_end(es, nested["processInstanceKey"], "FulfilmentCompleted")))
     collection["occurredAt"] = timestamp()
     collected = require(http(base, path + "/collect", collection), 202, "acknowledge original collection")
     terminal = "COMPLETED" if outcome in (None, "ADMITTED") else "FAILED"
@@ -157,7 +191,7 @@ def run_case(base, es, run_id, index, scenario, definition):
                 replacement=replacement, investigation=original.incident(), refusedActions=refused,
                 events=require(http(base, original.url + "/events"), 200, "original journal"),
                 replacementEvents=require(http(base, "/shipments/" + replacement_id + "/events"), 200, "replacement journal") if replacement else [],
-                engineRecords=ends)
+                engineRecords=ends, followup=followup)
 
 
 def main():
@@ -178,7 +212,9 @@ def main():
     assert stock["datasetVersion"] == 3 and stock["shipmentCount"] == 0
     assert all(p["available"] == 20 for p in stock["products"]) and receiving["available"] == 0
     paths = [*sorted((ROOT / "deployer").glob("*.py")), *sorted((ROOT / "bpmn").glob("*.bpmn")),
-             ROOT / "dcr/p4_quality_investigation.xml", ROOT / "siddhi-apps/ColdChainTelemetry.siddhi", Path(__file__)]
+             ROOT / "dcr/p4_quality_investigation.xml", ROOT / "siddhi-apps/ColdChainTelemetry.siddhi", Path(__file__),
+             ROOT / "compliance/p5/rules.xml", ROOT / "compliance/p5/build_p5_evidence.py", ROOT / "docker-compose.yml",
+             ROOT / "deployer/catalog.json", ROOT / "deployer/requirements.txt"]
     evidence = dict(source=SOURCE, status="running", runId=uuid.uuid4().hex[:8], capturedAt=timestamp(),
                     testedCommit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                     sourceHashes={str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},

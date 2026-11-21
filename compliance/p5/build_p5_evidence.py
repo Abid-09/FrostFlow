@@ -12,7 +12,6 @@ import argparse
 import copy
 import hashlib
 import json
-import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -148,9 +147,16 @@ def live(evidence_path, output_dir):
         raise ValueError("refusing to overwrite evidence; select a new --output-dir")
     rules = HERE / "rules.xml"
     traces, results = {}, {}
+    all_cases = []
     for item in cases:
+        all_cases.append(item)
+        if item["scenario"] == "replacement-rejected":
+            if not item.get("followup"):
+                raise ValueError("rejected replacement must include its separately completed P4-authorized return")
+            all_cases.append(item["followup"])
+    for item in all_cases:
         case = item["case"]
-        expected_success = item["scenario"] in ("return-collected", "replacement-admitted")
+        expected_success = item["scenario"] in ("return-collected", "replacement-admitted", "replacement-rejected-followup-return")
         expected_end = "FulfilmentCompleted" if expected_success else "FulfilmentFailed"
         engine = item.get("engineRecords", {}).get("p5", {})
         if (case["status"] != ("COMPLETED" if expected_success else "FAILED")
@@ -176,7 +182,8 @@ def live(evidence_path, output_dir):
                   command=f".venv/bin/python compliance/p5/build_p5_evidence.py live {evidence_path.relative_to(ROOT)}",
                   source=SOURCE, modes=evidence["health"]["integrations"], localReplay=results,
                   forbiddenTraces={name: test["result"] for name, test in negatives.items()},
-                  scenarios=[{k: c[k] for k in ("scenario", "correctiveId", "refusedActions", "engineRecords")} for c in cases],
+                  scenarios=[dict(scenario=c["scenario"], correctiveId=c["correctiveId"],
+                                  refusedActions=c.get("refusedActions", []), engineRecords=c["engineRecords"]) for c in all_cases],
                   warehouseBefore=evidence["warehouseBefore"], warehouseAfter=evidence["warehouseAfter"],
                   receivingBefore=evidence["receivingBefore"], receivingAfter=evidence["receivingAfter"],
                   processDoctor=dict(status="pending", reason="new P5 rules/log require manual external conformance checking"),

@@ -32,6 +32,7 @@ class CorrectiveRegistry:
             db, record, activity, actor=actor, process="P5",
             event_id=f"P5:{case['correctiveId']}:{activity}",
             payload={"correctiveId": case["correctiveId"], "incidentId": case["incidentId"],
+                     "quantity": record["quantity"], "recipientId": record["recipientId"],
                      "action": case["action"], **(payload or {})},
             occurred_at=input_event["occurredAt"] if input_event else None,
             input_mode="manual" if input_event else "system", source="corrective-fulfilment",
@@ -124,6 +125,8 @@ class CorrectiveRegistry:
             if kind == "ArrangementRequested":
                 if case["status"] != "AWAITING_ARRANGEMENT":
                     raise Conflict("arrangement requires AWAITING_ARRANGEMENT")
+                if seconds(occurred_at) < seconds(case["authorization"]["occurredAt"]):
+                    raise Conflict("arrangement cannot precede the P4 authorization")
                 if case["action"] == "REPLACE":
                     replacement = payload.get("replacement")
                     if not isinstance(replacement, dict):
@@ -131,7 +134,7 @@ class CorrectiveRegistry:
                     data = {**replacement, **{k: original[k] for k in (
                         "productId", "batchId", "quantity", "recipientId")},
                         "originalShipmentId": original["shipmentId"], "incidentId": case["incidentId"],
-                        "correctiveId": corrective_id}
+                        "replacementForCorrectiveId": corrective_id}
                     # Reserve vehicle and child identity atomically with acceptance: a
                     # later competing order cannot strand the arrangement worker.
                     self.create_in_transaction(db, data)
@@ -228,9 +231,11 @@ class CorrectiveRegistry:
 
     def notify_corrective_receiving(self, db, record, outcome):
         """P3 calls atomically with admission/rejection, before any P5 engine wait."""
-        if not record.get("originalShipmentId") or not record.get("correctiveId"):
+        if not record.get("originalShipmentId") or not record.get("replacementForCorrectiveId"):
             return
-        case = self.read_corrective(db, record["correctiveId"])
+        # A replacement may acquire its own P4 incident/correctiveId. Preserve the
+        # case it fulfils independently, so its rejection still reaches its parent.
+        case = self.read_corrective(db, record["replacementForCorrectiveId"])
         if case["replacementShipmentId"] != record["shipmentId"]:
             from registry import Conflict
             raise Conflict("replacement does not belong to the corrective case")

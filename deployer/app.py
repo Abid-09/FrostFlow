@@ -214,9 +214,9 @@ def p3_arrival():
     clean["arrival"] = {
         "recipientId": text_field(clean["arrival"], "recipientId"),
     }
-    for field in ("originalShipmentId", "incidentId"):
+    for field in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId"):
         if field in notification:
-            clean[field] = text_field(notification, field)
+            clean[field] = text_field(notification, field, max_length=1000 if field == "incidentId" else 100)
     if ("originalShipmentId" in clean) != ("incidentId" in clean):
         raise ValueError("replacement links require both originalShipmentId and incidentId")
     accepted = registry.accept_p3_arrival(clean)

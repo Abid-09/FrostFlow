@@ -19,6 +19,8 @@
 | `incidentId` | Identifies one investigation episode for a shipment. Multiple alerts can contribute to one active episode. |
 | `claimId` | Identifies one supplier claim; at most one claim per incident in the prototype. |
 | `originalShipmentId` | Present on replacement shipments; points to the original goods. |
+| `correctiveId` | One P5 case per applied P4 replacement/return disposition. |
+| `replacementForCorrectiveId` | The P5 case a replacement fulfils; retained even if that replacement receives its own incident and `correctiveId`. |
 | `eventId` | Identifies one event. Re-delivering it must not repeat the business effect. |
 | `commandId` | Identifies one requested simulator action and links its acknowledgement. |
 
@@ -306,12 +308,17 @@ inputs do not authorize P5. Previously finalized P4 decisions are not backfilled
 - `POST /corrective-fulfilments/<id>/arrange`: `eventId`, UTC `occurredAt`, `actor`,
   `collector`, `bookingReference`, UTC `scheduledAt`. For `REPLACE`, also send a
   `replacement` object containing only new `shipmentId`, new `journeyId`, `vehicleId`,
-  `routeId` and UTC `deliveryDeadline`. P5 copies the original product, batch, complete
+  `routeId` and UTC `deliveryDeadline`. Arrangement time cannot precede P4 authorization.
+  P5 copies the original product, batch, complete
   crate quantity and recipient; substitutes, partial replacements and new batches are
   outside scope. `RETURN` refuses replacement fields. The transaction reserves the
   replacement identity and vehicle, creates the linked shipment, and queues
   `P5ArrangementRequested` with `correctiveId`/`correctiveInput`. No stock is allocated
-  until P1 checks it. Ordinary `/shipments` rejects replacement links.
+  until P1 checks it. Ordinary `/shipments` rejects replacement links. The replacement's
+  `replacementForCorrectiveId` preserves its parent independently of any later P4
+  incident and corrective case of its own. P2's dispatch/arrival and P3's receiving
+  events retain these references; the arrival receiver checks them against the durable
+  P2 arrival snapshot so delayed retries remain valid after later quality changes.
 - P5's arrangement worker records `CollectionBooked` and, for replacement,
   `ReplacementRequested`. A parallel branch calls the co-deployed `ShipmentPreparation`
   using deployment binding and an explicit child `shipmentId` mapping. Child variables

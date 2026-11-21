@@ -49,6 +49,15 @@ identity in the parent process.
   called P1 child's parent key. The compliance graph permits both parallel orderings
   and rejects ten synthetic forbidden traces. All 134 offline tests pass.
 - Live verification, captured compliance evidence and final documentation: pending.
+- First development run `649b1605` passed all four live scenarios at `27f324b` (application
+  image sources from `ce3646d`, identical at that revision). Raw evidence remains in
+  `runtime/p5-compliance/evidence.json` with matched `p5-01` data. This run used inspection
+  failure for the rejected replacement. It does not validate subsequent review fixes.
+- Review added an independent `replacementForCorrectiveId`, so a replacement's own P4
+  return cannot overwrite its parent link, plus authorization-time and P3 arrival-reference
+  guards. Two new regressions bring the suite to 136 tests. The live runner now exercises
+  the replacement's own Siddhi/P4 rejection and completes its separate return as well.
+  Final fresh-data verification of these changes is pending.
 
 See the [wire/API contract](COLD-CHAIN-INTEGRATION-AGREEMENT.md#p5-corrective-fulfilment-contract)
 and [BPMN](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf).
