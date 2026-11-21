@@ -1,6 +1,8 @@
 # Team task board
 
-**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). This branch restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](../docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md). It requires review and explicit merge approval.
+**Independent review — 21 November 2026:** all 118 offline tests and four live P4 scenarios passed (run `ccd5079d`, local DCR, Zeebe/Siddhi, fresh matched `review21` data). See [verification record](../compliance/p4/integration-review21.json). Repository-mode and ProcessDoctor evidence remains separately scoped to the owner’s recorded runs. Review, merge and exact merged-main smoke outcomes are recorded on [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12). Earlier checkpoints below retain their original dates and scope.
+
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12) restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](../docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](../docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md). Review, merge and post-merge verification outcomes are recorded on PR #12.
 
 **Ashvanth owns P1; Rahul owns P2; Arunima Garg owns P3.** Abid owns P4; P5/P6 and shared external integration owners remain unassigned. Use `TODO`, `IN PROGRESS`, `IMPLEMENTED / VERIFY`, `BLOCKED` and `DONE`. A checked box records only the specific item described.
 
@@ -9,7 +11,7 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer in replacement PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); ProcessDoctor for the new log, review and merge approval |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); final review, approved merge and merged-main smoke |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |

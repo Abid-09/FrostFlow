@@ -1,10 +1,12 @@
 # P4 handover to Abid: monitoring foundation v1
 
-> **Status (replacement P4 PR, branch `feat/p4-foundation-integration`):** implemented on merged main `ae941cc` by reverting `31ad23b` and adapting P4 to this contract. How each boundary below is met, the tests and the pending live/external checks are listed in the [P4 guide](P4-QUALITY-INVESTIGATION.md#contract-v1-behaviour-enforced-by-the-service) and [sequencing checkpoint 4](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr). With a compatible consumer now present, the single Compose `P4_INCIDENT_URL` entry defaults to it; set it empty to keep handoffs pending.
+> **Status (replacement P4 PR, branch `feat/p4-foundation-integration`):** implemented on foundation main `ae941cc` by reverting `31ad23b` and adapting P4 to this contract. How each boundary below is met and the separately recorded offline, live and external results are listed in the [P4 guide](P4-QUALITY-INVESTIGATION.md#contract-v1-behaviour-enforced-by-the-service) and [sequencing checkpoint 4](P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr). With a compatible consumer now present, the single Compose `P4_INCIDENT_URL` entry defaults to it; set it empty to keep handoffs pending.
 
-Abid owns P4. [Original PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and its models, code and historical evidence remain in Git history. [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) is merged as `f475904`; removal commit `31ad23b` is retained. Foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) must pass review, receive separate merge approval and pass an exact merged-main smoke before this handover is ready for reintegration. This document does not implement P4.
+Abid owns P4. [Original PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) and its models, code and historical evidence remain in Git history. [Revert PR #11](https://github.com/ash-01xor/FrostFlow/pull/11) is merged as `f475904`; removal commit `31ad23b` is retained. Foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) passed review and merged as `ae941cc`; replacement PR #12 implements this handover. Its integration verification is recorded separately from the foundation checks; an exact merged-main smoke follows the approved P4 merge.
 
-## Restore and adapt deliberately
+## Restoration instructions (historical handover)
+
+The instructions in this section describe the original reintegration steps, now implemented by PR #12. Its current Compose default is the compatible local P4 consumer, and CLI 19 runs investigation; the empty default below describes the foundation-only checkpoint.
 
 Start a new branch from the verified merged foundation commit. Normally restore the original P4 by reverting `31ad23b` on that feature branch, then resolve conflicts and adapt contracts. Reopening the old merged-and-reverted branch alone will not restore it. Preserve useful DCR models, attribution and historical evidence. Use new monitored shipments in P4 tests; never remove `monitoringProfile`, skip finalization or bypass guards to make them pass.
 

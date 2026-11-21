@@ -1,6 +1,6 @@
 # Working on FrostFlow
 
-**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). This branch restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md). It requires review and explicit merge approval.
+**P4 reintegration (replacement PR, branch `feat/p4-foundation-integration`):** Abid’s P4 from [PR #10](https://github.com/ash-01xor/FrostFlow/pull/10) was reverted by PR #11 so foundation [PR #9](https://github.com/ash-01xor/FrostFlow/pull/9) could merge first (merged as `ae941cc`). [PR #12](https://github.com/ash-01xor/FrostFlow/pull/12) restores P4 by reverting `31ad23b` and adapts it to the [foundation contract v1](docs/P4-FOUNDATION-HANDOVER.md); see [sequencing](docs/P4-INTEGRATION-SEQUENCING.md#checkpoint-4--replacement-p4-pr) and the [P4 guide](docs/P4-QUALITY-INVESTIGATION.md). Review, merge and post-merge verification outcomes are recorded on PR #12.
 
 These instructions apply throughout this repository. Read this file before changing code, process models, tests or documentation. Keep it current when architecture, commands or shared contracts change.
 
