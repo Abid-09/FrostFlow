@@ -243,3 +243,7 @@ Codex reran all 118 offline tests and replayed the unchanged P1/P2/P3/P4 logs su
 ## 21 November 2026 — merged-main verification and README cleanup
 
 After user-authorized PR #12 merge (`70d1a1b`), Codex rebuilt the service image from that revision and ran the integrated smoke on the retained matched review21 dataset: admission/rejection, exported P2/P3 end events and exact -2 warehouse/+1 receiving effects passed. All running application source hashes matched. Preserved the older `ad47a3c` smoke report under `compliance/historical/` and recorded the new result with modes, source/image hashes and limitations. At the user’s request, reduced README repetition/history and removed its stale claim that foundation PR #9 was unmerged. README cleanup and post-merge evidence are on a separate documentation PR; no application or model changes, and no new external verification.
+
+## 21 November 2026 — P5 planning (local branch)
+
+The user requested project understanding and implementation of P5 on branch `P5`, with stepwise commits and user review/publishing afterward. Codex read the repository, P1–P4 implementation and shared P5 requirements, and recorded the implementation/verification plan. The working tree was clean at `347ae74`. No supplied course PDFs were inspected. `colgrep` is unavailable; scoped `rg` is used. No `.venv` or Python 3.12 existed; `uv` provisioned Python 3.12 and the pinned application requirements in `.venv`. Docker was stopped at inspection. No application behavior or execution evidence changed in this planning step.
