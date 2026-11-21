@@ -673,9 +673,9 @@ For verification, use two shipment IDs with distinct recorded quality incidents,
 ```bash
 python -m unittest stage_tests.test_p6_claims -v
 npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/supplier_claim.bpmn
-npx --yes bpmn-to-image@0.10.0 bpmn/supplier_claim.bpmn:bpmn/supplier_claim.pdf
-python stage_tests/check_p6_claims.py SETTLEMENT_SHIPMENT REJECTION_SHIPMENT
+npx --yes bpmn-to-image@0.10.0 'bpmn/supplier_claim.bpmn;bpmn/supplier_claim.pdf'
+python stage_tests/check_p6_claims.py SETTLEMENT_SHIPMENT REJECTION_SHIPMENT --extra-shipments INVALID_RESPONSE_SHIPMENT CONFLICTING_RESPONSE_SHIPMENT
 python compliance/check.py runtime/verification-results/p6/execution-log.xes --model compliance/p6/rules.xml
 ```
 
-Replace the uppercase arguments with real shipment IDs. The runner checks exported Zeebe end events, replays the actual P6 journal and writes XES for ProcessDoctor. Use a stack built from the revision under test and record the deployed revision and hashes before promoting output to reviewed evidence. Import the P6 rules and XES log together for external conformance. Offline P6 regressions pass. The pinned BPMN lint, PDF export, live Zeebe run and external conformance are pending.
+Use four distinct eligible shipments. Use a fresh third shipment to test an invalid response before settlement. The runner checks exported Zeebe end events, replays the actual P6 journal and writes XES for ProcessDoctor. Use a stack built from the revision under test and record the deployed revision and hashes before promoting output to reviewed evidence. Import the P6 rules and XES log together for external conformance. Offline P6 regressions pass. The PDF is in bpmn/supplier_claim.pdf. The four-case live results, XES log and ProcessDoctor screenshot are in compliance/p6. ProcessDoctor accepted one trace variant covering all four cases.

@@ -25,6 +25,14 @@ class Graph:
         if any(e.findall(".//event") for e in event_nodes):
             raise ValueError("nested DCR events are not supported")
         self.events = set(event_ids)
+        self.activity_ids = {event: event for event in self.events}
+        for mapping in root.findall("./specification/resources/labelMappings/labelMapping"):
+            label = mapping.get("labelId")
+            event = mapping.get("eventId")
+            if not label or event not in self.events:
+                raise ValueError("invalid event label mapping")
+            if self.activity_ids.setdefault(label, event) != event:
+                raise ValueError(f"ambiguous activity label: {label}")
         self.relations = {}
         relation_types = [
             ("conditions", "condition"),
@@ -44,6 +52,8 @@ class Graph:
         if root.find("./specification/constraints") is None:
             raise ValueError("DCR model needs a constraints section")
         for group in root.findall("./specification/constraints/*"):
+            if group.tag in {"coresponces", "updates", "spawns"} and not len(group) and not group.attrib and not (group.text or "").strip():
+                continue
             if group.tag not in allowed:
                 raise ValueError(f"unsupported relation group: {group.tag}")
             if any(
@@ -82,7 +92,8 @@ class Graph:
         }
 
     def execute(self, event):
-        if event not in self.events:
+        event = self.activity_ids.get(event)
+        if event is None:
             return "unknown activity"
         if event not in self.included:
             return "activity is excluded"

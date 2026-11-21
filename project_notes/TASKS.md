@@ -204,10 +204,10 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 
 ## P6 — Supplier claim resolution
 
-- [ ] Require explicit claimable loss; link original shipment and incident; deduplicate claims.
-- [ ] Assemble evidence; simulate submission and settlement/rejection response.
-- [ ] Prevent claim closure before final outcome.
-- [ ] Coordinate shared activity logger, JSON/XES export and compliance-tool import.
+- [x] Require explicit claimable loss; link original shipment and incident; deduplicate claims.
+- [x] Assemble evidence; simulate submission and settlement/rejection response.
+- [x] Prevent claim closure before final outcome.
+- [x] Coordinate shared activity logger, JSON/XES export and compliance-tool import.
 
 ## Shared integration and demonstration
 

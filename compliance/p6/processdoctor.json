@@ -8,7 +8,7 @@
   },
   "positive": {
     "path": "compliance/p6/execution-log.xes",
-    "sha256": "b8d81a62fd2b824b3a31334e37b600beaeb7c1e9acb088ab39ad8302036a269d",
+    "sha256": "fde30448260b3d36a44d6cec1605aac9c7f6b21268f3feb64e8c6b274e720b59",
     "traces": 4,
     "variants": 1,
     "conforming": 1,
@@ -16,5 +16,6 @@
     "violating": 0,
     "totalStructuralViolations": 0,
     "screenshot": "compliance/p6/processdoctor-conformation.png"
-  }
+  },
+  "checksumBasis": "SHA-256 of committed Git blob contents"
 }
