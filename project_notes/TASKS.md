@@ -11,11 +11,15 @@
 | P1 Shipment preparation | Ashvanth | IMPLEMENTED; engine and external conformance verified | Teammate review |
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer in replacement PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
-| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); final review, approved merge and merged-main smoke |
+| P4 Quality investigation (DCR) | Abid | IMPLEMENTED / VERIFY in replacement PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); PR #12 merged as `70d1a1b`; merged-main smoke passed |
 | P5 Corrective fulfilment | Unassigned | TODO | P4 authorised disposition + P1–P3 |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | TODO | Agree interfaces and access |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
+
+## Merged P4 checkpoint — 21 November 2026
+
+PR #12 merged as `70d1a1b` after user authorization and independent review. All 118 offline tests and four real P4 live scenarios passed before merge. The exact merged-main admission/rejection smoke passed with exported engine completion and warehouse/receiving deltas of -2/+1; see [record](../compliance/merged-main-verification.json). The smoke uses labelled test dispositions; the separate P4 investigation record identifies local DCR execution. README now presents current capabilities and entry points; detailed contracts and history remain in their guides. P5/P6 and automatic cooling/recovery integration remain planned.
 
 ## Foundation-first review checkpoint — 18 November 2026
 
@@ -54,7 +58,7 @@ The repair checkpoint below is historical; its reports identify the original rev
 - [x] P1 regression, three P2 live acceptance journeys and four P3 live scenarios pass. New P2/P3 logs pass local DCR replay; forbidden admission is rejected. Exact warehouse/receiving stock and all four receipt/inspection retries verified (see reports, tested checkout `89dfd26`).
 - [x] Inspect the three stopped test stacks; preserve their logs and registry/engine data, remove their 15 obsolete containers without deleting volumes. One replacement verification stack uses fresh paired data for each suite.
 - [ ] Refresh external ProcessDoctor checks for regenerated P2/P3 logs. Browser access host is unavailable in this session; previous log results are historical, not current evidence. Compliance owners: Rahul (P2), Arunima Garg (P3).
-- [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/merged-main-verification.json`.
+- [x] Merge #4 (`e36b0ac`), update #5 against main and inspect its remaining diff, then merge #5 (`ad47a3c`). Merged-main admission and hold/rejection smoke passed with engine end events and exact inventory deltas. Existing review records retained; three defect threads resolved. User explicitly approved merging with fresh ProcessDoctor checks pending. See `compliance/historical/merged-main-ad47a3c.json`.
 - [x] Abid: PR #10 DCR investigation restored and adapted to the foundation in the replacement PR (see P4 section). Test-harness quality dispositions remain stand-ins.
 
 Agent context and documentation maintenance are tracked in [PR #7](https://github.com/ash-01xor/FrostFlow/pull/7); implementation and verification results remain in their original reports.
