@@ -42,8 +42,36 @@ identity in the parent process.
   was rendered and visually inspected. Three API regressions bring the offline suite
   to 129 passing tests. CLI option 20 manages P5, and existing shipment IDs can be used
   for replacement loading/dispatch/receipt/inspection.
-- Live verification, compliance evidence and final documentation: pending.
+- Added the [fresh-data live runner](../stage_tests/check_p5_fulfilment.py) and
+  [compliance builder/rules](../compliance/p5/). The runner covers return, admitted and
+  rejected replacements, and cancellation after naturally exhausted stock. It checks
+  exact inventory, retries/refusals, original rejection, P5 engine end records and the
+  called P1 child's parent key. The compliance graph permits both parallel orderings
+  and rejects ten synthetic forbidden traces. All 134 offline tests pass.
+- Live verification, captured compliance evidence and final documentation: pending.
 
 See the [wire/API contract](COLD-CHAIN-INTEGRATION-AGREEMENT.md#p5-corrective-fulfilment-contract)
 and [BPMN](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf).
+
+## Live verification commands
+
+Inspect existing containers/volumes first; keep at most one stack running. On a fresh
+matched dataset, with the existing stopped datasets preserved:
+
+```bash
+export COMPOSE_PROJECT_NAME=frostflow-p5 VERIFY_DATASET=p5-01 REGISTRY_DIR=./runtime/p5/p5-01
+export P2_SIMULATOR_ENABLED=true GPS_TICK_SECONDS=2 TOMTOM_API_KEY= DCR_MODE=local
+docker compose -f docker-compose.yml -f stage_tests/verification.compose.yml up --build -d --wait --wait-timeout 180
+.venv/bin/python stage_tests/check_p5_fulfilment.py --base http://localhost:5001
+.venv/bin/python compliance/p5/build_p5_evidence.py live runtime/p5-compliance/evidence.json
+.venv/bin/python compliance/check.py compliance/p5/execution-log.xes --model compliance/p5/rules.xml
+```
+
+This suite consumes 25 warehouse crates and admits exactly one yoghurt crate; the
+20-crate chicken original forces its replacement into P1's real shortage wait. Reuse
+these variables to resume that dataset; select **both** new registry and volume identities
+for another fresh run. The live runner refuses reused datasets/evidence paths. The
+builder refuses partial/synthetic evidence and existing output; select `--output-dir`
+for subsequent results. It never fabricates an execution log from the forbidden traces.
+Exported P5 completion, local replay and external ProcessDoctor are separate checks.
 - ProcessDoctor external conformance: pending new real execution evidence and manual check.

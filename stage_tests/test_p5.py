@@ -282,6 +282,65 @@ class CorrectiveEffects(unittest.TestCase):
         self.assertEqual(self.http.post("/corrective-fulfilments/unknown/arrange", json=data).status_code, 404)
         self.assertEqual(self.db.inventory()["shipmentCount"], 1)
 
+    def test_quality_status_stand_in_rejection_cannot_authorize_corrective_work(self):
+        self.start_p2_transport()
+        self.readings(3, 3, 3)
+        self.risk_at_index(2)
+        record = self.db.get("S-test")
+        response = self.http.post("/integrations/p4/quality-status", json=dict(
+            shipmentId="S-test", eventId="stand-in-reject", occurredAt=p4.iso(self.clock),
+            qualityStatus="REJECTED", incidentId=record["qualityIncidentId"],
+            expectedEvidenceVersion=record["evidenceVersion"]))
+        self.assertEqual(response.status_code, 202, response.json)
+        self.assertEqual(self.db.corrective_cases(), [])
+        self.assertFalse(any(m["name"] == "P5DispositionRecorded" for m in self.db.pending_messages()))
+
+
+class CorrectiveCompliance(unittest.TestCase):
+    def setUp(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("p5_evidence", ROOT / "compliance/p5/build_p5_evidence.py")
+        self.builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.builder)
+        self.rules = ROOT / "compliance/p5/rules.xml"
+
+    def test_success_failure_and_both_parallel_orderings_conform(self):
+        from compliance.check import replay
+        start = ["ReplaceDisposition", "ReplacementAuthorized", "CollectionBooked", "ReplacementRequested"]
+        success = ["ReplacementDispatched", "ReplacementAdmitted"]
+        rejection = ["ReplacementDispatched", "ReplacementRejected"]
+        for middle, end in ((success, "CorrectiveFulfilmentCompleted"),
+                            (rejection, "CorrectiveFulfilmentFailed"),
+                            (["ReplacementCancelled"], "CorrectiveFulfilmentFailed")):
+            for events in (start + ["ReturnCollected"] + middle + [end], start + middle + ["ReturnCollected", end]):
+                self.assertTrue(replay(self.rules, events)["accepting"], events)
+        self.assertTrue(replay(self.rules, ["ReturnDisposition", "ReturnAuthorized", "CollectionBooked",
+                                           "ReturnCollected", "CorrectiveFulfilmentCompleted"])["accepting"])
+
+    def test_forbidden_actions_fail_and_unfinished_work_stays_pending(self):
+        from compliance.check import replay
+        for label, events in self.builder.FORBIDDEN.items():
+            self.assertFalse(replay(self.rules, events)["valid"], label)
+        result = replay(self.rules, ["ReturnDisposition", "ReturnAuthorized", "CollectionBooked"])
+        self.assertTrue(result["valid"])
+        self.assertFalse(result["accepting"])
+
+    def test_builder_refuses_partial_or_synthetic_evidence(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "partial.json"
+            evidence.write_text(json.dumps(dict(source=self.builder.SOURCE, status="failed", cases=[])))
+            with self.assertRaises(ValueError):
+                self.builder.live(evidence, Path(directory) / "output")
+            self.assertFalse((Path(directory) / "output/execution-log.xes").exists())
+
+    def test_tracked_rules_match_reproducible_builder(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            generated = Path(directory) / "rules.xml"
+            self.builder.build_rules(generated)
+            self.assertEqual(generated.read_bytes(), self.rules.read_bytes())
+
 
 if __name__ == "__main__":
     unittest.main()
