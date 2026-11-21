@@ -32,5 +32,11 @@ identity in the parent process.
 ## Progress
 
 - Planning: repository/contracts read; branch clean and based on current local main.
-- Implementation, verification and final documentation: pending.
+- Durable effects implemented: one case per applied disposition, transactional P4/P3
+  outboxes, replacement identity/vehicle reservation, original collection and terminal
+  success/failure guards. Public `/shipments` cannot forge replacement links.
+- Eight new offline tests cover monitored P1–P4 authorization, replacement admission and
+  rejection, shortage cancellation, retry/restart, concurrent arrangement, forged input
+  and P4 transaction rollback/recovery. These substitute Zeebe; live checks remain pending.
+- BPMN/API/menu wiring, live verification and final documentation: pending.
 - ProcessDoctor external conformance: pending new real execution evidence and manual check.

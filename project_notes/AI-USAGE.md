@@ -247,3 +247,7 @@ After user-authorized PR #12 merge (`70d1a1b`), Codex rebuilt the service image 
 ## 21 November 2026 — P5 planning (local branch)
 
 The user requested project understanding and implementation of P5 on branch `P5`, with stepwise commits and user review/publishing afterward. Codex read the repository, P1–P4 implementation and shared P5 requirements, and recorded the implementation/verification plan. The working tree was clean at `347ae74`. No supplied course PDFs were inspected. `colgrep` is unavailable; scoped `rg` is used. No `.venv` or Python 3.12 existed; `uv` provisioned Python 3.12 and the pinned application requirements in `.venv`. Docker was stopped at inspection. No application behavior or execution evidence changed in this planning step.
+
+## 21 November 2026 — P5 durable effects
+
+Codex implemented a corrective registry mixin and atomic P4 authorization/P3 receiving outboxes, preserved P1 shipment creation within a caller transaction, and blocked forged replacement links through ordinary order creation. Added eight offline regressions using temporary SQLite, monitored shipments and real local DCR with substituted Zeebe. All 126 offline tests pass (118 baseline plus eight P5); no live engine result is claimed. Coverage includes admission versus rejection, full original collection, shortage cancellation, concurrency, exact/conflicting retries, restart and P4 disposition transaction rollback/recovery. Updated the P5 guide and integration handoff description. BPMN/API/menu and live evidence remain pending in the next steps.
