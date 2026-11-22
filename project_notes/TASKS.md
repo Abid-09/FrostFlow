@@ -1,6 +1,6 @@
 # Team task board
 
-**P5 review — 22 November 2026:** Daniel owns P5. Branch `P5` is published in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14), open, non-draft and not merged. The submitted review reports no functional blocker and flags the clipped PDF. The PDF margin and ownership/status corrections are committed locally; pushing the corrections, review follow-up and an authorized merge remain pending.
+**P5 integration — 22 November 2026:** Daniel owns P5 and merged [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) as `b3f6102`. The PDF margin and ownership corrections are included and have been rechecked. Application and BPMN source are unchanged from the reviewed code. Exact merged-main smoke remains pending; the recorded verification below retains its original revision and scope.
 
 **Recorded P5 verification — 21 November 2026:** all 136 offline tests and final-code live run `9347c2c8` passed at `d118870`: four scenarios, five P5 instances, exact -25/+1 inventory effects and real P1/P2/P3/P5 engine records. Local replay passed all five traces; ProcessDoctor reported 4/4 conforming variants with zero structural violations, and the separate synthetic dispatch-only trace violated as expected. See [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md), [verification](../compliance/p5/verification.json) and [external evidence](../compliance/p5/processdoctor.json). These review corrections change only documentation and the PDF export; the recorded runtime evidence retains its original revision.
 
@@ -16,7 +16,7 @@
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer merged in PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED; merged in PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); PR #12 merged as `70d1a1b`; merged-main smoke passed |
-| P5 Corrective fulfilment | Daniel | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) open, non-draft; review follow-up/merge pending |
+| P5 Corrective fulfilment | Daniel | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); PR #14 merged as `b3f6102`; exact merged-main smoke pending |
 | P6 Supplier claim resolution | Unassigned | TODO | Explicit claimable-loss event |
 | Shared CEP, APIs, simulator, logging | Unassigned | PARTLY IMPLEMENTED | ETA/container CEP, weather and durable journals implemented; cooling/recovery, external simulator and shared logger pending |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
@@ -199,9 +199,9 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Guard successful completion on collection plus replacement admission; rejection/cancellation fails fulfilment. Offline regressions and live runner check these guards.
 - [x] Add BPMN/PDF, API/menu option 20, DCR compliance rules, forbidden traces and reproducible live evidence tooling.
 - [x] Final-code live run `9347c2c8`, matching source/image hashes, five local replay traces, 4/4 external conforming variants and a separate expected negative result recorded.
-- [x] User published branch `P5` and opened [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14); open, non-draft and not merged as of 22 November 2026.
-- [x] Address PDF clipping with a margin-preserving re-export and reconcile Daniel’s ownership/PR status across current guides; corrections committed locally for the user to push.
-- [ ] Complete review follow-up and merge only with explicit user authorization.
+- [x] Branch `P5` published through [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14); Daniel merged it as `b3f6102` on 22 November 2026.
+- [x] Address and recheck PDF clipping and Daniel’s ownership; corrections are included in the merge.
+- [ ] Rebuild and smoke-test exact merged main with matched registry/engine data; record the new result separately from earlier P4 smoke and P5 branch evidence.
 - [x] Temperature/combined-risk and persistent ETA patterns already implemented by the foundation/P2.
 - [ ] Coordinate post-cooling recovery CEP with P2/P4 and the unconfirmed shared integration owner.
 - [x] Open-Meteo current evidence already implemented by the foundation and supplied to P4.

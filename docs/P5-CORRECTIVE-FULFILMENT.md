@@ -1,8 +1,7 @@
 # P5 — Corrective fulfilment
 
-**Owner:** Daniel. P5 is published from branch `P5` in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14).
-As of 22 November 2026, the PR is open, non-draft and not merged; review follow-up and
-merge remain pending. It consumes applied P4 replacement/return decisions and
+**Owner:** Daniel. P5 merged through [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14)
+as `b3f6102` on 22 November 2026. It consumes applied P4 replacement/return decisions and
 runs `CorrectiveFulfilment` in Camunda, alongside P1–P3. P6 claims and automatic
 cooling/recovery remain future work.
 
@@ -144,12 +143,13 @@ one structural violation (expected). External results and exact input hashes are
 | First live development run | `649b1605`, all four scenarios passed on `27f324b`; older inspection-rejection path, preserved `p5-01` data |
 | Parent-link, chronology and arrival-reference review fixes | `d118870`; 136 tests |
 | Final-code verification | `9347c2c8`, four scenarios/five P5 completions; exact source/image/data identities in the verification report |
-| PR #14 review corrections — 22 November 2026 | `bd75de9`: unclipped PDF with reproducible margins; Daniel ownership and open/non-draft/unmerged PR status reconciled across current guides |
+| PR #14 review corrections — 22 November 2026 | `bd75de9`: unclipped PDF with reproducible margins; `07ed1e4`: Daniel ownership and publication documentation reconciled |
+| Main integration — 22 November 2026 | Daniel merged PR #14 as `b3f6102`; application/BPMN source unchanged from the reviewed code; exact merged-main smoke remains pending |
 
 Documentation impact: README, run guide, implementation guide, integration agreement,
 this P5 guide, P4 investigation/handover guides, task board, AGENTS.md and AI-use record are updated. The full P1–P6 target
 and P6/shared ownership still to be confirmed remain explicit. Earlier runtime and
 conformance evidence is unchanged; the PDF-only review correction is recorded separately.
-Branch `P5` is published in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14); as of 22 November 2026 it remains open,
-non-draft and unmerged. Review corrections are committed locally for the user to push;
-review follow-up remains pending, and merge requires explicit user authorization.
+The PDF and ownership corrections are included in the merged PR. An exact merged-main
+smoke at `b3f6102` remains pending; the recorded P5 live/external results retain their
+original tested revisions, and the shared merged-main report still covers the earlier P4 merge.

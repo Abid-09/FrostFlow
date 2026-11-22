@@ -295,8 +295,7 @@ See [Abid’s P4 foundation handover](P4-FOUNDATION-HANDOVER.md) for intake, dur
 
 ## P5 corrective fulfilment contract
 
-Daniel’s branch `P5`, published in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) (open, non-draft and not merged
-as of 22 November 2026), adds `CorrectiveFulfilment` to the single communication service. An applied
+Daniel’s P5, integrated through [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14), runs `CorrectiveFulfilment` in the single communication service. An applied
 P4 `REPLACE` or `RETURN` decision creates one `correctiveId` per incident and queues
 `P5DispositionRecorded` in the same transaction as `DispositionRecorded` and the saved
 P4 decision. The message carries `correctiveId` and the exact `authorizationEvent`.

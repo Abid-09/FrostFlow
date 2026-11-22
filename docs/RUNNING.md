@@ -616,6 +616,8 @@ Use new paired suffixes for any future fresh-data suite. Foundation PR #9 merged
 
 ## P5 corrective fulfilment
 
+P5 merged through PR #14 as `b3f6102`. An exact merged-main smoke for that integration is still pending; `compliance/merged-main-verification.json` records the earlier P4 merge. The P5 branch evidence below retains its original tested revision.
+
 P5 deploys with P1/P2/P3 at startup (`P5_BPMN_FILE`, default
 `bpmn/corrective_fulfilment.bpmn`; Compose uses `/bpmn/corrective_fulfilment.bpmn`).
 There is no extra service, port or credential. New applied P4 replacement/return

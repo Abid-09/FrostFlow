@@ -20,8 +20,7 @@ of a new linked shipment through P1–P3. Rejected/cancelled replacements fail f
 Container excursion/combined-risk CEP, independent Open-Meteo current conditions and P3
 monitoring finalization are implemented in the [foundation](PRE-P4-FOUNDATION.md).
 Cooling/recovery automation and P6 claims remain planned. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
-and [verification commands/evidence](RUNNING.md#automated-verification) for tested revisions and limits. Daniel’s P5 is published in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14), open,
-non-draft and not merged as of 22 November 2026.
+and [verification commands/evidence](RUNNING.md#automated-verification) for tested revisions and limits.
 
 ## 1. What problem are we solving?
 
@@ -134,7 +133,7 @@ A delay alone does not prove damaged goods. The officer assesses the evidence. C
 
 ### Daniel — P5: Corrective fulfilment · Camunda
 
-**Implemented in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) (branch `P5`; open, non-draft and not merged as of 22 November 2026):** applied P4 replacement/return → explicit collection booking → original collection acknowledgement in parallel with replacement preparation/transport/receiving → completed or failed outcome. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md), [model](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf) and [compliance artifacts](../compliance/p5/). Daniel is the confirmed P5 owner.
+**Implemented in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) (merged as `b3f6102`):** applied P4 replacement/return → explicit collection booking → original collection acknowledgement in parallel with replacement preparation/transport/receiving → completed or failed outcome. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md), [model](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf) and [compliance artifacts](../compliance/p5/). Daniel is the confirmed P5 owner.
 
 - Reject corrective work without an authorised quality decision.
 - For replacement, create a new shipment linked to the original and reuse P1–P3.
