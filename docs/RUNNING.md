@@ -498,7 +498,7 @@ npx --yes @camunda8/cli@4.6.1 bpmn lint bpmn/corrective_fulfilment.bpmn
 npx --yes bpmn-to-image@0.10.0 --title='P1 Shipment preparation' bpmn/shipment_preparation.bpmn:bpmn/shipment_preparation.pdf
 npx --yes bpmn-to-image@0.10.0 bpmn/transport.bpmn:bpmn/transport.pdf
 npx --yes bpmn-to-image@0.10.0 --title='P3 Receiving and stock admission' bpmn/receiving.bpmn:bpmn/receiving.pdf
-npx --yes bpmn-to-image@0.10.0 --title='P5 Corrective fulfilment' bpmn/corrective_fulfilment.bpmn:bpmn/corrective_fulfilment.pdf
+npx --yes bpmn-to-image@0.10.0 --min-dimensions=2400x800 --title='P5 Corrective fulfilment' bpmn/corrective_fulfilment.bpmn:bpmn/corrective_fulfilment.pdf
 ```
 
 ### P4 investigation live run
@@ -615,6 +615,8 @@ curl http://localhost:5001/health
 Use new paired suffixes for any future fresh-data suite. Foundation PR #9 merged as `ae941cc`; P4 PR #12 merged as `70d1a1b`. The exact P4 merged revision passed the admission/hold-rejection smoke on the retained matched `review21` dataset (project `frostflow-p4-final`, local DCR/Siddhi, GPS tick 15 seconds and local demo ETAs); see [the current report](../compliance/merged-main-verification.json). This smoke uses labelled test dispositions; the separate [four-case P4 live verification](../compliance/p4/integration-review21.json) exercises actual investigation decisions. After each approved merge, rebuild from merged main using the same paired-dataset variables plus `up --build`, run `stage_tests/check_integration_smoke.py` with sufficient salad/chicken stock and free vehicles, and record the exact merged revision. Until that smoke passes, this is branch verification, not the final handover readiness claim. See [Abid's P4 handover](P4-FOUNDATION-HANDOVER.md).
 
 ## P5 corrective fulfilment
+
+P5 merged through PR #14 as `b3f6102`. An exact merged-main smoke for that integration is still pending; `compliance/merged-main-verification.json` records the earlier P4 merge. The P5 branch evidence below retains its original tested revision.
 
 P5 deploys with P1/P2/P3 at startup (`P5_BPMN_FILE`, default
 `bpmn/corrective_fulfilment.bpmn`; Compose uses `/bpmn/corrective_fulfilment.bpmn`).

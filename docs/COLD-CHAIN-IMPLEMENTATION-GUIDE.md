@@ -10,7 +10,7 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5–P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5 — Daniel; P6 - Sai Shashank Maktala
 
 **Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk, P3 receiving,
 P4 DCR investigation and P5 corrective fulfilment are executable. Risks establish a
@@ -19,7 +19,7 @@ one P5 case. P5 requires original collection and, for replacement success, admis
 of a new linked shipment through P1–P3. Rejected/cancelled replacements fail fulfilment.
 Container excursion/combined-risk CEP, independent Open-Meteo current conditions and P3
 monitoring finalization are implemented in the [foundation](PRE-P4-FOUNDATION.md).
-Cooling/recovery automation remains planned. P6 supplier claims are implemented and await live verification. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
+Cooling/recovery automation remains planned. P6 supplier claims are implemented with four verified cases. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
 and [verification commands/evidence](RUNNING.md#automated-verification) for tested revisions and limits.
 
 ## 1. What problem are we solving?
@@ -59,7 +59,7 @@ We will not build route optimisation, physical sensors, detailed refrigeration p
 
 ## 3. How the system will work
 
-This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P5 behavior from future cooling/recovery automation. P6 still needs live verification.
+This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P5 behavior from future cooling/recovery automation. Four recorded P6 cases passed conformance checking.
 
 1. The warehouse prepares a shipment and confirms loading before dispatch.
 2. During transport, simulated GPS and temperature data enter Siddhi alongside weather and ETA updates.
@@ -74,7 +74,7 @@ This demonstrates communication in both directions: **events affect processes, a
 
 ## 4. Who will do what?
 
-P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4; assign P5/P6 and shared integration work. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
+P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4 and Daniel owns P5; Sai Shashank Maktala owns P6 and shared integration ownership remains open. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
 
 ### Ashvanth — P1: Shipment preparation · Camunda
 
@@ -131,9 +131,9 @@ Abid is the confirmed P4 owner. **Status:** restored and adapted to the foundati
 
 A delay alone does not prove damaged goods. The officer assesses the evidence. Closing the investigation does not mean a replacement or claim has also finished.
 
-### Unassigned — P5: Corrective fulfilment · Camunda
+### Daniel — P5: Corrective fulfilment · Camunda
 
-**Implemented on branch `P5`:** applied P4 replacement/return → explicit collection booking → original collection acknowledgement in parallel with replacement preparation/transport/receiving → completed or failed outcome. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md), [model](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf) and [compliance artifacts](../compliance/p5/). Human ownership remains unassigned.
+**Implemented in [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) (merged as `b3f6102`):** applied P4 replacement/return → explicit collection booking → original collection acknowledgement in parallel with replacement preparation/transport/receiving → completed or failed outcome. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md), [model](../bpmn/corrective_fulfilment.bpmn)/[PDF](../bpmn/corrective_fulfilment.pdf) and [compliance artifacts](../compliance/p5/). Daniel is the confirmed P5 owner.
 
 - Reject corrective work without an authorised quality decision.
 - For replacement, create a new shipment linked to the original and reuse P1–P3.
@@ -143,7 +143,7 @@ A delay alone does not prove damaged goods. The officer assesses the evidence. C
 
 **Must prove:** replacement/return follows authorisation and requires completion acknowledgement.
 
-### Unassigned — P6: Supplier claim resolution · Camunda
+### Sai Shashank Maktala — P6: Supplier claim resolution · Camunda
 
 **Build:** record claimable loss → assemble evidence → submit claim → receive settlement/rejection → close.
 
