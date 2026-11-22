@@ -2,8 +2,8 @@
 
 **Owner:** Daniel. P5 merged through [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14)
 as `b3f6102` on 22 November 2026. It consumes applied P4 replacement/return decisions and
-runs `CorrectiveFulfilment` in Camunda, alongside P1–P3. P6 claims and automatic
-cooling/recovery remain future work.
+runs `CorrectiveFulfilment` in Camunda, alongside P1–P3. P6 claims are implemented separately; automatic
+cooling/recovery remains future work.
 
 The final-code live run **`9347c2c8`**, tested at **`d118870`**, passed four scenarios
 and completed five P5 instances. All **136 offline tests** pass. Five real traces pass
@@ -144,12 +144,13 @@ one structural violation (expected). External results and exact input hashes are
 | Parent-link, chronology and arrival-reference review fixes | `d118870`; 136 tests |
 | Final-code verification | `9347c2c8`, four scenarios/five P5 completions; exact source/image/data identities in the verification report |
 | PR #14 review corrections — 22 November 2026 | `bd75de9`: unclipped PDF with reproducible margins; `07ed1e4`: Daniel ownership and publication documentation reconciled |
-| Main integration — 22 November 2026 | Daniel merged PR #14 as `b3f6102`; application/BPMN source unchanged from the reviewed code; exact merged-main smoke remains pending |
+| Main integration — 22 November 2026 | Daniel merged PR #14 as `b3f6102`; application/BPMN source unchanged from the reviewed code; smoke was pending at that checkpoint |
 
 Documentation impact: README, run guide, implementation guide, integration agreement,
 this P5 guide, P4 investigation/handover guides, task board, AGENTS.md and AI-use record are updated. The full P1–P6 target
-and P6/shared ownership still to be confirmed remain explicit. Earlier runtime and
+and unconfirmed shared-integration ownership remain explicit; Sai Shashank Maktala owns P6. Earlier runtime and
 conformance evidence is unchanged; the PDF-only review correction is recorded separately.
-The PDF and ownership corrections are included in the merged PR. An exact merged-main
-smoke at `b3f6102` remains pending; the recorded P5 live/external results retain their
-original tested revisions, and the shared merged-main report still covers the earlier P4 merge.
+The PDF and ownership corrections are included in the merged PR. The latest integrated
+main `35d2d0b` passed the post-P6 admission/rejection and claim smoke; see the
+[merged-main report](../compliance/merged-main-verification.json). Full P5 live/external
+results retain their original tested revisions; the smoke uses labelled dispositions.
