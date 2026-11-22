@@ -138,6 +138,24 @@ class Preparation(unittest.TestCase):
         eta, source = service.transport_integrations.eta(points, "route-01", 0)
         self.db.start_journey("S-test", 999, points[0], eta, source, points)
 
+    def test_claim_accepts_long_foundation_incident_id(self):
+        shipment = "S" * 31
+        journey = "journey-" + shipment
+        incident = f"ASSESS:{shipment}:CONTAINER:{shipment}:{journey}:7"
+        self.assertGreater(len(incident), 100)
+        product = self.db.inventory()["products"][0]
+        with self.db.transaction() as db:
+            self.db.save(db, dict(product, shipmentId=shipment, journeyId=journey,
+                                  qualityIncidentId=incident))
+        loss = dict(originalShipmentId=shipment, incidentId=incident,
+                    lossDescription="One rejected crate", actor="operator",
+                    evidenceRefs=["inspection-1"])
+        result = self.http.post("/claims", json=loss)
+        self.assertEqual(result.status_code, 202, result.json)
+        claim = self.http.get("/claims/" + result.json["claimId"])
+        self.assertEqual(claim.json["loss"]["incidentId"], incident)
+        self.assertEqual(self.http.post("/claims", json=dict(loss, incidentId="x" * 1001)).status_code, 400)
+
     def test_dispatch_requires_processed_loading(self):
         self.loading_wait()
 

@@ -167,7 +167,7 @@ def create_claim():
     if not isinstance(refs, list) or not 1 <= len(refs) <= 50:
         raise ValueError("evidenceRefs must contain 1 to 50 references")
     loss = {
-        "incidentId": text_field(data, "incidentId"),
+        "incidentId": text_field(data, "incidentId", max_length=1000),
         "originalShipmentId": text_field(data, "originalShipmentId"),
         "lossDescription": text_field(data, "lossDescription", 1000),
         "actor": text_field(data, "actor"),
