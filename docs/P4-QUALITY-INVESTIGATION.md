@@ -142,5 +142,5 @@ Every case checks that receipt released the vehicle while quality was still held
 
 ## Still to do
 
-- Cooling-command/recovery contracts (Siddhi), the external physical simulator and P6 claims remain future work.
+- Cooling-command/recovery contracts (Siddhi) and the external physical simulator remain future work. P6 supplier claims are implemented separately; see [the run guide](RUNNING.md#p6-supplier-claims).
 - P5 now consumes applied `REPLACE`/`RETURN` decisions; its live/local/external results are in the [P5 guide](P5-CORRECTIVE-FULFILMENT.md). This branch’s P5 acceptance uses local DCR. Earlier full-stack repository-mode runs retain their recorded revisions above.

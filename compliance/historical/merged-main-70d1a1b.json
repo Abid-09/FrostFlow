@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-21T07:55:33.430Z",
+  "testedCommit": "70d1a1b6612663d866251b2e5c5a45fa4d2299fb",
+  "command": ".venv/bin/python stage_tests/check_integration_smoke.py",
+  "project": "frostflow-p4-final",
+  "dataset": "Existing review21 P4 dataset; retained matched registry/engine data. New smoke shipments and inventory deltas; not a repeated fresh-data suite.",
+  "inputModes": {
+    "gps": "scripted-demo; 15-second tick",
+    "eta": "local-demo-estimate; TomTom disabled",
+    "container": "simulated-independent; evaluated by local Siddhi",
+    "weather": "Open-Meteo current model; no dedicated provider acceptance check",
+    "p4Engine": "local-dcr-engine",
+    "qualityDisposition": "labelled test stand-in; actual P4 investigated in the separate ccd5079d live run"
+  },
+  "cases": [
+    {
+      "scenario": "admission",
+      "shipmentId": "p3comp-smoke-0425faed-admission",
+      "p1ProcessInstanceKey": "2251799813689346",
+      "p2ProcessInstanceKey": "2251799813689413",
+      "p3ProcessInstanceKey": "2251799813689657",
+      "expectedFinalStatus": "ADMITTED",
+      "eventsCount": 32,
+      "eventsSha256": "cc8111e2ba2695aa2c4d300a6e0d0fc09c93a959490d13ae3559e34bc89eb764",
+      "acceptedIntegrationEventsCount": 0,
+      "acceptedIntegrationEventsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "scenario": "quality-rejection",
+      "shipmentId": "p3comp-smoke-0425faed-quality-rejection",
+      "p1ProcessInstanceKey": "2251799813689786",
+      "p2ProcessInstanceKey": "2251799813689850",
+      "p3ProcessInstanceKey": "2251799813690075",
+      "expectedFinalStatus": "REJECTED",
+      "eventsCount": 34,
+      "eventsSha256": "baf47160ce7a5e008496d24cc60bbc23fe937c8144b25d5601b49fe78b56b5c2",
+      "acceptedIntegrationEventsCount": 1,
+      "acceptedIntegrationEventsSha256": "3d574f752a8ecfd9e36eaaeeacc4207ce3b59611e7ea56272a3f2d876ac11d40"
+    }
+  ],
+  "warehouseBefore": 96,
+  "warehouseAfter": 94,
+  "warehouseDelta": -2,
+  "receivingBefore": 2,
+  "receivingAfter": 3,
+  "receivingDelta": 1,
+  "assertions": [
+    "Normal goods admitted; held goods rejected without crediting receiving stock",
+    "P2 TransportCompleted and P3 StockAdmitted/GoodsRejected end events exported",
+    "Warehouse delta -2; receiving delta +1; exact per-product deltas",
+    "All running /app/*.py hashes match merged source"
+  ],
+  "sourceSha256": {
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
+    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
+    "dcr/p4_quality_investigation.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
+    "deployer/app.py": "2023418ef5636a0e426bd1d18e7bd5e305244c817742633c9e64a754db83eb2e",
+    "deployer/dcr_client.py": "4039649743794aa7ef441bf4a3887d584c9e1b0308054909cef9a6fb97757e75",
+    "deployer/monitoring.py": "c8e9f8cc8ae53738700ecf8050863aab4d7ca5de37161a90273503e315edf2a5",
+    "deployer/monitoring_registry.py": "22378e200627701fc90e3882d4222883551b4f77064325992ba7fe7f31b8efa9",
+    "deployer/quality.py": "bf9ff62dfd4d3f2ee2801e62bacc0e3bc5cd1eb793b5d17a7b96e804aea901bb",
+    "deployer/registry.py": "df2041c592ab236d31ad29d33cd3f8abc9da40e1efd668d335d11372d1150f39",
+    "deployer/transport_integrations.py": "8c60e20a3f97bf5610ed18ccb548d0c514ba278c794f6321ae91926f78abeee8",
+    "deployer/weather.py": "b4687b1b70f5937c62523fa7df91852a2831b546a8fa32d77f4d3e98f1fd61a5",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "siddhi-apps/ContainerAssessment.siddhi": "25c8a86035751d4be184c27a92ee37806a6016606f135912ec979af27993784e",
+    "stage_tests/check_integration_smoke.py": "db08acce1e3a54920711789ad0e253e9dfdfaa7f50d73658c1a2e7f33f504d56"
+  },
+  "rawEvidenceSha256": "d6df08e4cb51c1bed97dc17b66699f41c183a005c899cee2b3918d9ececaabd4",
+  "images": {
+    "communication": "sha256:86b0b0fca6b9d51335af582309c736eace19a93e8de9092bb1a4b0ae3a913a9f",
+    "zeebe": "sha256:f2a4737e0bbaacc0ed9ba31efc32262e81746988f9d5210cc2f5f9c66cdd9815",
+    "elasticsearch": "sha256:93a9a7e1908f0c59ffce42ff494791bd785c36de40189759fc2a0ed7d6006c9d",
+    "siddhi": "sha256:17dd32e19116d5219d6211a864693db4bf8d6eebaa13f18f50a1d5df5e3c43ad",
+    "operate": "sha256:3ef9717192aedbccb66b767577bdf29937ba816d35edba2423adce19aafdaa91"
+  },
+  "historicalReport": "compliance/historical/merged-main-ad47a3c.json",
+  "p4InvestigationVerification": "compliance/p4/integration-review21.json",
+  "limits": [
+    "This smoke uses the test disposition endpoint; it is not a new P4 DCR investigation or external conformance result.",
+    "No new live TomTom, repository-mode DCR or ProcessDoctor verification. Earlier external results retain their recorded scope."
+  ]
+}

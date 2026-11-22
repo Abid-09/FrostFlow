@@ -4,7 +4,7 @@
 
 **Purpose:** define how the six processes exchange information before their owners implement the connections. Read the [team implementation guide](COLD-CHAIN-IMPLEMENTATION-GUIDE.md) for scope, assignments, and stages.
 
-**Status:** shared contract for implemented P1–P5 and planned P6 connections. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
+**Status:** shared contract for implemented P1–P6 connections and explicitly planned shared integration work. Target handoffs for unimplemented processes are identified by their scope; a message name is not proof of a deployed consumer. Changes to shared messages must be reflected here and coordinated with affected owners.
 
 ## 1. Common identifiers
 
@@ -127,7 +127,7 @@ The P2 manual receipt endpoint is usable only in P2-only runs (`P3_ARRIVAL_URL` 
 
 ### P2 and P3 development handover
 
-P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. Abid owns P4 and Daniel owns P5; P6 and shared external integration owners remain unassigned. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
+P2 is owned by **Rahul Shanbhag** and P3 by **Arunima Garg**. Abid owns P4, Daniel owns P5 and Sai Shashank Maktala owns P6; shared external integration ownership remains unconfirmed. P2's current implementation is in `bpmn/transport.bpmn`, `deployer/app.py`, `deployer/registry.py`, `deployer/transport_integrations.py`, `tools/demo.py` and `stage_tests/`.
 
 #### P2 transport implementation
 

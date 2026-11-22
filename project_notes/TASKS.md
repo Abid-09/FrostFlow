@@ -1,8 +1,8 @@
 # Team task board
 
-**P6 integration review — 22 November 2026:** all reported PR #15 findings are fixed. Independent verification at `163bd16` passed 140 offline tests, four P5 scenarios/five corrective completions and five live P6 claims, including a 116-character incident ID. Actual Zeebe ends, real Siddhi assessments, local DCR execution and exact -25/+1 stock effects (zero P6 stock effect) are recorded in the [supplement](../compliance/p6/review22/verification.json). The next integration gate is an authorized P6 merge followed by smoke-testing its exact merged-main revision. This does not complete automatic cooling/recovery or submission work.
+**P6 merged integration — 22 November 2026:** all reported PR #15 findings are fixed. Independent verification at `163bd16` passed 140 offline tests, four P5 scenarios/five corrective completions and five live P6 claims, including a 116-character incident ID. Actual Zeebe ends, real Siddhi assessments, local DCR execution and exact -25/+1 stock effects (zero P6 stock effect) are recorded in the [supplement](../compliance/p6/review22/verification.json). PR #15 merged as `35d2d0b`; all 140 tests and its exact merged-main admission/rejection/claim smoke passed, with exported engine ends and -2/+1 stock effects (zero P6 stock effect). See the [merged-main record](../compliance/merged-main-verification.json). This does not complete automatic cooling/recovery or submission work.
 
-**P5 integration — 22 November 2026:** Daniel owns P5 and merged [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) as `b3f6102`. The PDF margin and ownership corrections are included and have been rechecked. Application and BPMN source are unchanged from the reviewed code. Exact merged-main smoke remains pending; the recorded verification below retains its original revision and scope.
+**P5 integration — 22 November 2026:** Daniel owns P5 and merged [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) as `b3f6102`. The PDF margin and ownership corrections are included and have been rechecked. Application and BPMN source are unchanged from the reviewed code. The integrated P6 main revision `35d2d0b` now passes post-merge smoke; the full P5 workflow evidence below retains its original revision and scope.
 
 **Recorded P5 verification — 21 November 2026:** all 136 offline tests and final-code live run `9347c2c8` passed at `d118870`: four scenarios, five P5 instances, exact -25/+1 inventory effects and real P1/P2/P3/P5 engine records. Local replay passed all five traces; ProcessDoctor reported 4/4 conforming variants with zero structural violations, and the separate synthetic dispatch-only trace violated as expected. See [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md), [verification](../compliance/p5/verification.json) and [external evidence](../compliance/p5/processdoctor.json). These review corrections change only documentation and the PDF export; the recorded runtime evidence retains its original revision.
 
@@ -18,14 +18,14 @@
 | P2 Transport and delivery | Rahul | IMPLEMENTED; live acceptance and local DCR pass; review-18 manual external conformance passed | [Detailed handover](../docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md#p2-and-p3-development-handover); P4 consumer merged in PR #12 |
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED; merged in PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); PR #12 merged as `70d1a1b`; merged-main smoke passed |
-| P5 Corrective fulfilment | Daniel | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); PR #14 merged as `b3f6102`; exact merged-main smoke pending |
-| P6 Supplier claim resolution | Sai Shashank Maktala | IMPLEMENTED / VERIFIED; 140-test suite and five independent live claims pass; original external conformance retains its recorded scope | [PR #15](https://github.com/ash-01xor/FrostFlow/pull/15); authorized merge and exact merged-main smoke |
+| P5 Corrective fulfilment | Daniel | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); PR #14 merged as `b3f6102`; latest integrated-main smoke passed at `35d2d0b` |
+| P6 Supplier claim resolution | Sai Shashank Maktala | IMPLEMENTED / VERIFIED; 140-test suite and five independent live claims pass; original external conformance retains its recorded scope | PR #15 merged as `35d2d0b`; exact merged-main smoke passed |
 | Shared CEP, APIs, simulator, logging | Unassigned | PARTLY IMPLEMENTED | ETA/container CEP, weather, shared durable journals and JSON/XES exports implemented; cooling/recovery and external simulator integration pending |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
 
 ## Merged P4 checkpoint — 21 November 2026
 
-PR #12 merged as `70d1a1b` after user authorization and independent review. All 118 offline tests and four real P4 live scenarios passed before merge. The exact merged-main admission/rejection smoke passed with exported engine completion and warehouse/receiving deltas of -2/+1; see [record](../compliance/merged-main-verification.json). The smoke uses labelled test dispositions; the separate P4 investigation record identifies local DCR execution. README now presents current capabilities and entry points; detailed contracts and history remain in their guides. At this earlier checkpoint, P5/P6 and automatic cooling/recovery were planned; the later P5 result is recorded above.
+PR #12 merged as `70d1a1b` after user authorization and independent review. All 118 offline tests and four real P4 live scenarios passed before merge. The exact merged-main admission/rejection smoke passed with exported engine completion and warehouse/receiving deltas of -2/+1; see [historical record](../compliance/historical/merged-main-70d1a1b.json). The smoke uses labelled test dispositions; the separate P4 investigation record identifies local DCR execution. README now presents current capabilities and entry points; detailed contracts and history remain in their guides. At this earlier checkpoint, P5/P6 and automatic cooling/recovery were planned; the later P5 result is recorded above.
 
 ## Foundation-first review checkpoint — 18 November 2026
 
@@ -203,7 +203,7 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Final-code live run `9347c2c8`, matching source/image hashes, five local replay traces, 4/4 external conforming variants and a separate expected negative result recorded.
 - [x] Branch `P5` published through [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14); Daniel merged it as `b3f6102` on 22 November 2026.
 - [x] Address and recheck PDF clipping and Daniel’s ownership; corrections are included in the merge.
-- [ ] Rebuild and smoke-test exact merged main with matched registry/engine data; record the new result separately from earlier P4 smoke and P5 branch evidence.
+- [x] Verify integrated main `35d2d0b` with fresh matched `smoke-r1` data: admission/rejection, exported engine ends, exact stock deltas and a P6 settlement. Full P5 paths retain their separate verified source/revision.
 - [x] Temperature/combined-risk and persistent ETA patterns already implemented by the foundation/P2.
 - [ ] Coordinate post-cooling recovery CEP with P2/P4 and the unconfirmed shared integration owner.
 - [x] Open-Meteo current evidence already implemented by the foundation and supplied to P4.
@@ -216,7 +216,7 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Prevent claim closure before final outcome.
 - [x] Journal P6 through shared `Registry.event`, export real JSON/XES and record scoped local/external conformance evidence.
 - [x] Recheck the review fixes: long incident IDs, complete P4 graph validation and corrected run instructions; 140 tests and five live claims pass.
-- [ ] After an authorized PR #15 merge, rebuild and smoke-test the exact merged-main revision; preserve earlier evidence.
+- [x] PR #15 merged as `35d2d0b`; rebuild and exact merged-main smoke pass, including a live P6 settlement and unchanged rejected goods/stock. Earlier evidence is preserved.
 
 ## Shared integration and demonstration
 
