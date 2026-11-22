@@ -287,3 +287,18 @@ Documentation impact: README, AGENTS, P5/implementation/integration guides and T
 ## 22 November 2026 — merged P5 documentation status correction
 
 At the user’s explicit request to update main directly, Codex refreshed main to Daniel’s PR #14 merge (`b3f6102`) and corrected outdated open/unmerged/local-only statements in AGENTS, the implementation/integration guides, P5 guide and task board. Removed temporary PR status wording from README. The run guide and P5 checkpoint explicitly retain exact merged-main smoke as pending; earlier verification and dated AI-use history are preserved. Documentation-only change: no application, BPMN, PDF or execution evidence changes, no tests/live runs or new external conformance claims. Verified changed document links, unchanged recorded source hashes and `git diff --check`. Semantic search failed with the host’s Metal GPU error; scoped text search was used. The normal branch/PR workflow remains unchanged for future work; this direct-main correction was specifically authorized by the user.
+
+## P6 supplier claims
+
+
+Codex added the P6 Camunda model, claim API and transactional registry, offline regressions, DCR rules, live runner and documentation. Offline checks exercised registry methods and local DCR replay. Live Zeebe and ProcessDoctor were unavailable and no live execution evidence was generated.
+
+Integrated P6 onto P5 at 8a05f85 in an isolated checkout. Three P6 offline checks, Python compilation and Compose validation passed. Full discovery reported four missing grpc errors and two weather-test errors. Docker engine verification remains pending.
+
+Subsequent verification recorded four live claims and ProcessDoctor conformance in compliance/p6.
+
+## 22 November 2026 — independent P6 integration verification and documentation reconciliation
+
+Codex verified PR code `163bd16`: all 140 offline tests passed, including the restored exhaustive P4 graph validation and long-incident API regression. A fresh matched `full-r1` stack (project `frostflow-final-review`) ran P1/P2/P3/P5/P6 in Zeebe, actual container assessment in Siddhi and P4 in the local DCR engine. P5 run `84863cf9` passed four scenarios/five corrective completions; four standard P6 cases plus a real 116-character-incident claim closed with exported engine ends. Exact -25 warehouse/+1 receiving effects were checked, and P6 changed neither stock nor original rejection/vehicle state. The 23 unchanged saved P1–P6 traces replayed valid and accepting. Application hashes matched the tested checkout; modes, images, source/log hashes and actual results are preserved in `compliance/p6/review22/verification.json`. Raw data/logs and the stopped matched dataset remain under ignored `runtime/final-readiness`. No new TomTom, hosted DCR or ProcessDoctor result is claimed; the supplemental log has local replay only and the original reports remain intact.
+
+At the user’s request, updated the PR’s README/AGENTS, implementation/integration/run guides and task board to record P6 contracts/provenance as implemented and separate remaining automatic cooling/recovery, merged-main smoke, rehearsal and submission work. No cooling functionality or owner assignment was added. Documentation paths/anchors, evidence hashes and local replay were checked with `git diff --check`; no application or model changes. Exact merged-main verification follows a separately authorized merge.

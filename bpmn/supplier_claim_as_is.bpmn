@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_P6_AsIs" targetNamespace="http://cold-chain.example/bpmn">
+  <bpmn:process id="ManualSupplierClaim" name="P6 AS-IS - Manual supplier claim handling" isExecutable="false">
+    <bpmn:documentation>Assumed coursework baseline from the claims handler perspective. A reported incident is reviewed for claimable loss. Email and a manually maintained claim register are modeling assumptions. Evidence gathering, supplier follow-up and closure depend on the handler.</bpmn:documentation>
+    <bpmn:startEvent id="Loss" name="Loss reported">
+      <bpmn:outgoing>Loss_Review</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:manualTask id="Review" name="Review incident and loss">
+      <bpmn:incoming>Loss_Review</bpmn:incoming>
+      <bpmn:outgoing>Review_Eligible</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:exclusiveGateway id="Eligible" name="Claimable loss?">
+      <bpmn:incoming>Review_Eligible</bpmn:incoming>
+      <bpmn:outgoing>Eligible_Skip</bpmn:outgoing>
+      <bpmn:outgoing>Eligible_Gather</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Skip" name="No claim raised">
+      <bpmn:incoming>Eligible_Skip</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:manualTask id="Gather" name="Collect shipment and incident evidence">
+      <bpmn:incoming>Eligible_Gather</bpmn:incoming>
+      <bpmn:outgoing>Gather_Send</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="Send" name="Email claim to supplier">
+      <bpmn:incoming>Gather_Send</bpmn:incoming>
+      <bpmn:outgoing>Send_Reply</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:intermediateCatchEvent id="Reply" name="Supplier reply received">
+      <bpmn:incoming>Send_Reply</bpmn:incoming>
+      <bpmn:outgoing>Reply_Outcome</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="SupplierReply" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Outcome" name="Supplier decision?">
+      <bpmn:incoming>Reply_Outcome</bpmn:incoming>
+      <bpmn:outgoing>Outcome_Settle</bpmn:outgoing>
+      <bpmn:outgoing>Outcome_Reject</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:manualTask id="Settle" name="Record settlement in claim register">
+      <bpmn:incoming>Outcome_Settle</bpmn:incoming>
+      <bpmn:outgoing>Settle_Merge</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:manualTask id="Reject" name="Record rejection in claim register">
+      <bpmn:incoming>Outcome_Reject</bpmn:incoming>
+      <bpmn:outgoing>Reject_Merge</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:exclusiveGateway id="Merge">
+      <bpmn:incoming>Settle_Merge</bpmn:incoming>
+      <bpmn:incoming>Reject_Merge</bpmn:incoming>
+      <bpmn:outgoing>Merge_File</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:manualTask id="File" name="File correspondence and close claim">
+      <bpmn:incoming>Merge_File</bpmn:incoming>
+      <bpmn:outgoing>File_Closed</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:endEvent id="Closed" name="Claim closed">
+      <bpmn:incoming>File_Closed</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Loss_Review" sourceRef="Loss" targetRef="Review" />
+    <bpmn:sequenceFlow id="Review_Eligible" sourceRef="Review" targetRef="Eligible" />
+    <bpmn:sequenceFlow id="Eligible_Skip" name="No" sourceRef="Eligible" targetRef="Skip" />
+    <bpmn:sequenceFlow id="Eligible_Gather" name="Yes" sourceRef="Eligible" targetRef="Gather" />
+    <bpmn:sequenceFlow id="Gather_Send" sourceRef="Gather" targetRef="Send" />
+    <bpmn:sequenceFlow id="Send_Reply" sourceRef="Send" targetRef="Reply" />
+    <bpmn:sequenceFlow id="Reply_Outcome" sourceRef="Reply" targetRef="Outcome" />
+    <bpmn:sequenceFlow id="Outcome_Settle" name="Settled" sourceRef="Outcome" targetRef="Settle" />
+    <bpmn:sequenceFlow id="Outcome_Reject" name="Rejected" sourceRef="Outcome" targetRef="Reject" />
+    <bpmn:sequenceFlow id="Settle_Merge" sourceRef="Settle" targetRef="Merge" />
+    <bpmn:sequenceFlow id="Reject_Merge" sourceRef="Reject" targetRef="Merge" />
+    <bpmn:sequenceFlow id="Merge_File" sourceRef="Merge" targetRef="File" />
+    <bpmn:sequenceFlow id="File_Closed" sourceRef="File" targetRef="Closed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram">
+    <bpmndi:BPMNPlane id="Plane" bpmnElement="ManualSupplierClaim">
+      <bpmndi:BPMNShape id="Loss_di" bpmnElement="Loss">
+        <dc:Bounds x="50" y="150" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="22" y="194" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Review_di" bpmnElement="Review">
+        <dc:Bounds x="125" y="132" width="120" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Eligible_di" bpmnElement="Eligible" isMarkerVisible="true">
+        <dc:Bounds x="285" y="143" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="264" y="201" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Skip_di" bpmnElement="Skip">
+        <dc:Bounds x="292" y="45" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="264" y="18" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gather_di" bpmnElement="Gather">
+        <dc:Bounds x="385" y="132" width="135" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Send_di" bpmnElement="Send">
+        <dc:Bounds x="562" y="132" width="120" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reply_di" bpmnElement="Reply">
+        <dc:Bounds x="735" y="150" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="707" y="194" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Outcome_di" bpmnElement="Outcome" isMarkerVisible="true">
+        <dc:Bounds x="840" y="143" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="819" y="201" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Settle_di" bpmnElement="Settle">
+        <dc:Bounds x="945" y="72" width="140" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reject_di" bpmnElement="Reject">
+        <dc:Bounds x="945" y="212" width="140" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_di" bpmnElement="Merge" isMarkerVisible="true">
+        <dc:Bounds x="1130" y="143" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="File_di" bpmnElement="File">
+        <dc:Bounds x="1230" y="132" width="135" height="72" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Closed_di" bpmnElement="Closed">
+        <dc:Bounds x="1410" y="150" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1382" y="194" width="92" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Loss_Review_di" bpmnElement="Loss_Review">
+        <di:waypoint x="86" y="168" />
+        <di:waypoint x="125" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Review_Eligible_di" bpmnElement="Review_Eligible">
+        <di:waypoint x="245" y="168" />
+        <di:waypoint x="285" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Eligible_Skip_di" bpmnElement="Eligible_Skip">
+        <di:waypoint x="310" y="143" />
+        <di:waypoint x="310" y="81" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="315" y="104" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Eligible_Gather_di" bpmnElement="Eligible_Gather">
+        <di:waypoint x="335" y="168" />
+        <di:waypoint x="385" y="168" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="343" y="146" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Gather_Send_di" bpmnElement="Gather_Send">
+        <di:waypoint x="520" y="168" />
+        <di:waypoint x="562" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Send_Reply_di" bpmnElement="Send_Reply">
+        <di:waypoint x="682" y="168" />
+        <di:waypoint x="735" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reply_Outcome_di" bpmnElement="Reply_Outcome">
+        <di:waypoint x="771" y="168" />
+        <di:waypoint x="840" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Outcome_Settle_di" bpmnElement="Outcome_Settle">
+        <di:waypoint x="865" y="143" />
+        <di:waypoint x="865" y="108" />
+        <di:waypoint x="945" y="108" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="86" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Outcome_Reject_di" bpmnElement="Outcome_Reject">
+        <di:waypoint x="865" y="193" />
+        <di:waypoint x="865" y="248" />
+        <di:waypoint x="945" y="248" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="227" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Settle_Merge_di" bpmnElement="Settle_Merge">
+        <di:waypoint x="1085" y="108" />
+        <di:waypoint x="1155" y="108" />
+        <di:waypoint x="1155" y="143" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Reject_Merge_di" bpmnElement="Reject_Merge">
+        <di:waypoint x="1085" y="248" />
+        <di:waypoint x="1155" y="248" />
+        <di:waypoint x="1155" y="193" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Merge_File_di" bpmnElement="Merge_File">
+        <di:waypoint x="1180" y="168" />
+        <di:waypoint x="1230" y="168" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="File_Closed_di" bpmnElement="File_Closed">
+        <di:waypoint x="1365" y="168" />
+        <di:waypoint x="1410" y="168" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

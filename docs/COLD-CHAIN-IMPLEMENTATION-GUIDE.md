@@ -10,7 +10,7 @@
 
 **Submission:** 15 December 2026, 23:59, according to the course specification
 
-**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5 — Daniel; P6 unassigned
+**Ownership:** P1 — Ashvanth; P2 — Rahul Shanbhag; P3 — Arunima Garg; P4 — Abid; P5 — Daniel; P6 - Sai Shashank Maktala
 
 **Implemented checkpoint:** P1 preparation, P2 transport/Siddhi ETA risk, P3 receiving,
 P4 DCR investigation and P5 corrective fulfilment are executable. Risks establish a
@@ -19,7 +19,7 @@ one P5 case. P5 requires original collection and, for replacement success, admis
 of a new linked shipment through P1–P3. Rejected/cancelled replacements fail fulfilment.
 Container excursion/combined-risk CEP, independent Open-Meteo current conditions and P3
 monitoring finalization are implemented in the [foundation](PRE-P4-FOUNDATION.md).
-Cooling/recovery automation and P6 claims remain planned. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
+Cooling/recovery automation remains planned. P6 supplier claims are implemented; the [independent integration supplement](../compliance/p6/review22/verification.json) records five live claim completions and 140 passing offline tests at `163bd16`. See the [P5 guide](P5-CORRECTIVE-FULFILMENT.md)
 and [verification commands/evidence](RUNNING.md#automated-verification) for tested revisions and limits.
 
 ## 1. What problem are we solving?
@@ -59,7 +59,7 @@ We will not build route optimisation, physical sensors, detailed refrigeration p
 
 ## 3. How the system will work
 
-This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P5 behavior from future cooling/recovery automation and P6 claims.
+This is the target P1–P6 design. The implemented checkpoint above distinguishes implemented P1–P6 behavior from future cooling/recovery automation. Independent live verification and its exact scope are recorded in the [P6 integration supplement](../compliance/p6/review22/verification.json); recorded external conformance retains its original log/model scope.
 
 1. The warehouse prepares a shipment and confirms loading before dispatch.
 2. During transport, simulated GPS and temperature data enter Siddhi alongside weather and ETA updates.
@@ -74,7 +74,7 @@ This demonstrates communication in both directions: **events affect processes, a
 
 ## 4. Who will do what?
 
-P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4 and Daniel owns P5; P6 and shared integration owners remain to be assigned. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
+P1 is owned by Ashvanth, P2 by Rahul Shanbhag and P3 by Arunima Garg. Abid owns P4 and Daniel owns P5; Sai Shashank Maktala owns P6 and shared integration ownership remains open. Every owner delivers the model, working implementation, checks and a short explanation. Shared tasks are coordinated by the process owner with help from teammates.
 
 ### Ashvanth — P1: Shipment preparation · Camunda
 
@@ -143,7 +143,7 @@ A delay alone does not prove damaged goods. The officer assesses the evidence. C
 
 **Must prove:** replacement/return follows authorisation and requires completion acknowledgement.
 
-### Unassigned — P6: Supplier claim resolution · Camunda
+### Sai Shashank Maktala — P6: Supplier claim resolution · Camunda
 
 **Build:** record claimable loss → assemble evidence → submit claim → receive settlement/rejection → close.
 
@@ -174,7 +174,7 @@ Each person also models their process's compliance rules as a DCR graph and chec
 | Combined transport risk (implemented assessment) | Current-revision persistent fresh late ETA, three rising readings over 10 s (≥0.5°C rise), eligible outdoor temperature ≥30°C | Urgent assessment, coalescing/escalating the current incident |
 | Missing container data (implemented watchdog) | No valid reading for 20 s, including after restart | Assessment hold; missing data never means normal |
 | Delivery risk | Repeated fresh ETA updates predict arrival after the delivery deadline | Start delay handling and quality assessment |
-| Recovery | After an acknowledged cooling command, readings remain within the configured range for a configured duration | Send recovery evidence to the investigation |
+| Recovery (planned automation; P4 currently records manual acknowledgement/evidence) | After an acknowledged cooling command, readings remain within the configured range for a configured duration | Send recovery evidence to the investigation; officer still decides disposition |
 
 Missing readings cannot establish normal conditions or recovery. Failed/stale API updates must be shown as unavailable. Weather is supporting evidence, not container temperature or an automatic rejection rule.
 

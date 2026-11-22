@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='utf-8'?>
+<log xes.version="1.0" xmlns="http://www.xes-standard.org/">
+  <extension name="Concept" prefix="concept" uri="http://www.xes-standard.org/concept.xesext" />
+  <extension name="Time" prefix="time" uri="http://www.xes-standard.org/time.xesext" />
+  <trace>
+    <string key="concept:name" value="6fc695cc00b54a00afea5d09ae4a2345" />
+    <string key="productId" value="PRD-001" />
+    <string key="productName" value="Fresh milk" />
+    <string key="batchId" value="DEMO-MILK-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ClaimableLossRecorded" />
+      <string key="org:resource" value="demo operator" />
+      <string key="eventId" value="P6:6fc695cc00b54a00afea5d09ae4a2345:ClaimableLossRecorded" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:43.186657Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ClaimEvidenceAssembled" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:6fc695cc00b54a00afea5d09ae4a2345:ClaimEvidenceAssembled" />
+      <string key="processInstanceKey" value="2251799813688174" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:43.866313Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimSubmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:6fc695cc00b54a00afea5d09ae4a2345:SupplierClaimSubmitted" />
+      <string key="processInstanceKey" value="2251799813688174" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:43.877613Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierResponseRecorded" />
+      <string key="org:resource" value="simulated supplier" />
+      <string key="eventId" value="P6:6fc695cc00b54a00afea5d09ae4a2345:SupplierResponseRecorded" />
+      <string key="processInstanceKey" value="2251799813688174" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:44.211277Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimClosed" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:6fc695cc00b54a00afea5d09ae4a2345:SupplierClaimClosed" />
+      <string key="processInstanceKey" value="2251799813688174" />
+      <string key="productId" value="PRD-001" />
+      <string key="batchId" value="DEMO-MILK-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:44.907309Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="50453946f6464414bec3b2cbbc606c6e" />
+    <string key="productId" value="PRD-002" />
+    <string key="productName" value="Plain yoghurt" />
+    <string key="batchId" value="DEMO-YOGHURT-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ClaimableLossRecorded" />
+      <string key="org:resource" value="demo operator" />
+      <string key="eventId" value="P6:50453946f6464414bec3b2cbbc606c6e:ClaimableLossRecorded" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:50.331765Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ClaimEvidenceAssembled" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:50453946f6464414bec3b2cbbc606c6e:ClaimEvidenceAssembled" />
+      <string key="processInstanceKey" value="2251799813688229" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:51.053394Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimSubmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:50453946f6464414bec3b2cbbc606c6e:SupplierClaimSubmitted" />
+      <string key="processInstanceKey" value="2251799813688229" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:51.061029Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierResponseRecorded" />
+      <string key="org:resource" value="simulated supplier" />
+      <string key="eventId" value="P6:50453946f6464414bec3b2cbbc606c6e:SupplierResponseRecorded" />
+      <string key="processInstanceKey" value="2251799813688229" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:51.355664Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimClosed" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:50453946f6464414bec3b2cbbc606c6e:SupplierClaimClosed" />
+      <string key="processInstanceKey" value="2251799813688229" />
+      <string key="productId" value="PRD-002" />
+      <string key="batchId" value="DEMO-YOGHURT-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:52.098319Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="e39a33b106a54eb78bbf01eedc7bd094" />
+    <string key="productId" value="PRD-003" />
+    <string key="productName" value="Fresh cheese" />
+    <string key="batchId" value="DEMO-CHEESE-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ClaimableLossRecorded" />
+      <string key="org:resource" value="demo operator" />
+      <string key="eventId" value="P6:e39a33b106a54eb78bbf01eedc7bd094:ClaimableLossRecorded" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:55.437640Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ClaimEvidenceAssembled" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:e39a33b106a54eb78bbf01eedc7bd094:ClaimEvidenceAssembled" />
+      <string key="processInstanceKey" value="2251799813688277" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:56.199006Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimSubmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:e39a33b106a54eb78bbf01eedc7bd094:SupplierClaimSubmitted" />
+      <string key="processInstanceKey" value="2251799813688277" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:56.205480Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierResponseRecorded" />
+      <string key="org:resource" value="simulated supplier" />
+      <string key="eventId" value="P6:e39a33b106a54eb78bbf01eedc7bd094:SupplierResponseRecorded" />
+      <string key="processInstanceKey" value="2251799813688277" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:56.459007Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimClosed" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:e39a33b106a54eb78bbf01eedc7bd094:SupplierClaimClosed" />
+      <string key="processInstanceKey" value="2251799813688277" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:01:57.242352Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="8b39c8e2a30c4da58fc3b2b7e7cdff45" />
+    <string key="productId" value="PRD-004" />
+    <string key="productName" value="Raw chicken breast" />
+    <string key="batchId" value="DEMO-CHICKEN-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ClaimableLossRecorded" />
+      <string key="org:resource" value="demo operator" />
+      <string key="eventId" value="P6:8b39c8e2a30c4da58fc3b2b7e7cdff45:ClaimableLossRecorded" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:00.567042Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ClaimEvidenceAssembled" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:8b39c8e2a30c4da58fc3b2b7e7cdff45:ClaimEvidenceAssembled" />
+      <string key="processInstanceKey" value="2251799813688325" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:01.357405Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimSubmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:8b39c8e2a30c4da58fc3b2b7e7cdff45:SupplierClaimSubmitted" />
+      <string key="processInstanceKey" value="2251799813688325" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:01.367648Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierResponseRecorded" />
+      <string key="org:resource" value="simulated supplier" />
+      <string key="eventId" value="P6:8b39c8e2a30c4da58fc3b2b7e7cdff45:SupplierResponseRecorded" />
+      <string key="processInstanceKey" value="2251799813688325" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:01.586330Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimClosed" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:8b39c8e2a30c4da58fc3b2b7e7cdff45:SupplierClaimClosed" />
+      <string key="processInstanceKey" value="2251799813688325" />
+      <string key="productId" value="PRD-004" />
+      <string key="batchId" value="DEMO-CHICKEN-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:02.397618Z" />
+    </event>
+  </trace>
+  <trace>
+    <string key="concept:name" value="0f1befca6da8477f9a6750402baf3fb8" />
+    <string key="productId" value="PRD-003" />
+    <string key="productName" value="Fresh cheese" />
+    <string key="batchId" value="DEMO-CHEESE-001" />
+    <string key="quantityUnit" value="crate" />
+    <string key="temperatureProfileId" value="CHILLED-DEMO" />
+    <event>
+      <string key="concept:name" value="ClaimableLossRecorded" />
+      <string key="org:resource" value="demo operator" />
+      <string key="eventId" value="P6:0f1befca6da8477f9a6750402baf3fb8:ClaimableLossRecorded" />
+      <string key="processInstanceKey" value="" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:05.919958Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="ClaimEvidenceAssembled" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:0f1befca6da8477f9a6750402baf3fb8:ClaimEvidenceAssembled" />
+      <string key="processInstanceKey" value="2251799813688376" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:06.522190Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimSubmitted" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:0f1befca6da8477f9a6750402baf3fb8:SupplierClaimSubmitted" />
+      <string key="processInstanceKey" value="2251799813688376" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:06.531324Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierResponseRecorded" />
+      <string key="org:resource" value="simulated supplier" />
+      <string key="eventId" value="P6:0f1befca6da8477f9a6750402baf3fb8:SupplierResponseRecorded" />
+      <string key="processInstanceKey" value="2251799813688376" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:06.940998Z" />
+    </event>
+    <event>
+      <string key="concept:name" value="SupplierClaimClosed" />
+      <string key="org:resource" value="system" />
+      <string key="eventId" value="P6:0f1befca6da8477f9a6750402baf3fb8:SupplierClaimClosed" />
+      <string key="processInstanceKey" value="2251799813688376" />
+      <string key="productId" value="PRD-003" />
+      <string key="batchId" value="DEMO-CHEESE-001" />
+      <string key="quantityUnit" value="crate" />
+      <date key="time:timestamp" value="2026-11-22T17:02:07.565984Z" />
+    </event>
+  </trace>
+</log>

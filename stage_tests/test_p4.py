@@ -6,6 +6,7 @@ as in test_monitoring.py. P4 runs on the local DCR engine over
 dcr/p4_quality_investigation.xml. These are not dcrgraphs.net repository executions.
 """
 
+from copy import copy
 import json
 import sys
 import tempfile
@@ -830,8 +831,7 @@ class P4Graph(unittest.TestCase):
             here = key(graph)
             edges[here] = []
             for event in events:
-                nxt = Graph.__new__(Graph)
-                nxt.events, nxt.relations = graph.events, graph.relations
+                nxt = copy(graph)
                 nxt.included, nxt.executed, nxt.pending = (
                     set(graph.included), set(graph.executed), set(graph.pending))
                 if nxt.execute(event) is None:

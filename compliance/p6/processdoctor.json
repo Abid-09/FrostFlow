@@ -1,0 +1,21 @@
+{
+  "site": "https://processdoctor.compute.dtu.dk/",
+  "method": "User-performed browser conformance check, confirmed by screenshot",
+  "coverageThreshold": 100,
+  "model": {
+    "path": "compliance/p6/rules.xml",
+    "sha256": "53db416d0bf65b004da82d62e4b59ca9bbb1f509ac697836c63e86c3022ea805"
+  },
+  "positive": {
+    "path": "compliance/p6/execution-log.xes",
+    "sha256": "fde30448260b3d36a44d6cec1605aac9c7f6b21268f3feb64e8c6b274e720b59",
+    "traces": 4,
+    "variants": 1,
+    "conforming": 1,
+    "partiallyViolating": 0,
+    "violating": 0,
+    "totalStructuralViolations": 0,
+    "screenshot": "compliance/p6/processdoctor-conformation.png"
+  },
+  "checksumBasis": "SHA-256 of committed Git blob contents"
+}

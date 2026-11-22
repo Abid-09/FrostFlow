@@ -1,0 +1,299 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-11-22T17:02:05.677Z",
+  "recordedAt": "2026-11-22T17:20:00.663062Z",
+  "testedCommit": "163bd162bd7b37528a1c828d475779fad87f3ff9",
+  "scope": "Independent PR #15 verification; supplements existing evidence without replacing it. Documentation-only commits after testedCommit do not change the tested application/model sources.",
+  "project": "frostflow-final-review",
+  "dataset": "full-r1",
+  "commands": [
+    "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/.venv/bin/python -m unittest discover -s stage_tests -p 'test_*.py'",
+    "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/.venv/bin/python -u stage_tests/check_p5_fulfilment.py --base http://localhost:5001 --output /Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/runtime/final-readiness/p5-live.json",
+    "/Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/.venv/bin/python -u stage_tests/check_p6_claims.py p5live-84863cf9-1 p5live-84863cf9-2 --extra-shipments p5live-84863cf9-3 p5live-84863cf9-4 --output-dir /Users/ash/Study/DTU/SEM-1/ProcessOriented/Assignments/Project/runtime/final-readiness/p6-live"
+  ],
+  "offlineTests": {
+    "count": 140,
+    "status": "passed",
+    "outputSha256": "462f8b599df81c12502addeeb6fbe5e1ac5ddfb6589a057dfdbb3144d6dd7712"
+  },
+  "inputModes": {
+    "P1P2P3P5P6": "Zeebe 8.8",
+    "P4": "local DCR engine",
+    "container": "simulated; evaluated by local Siddhi",
+    "eta": "local demo estimates; TomTom disabled",
+    "physicalActions": "manual simulated confirmations",
+    "supplier": "simulated responses"
+  },
+  "gpsTickSeconds": 2,
+  "images": {
+    "communication": "sha256:36028728f06d652d6d1895dfc3deee995e94b23277a3215869c7fa94bf4783ff",
+    "zeebe": "sha256:f2a4737e0bbaacc0ed9ba31efc32262e81746988f9d5210cc2f5f9c66cdd9815",
+    "elasticsearch": "sha256:93a9a7e1908f0c59ffce42ff494791bd785c36de40189759fc2a0ed7d6006c9d",
+    "siddhi": "sha256:17dd32e19116d5219d6211a864693db4bf8d6eebaa13f18f50a1d5df5e3c43ad",
+    "operate": "sha256:3ef9717192aedbccb66b767577bdf29937ba816d35edba2423adce19aafdaa91"
+  },
+  "sourceSha256": {
+    "bpmn/corrective_fulfilment.bpmn": "4fcb75985ade77710c83983008d35f63cd26ce12bc539d277f8ead430bc10792",
+    "bpmn/receiving.bpmn": "2aa42bd54e2c16e13d66b437d5a60cbb128ab0284eb9ade0d62b78faadb9829b",
+    "bpmn/shipment_preparation.bpmn": "ff7cca3684bb5c41e425dd3666abdc05c146fb0ac12f540c80019b16d4fe3efa",
+    "bpmn/supplier_claim.bpmn": "ddd161d571dcd57b92cd16022fc567b60afaf4de0df2eba945372e9f5f9b36ed",
+    "bpmn/supplier_claim_as_is.bpmn": "4e2200a44a5f89179f2375b753ca0bf5cf7e5901856d51a4f55f03c1225ae896",
+    "bpmn/transport.bpmn": "1bca58249dbd06f3b2cbd8985f334e1c022941d743e47b221c88b7dcc2ce13c6",
+    "compliance/p6/rules.xml": "53db416d0bf65b004da82d62e4b59ca9bbb1f509ac697836c63e86c3022ea805",
+    "dcr/p4_quality_investigation.xml": "630bcdc2a0c6140eee6f9ac78e5aaf2366bea31c471915546498078c6261c610",
+    "deployer/app.py": "4b9fd0e0970edbe7cf7ecdd4c6c936baa3bdc3404ccedbebda5de65d7a44c37e",
+    "deployer/claim_registry.py": "6414714099d86517d3d2527242d6e67c4235de0ce456e1af731c439cb496fa6f",
+    "deployer/corrective.py": "dfa9a74ba670340e72da8a4cc5ae88c5eabe920aceaeeca9c22f8684a6e21cd7",
+    "deployer/corrective_registry.py": "da8481c2f626b9c07352585aa62dd60445b08bb0259d7d3ce272718636311797",
+    "deployer/dcr_client.py": "4039649743794aa7ef441bf4a3887d584c9e1b0308054909cef9a6fb97757e75",
+    "deployer/monitoring.py": "c8e9f8cc8ae53738700ecf8050863aab4d7ca5de37161a90273503e315edf2a5",
+    "deployer/monitoring_registry.py": "22378e200627701fc90e3882d4222883551b4f77064325992ba7fe7f31b8efa9",
+    "deployer/quality.py": "321f561df8b8798895cc0221619b8ae8a41cf02ab972929a5c1ccb6c31a2d73e",
+    "deployer/registry.py": "8513a06c43fbb940cfae99b720438cab18b79bd34c2497fc8bbfccd75ff6e9fd",
+    "deployer/transport_integrations.py": "8c60e20a3f97bf5610ed18ccb548d0c514ba278c794f6321ae91926f78abeee8",
+    "deployer/weather.py": "b4687b1b70f5937c62523fa7df91852a2831b546a8fa32d77f4d3e98f1fd61a5",
+    "siddhi-apps/ColdChainTelemetry.siddhi": "2b90f71ab5f7a15efa0e2007750d1e2720e71d0bce76fbe5dbfe66e839e671b1",
+    "siddhi-apps/ContainerAssessment.siddhi": "25c8a86035751d4be184c27a92ee37806a6016606f135912ec979af27993784e"
+  },
+  "p5": {
+    "runId": "84863cf9",
+    "scenarios": 4,
+    "engineCompletions": 5,
+    "cases": [
+      {
+        "scenario": "return-collected",
+        "correctiveId": "CF-c6133767497756e625612030",
+        "status": "COMPLETED",
+        "originalGoodsStatus": "COLLECTED",
+        "replacementOutcome": "NOT_REQUIRED",
+        "processInstanceKey": "2251799813685720",
+        "engineEnd": "FulfilmentCompleted"
+      },
+      {
+        "scenario": "replacement-admitted",
+        "correctiveId": "CF-82d9f5db4b67518ce02aa770",
+        "status": "COMPLETED",
+        "originalGoodsStatus": "COLLECTED",
+        "replacementOutcome": "ADMITTED",
+        "processInstanceKey": "2251799813686148",
+        "engineEnd": "FulfilmentCompleted"
+      },
+      {
+        "scenario": "replacement-rejected",
+        "correctiveId": "CF-bcac8150ebed083a200b2295",
+        "status": "FAILED",
+        "originalGoodsStatus": "COLLECTED",
+        "replacementOutcome": "REJECTED",
+        "processInstanceKey": "2251799813686896",
+        "engineEnd": "FulfilmentFailed"
+      },
+      {
+        "scenario": "replacement-rejected-followup-return",
+        "correctiveId": "CF-fbf8419a352bd35152fbfc9b",
+        "status": "COMPLETED",
+        "originalGoodsStatus": "COLLECTED",
+        "replacementOutcome": "NOT_REQUIRED",
+        "processInstanceKey": "2251799813687314",
+        "engineEnd": "FulfilmentCompleted"
+      },
+      {
+        "scenario": "replacement-cancelled",
+        "correctiveId": "CF-947d00ff788657f817d468d6",
+        "status": "FAILED",
+        "originalGoodsStatus": "COLLECTED",
+        "replacementOutcome": "CANCELLED",
+        "processInstanceKey": "2251799813687799",
+        "engineEnd": "FulfilmentFailed"
+      }
+    ],
+    "localReplay": {
+      "return-collected": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "replacement-admitted": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "replacement-rejected": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "replacement-rejected-followup-return": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "replacement-cancelled": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      }
+    }
+  },
+  "p6": {
+    "claims": [
+      {
+        "claimId": "6fc695cc00b54a00afea5d09ae4a2345",
+        "scenario": "settlement",
+        "shipmentId": "p5live-84863cf9-1",
+        "outcome": "SETTLED",
+        "checks": [],
+        "engineEnd": {
+          "intent": "ELEMENT_COMPLETED",
+          "position": 6857,
+          "bpmnProcessId": "SupplierClaimResolution",
+          "processInstanceKey": 2251799813688174,
+          "processDefinitionKey": 2251799813685299,
+          "elementId": "Settled"
+        }
+      },
+      {
+        "claimId": "50453946f6464414bec3b2cbbc606c6e",
+        "scenario": "rejection",
+        "shipmentId": "p5live-84863cf9-2",
+        "outcome": "REJECTED",
+        "checks": [],
+        "engineEnd": {
+          "intent": "ELEMENT_COMPLETED",
+          "position": 6991,
+          "bpmnProcessId": "SupplierClaimResolution",
+          "processInstanceKey": 2251799813688229,
+          "processDefinitionKey": 2251799813685299,
+          "elementId": "Rejected"
+        }
+      },
+      {
+        "claimId": "e39a33b106a54eb78bbf01eedc7bd094",
+        "scenario": "invalid-response-then-settlement",
+        "shipmentId": "p5live-84863cf9-3",
+        "outcome": "SETTLED",
+        "checks": [
+          "Invalid outcome returned HTTP 400 and claim remained SUBMITTED"
+        ],
+        "engineEnd": {
+          "intent": "ELEMENT_COMPLETED",
+          "position": 7122,
+          "bpmnProcessId": "SupplierClaimResolution",
+          "processInstanceKey": 2251799813688277,
+          "processDefinitionKey": 2251799813685299,
+          "elementId": "Settled"
+        }
+      },
+      {
+        "claimId": "8b39c8e2a30c4da58fc3b2b7e7cdff45",
+        "scenario": "conflicting-response-after-rejection",
+        "shipmentId": "p5live-84863cf9-4",
+        "outcome": "REJECTED",
+        "checks": [
+          "Conflicting settlement returned HTTP 409 and rejection remained final"
+        ],
+        "engineEnd": {
+          "intent": "ELEMENT_COMPLETED",
+          "position": 7245,
+          "bpmnProcessId": "SupplierClaimResolution",
+          "processInstanceKey": 2251799813688325,
+          "processDefinitionKey": 2251799813685299,
+          "elementId": "Rejected"
+        }
+      },
+      {
+        "claimId": "0f1befca6da8477f9a6750402baf3fb8",
+        "scenario": "long-incident-settlement",
+        "shipmentId": "p5live-84863cf9-3-replacement",
+        "outcome": "SETTLED",
+        "checks": [],
+        "incidentIdLength": 116,
+        "engineEnd": {
+          "intent": "ELEMENT_COMPLETED",
+          "position": 7378,
+          "bpmnProcessId": "SupplierClaimResolution",
+          "processInstanceKey": 2251799813688376,
+          "processDefinitionKey": 2251799813685299,
+          "elementId": "Settled"
+        }
+      }
+    ],
+    "localReplay": {
+      "6fc695cc00b54a00afea5d09ae4a2345": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "50453946f6464414bec3b2cbbc606c6e": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "e39a33b106a54eb78bbf01eedc7bd094": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "8b39c8e2a30c4da58fc3b2b7e7cdff45": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      },
+      "0f1befca6da8477f9a6750402baf3fb8": {
+        "valid": true,
+        "accepting": true,
+        "pending": []
+      }
+    },
+    "idBoundaryRegression": "A real 116-character container incident accepted and completed; offline API checks also cover rejection beyond 1000 characters.",
+    "forbiddenActions": "Conflicting loss/reply retries refused; invalid supplier outcome refused without changing state. Exact retries preserve one claim and terminal outcome."
+  },
+  "inventory": {
+    "warehouseBefore": 100,
+    "warehouseAfter": 75,
+    "warehouseDelta": -25,
+    "receivingBefore": 0,
+    "receivingAfter": 1,
+    "receivingDelta": 1,
+    "p6InventoryDelta": 0,
+    "originalRejectionAndVehicleStatePreserved": true
+  },
+  "savedEvidenceReplay": {
+    "traces": 23,
+    "allValidAccepting": true,
+    "scope": "Unchanged saved evidence; not new execution or external conformance"
+  },
+  "model": {
+    "path": "compliance/p6/rules.xml",
+    "sha256": "53db416d0bf65b004da82d62e4b59ca9bbb1f509ac697836c63e86c3022ea805"
+  },
+  "log": {
+    "path": "compliance/p6/review22/execution-log.xes",
+    "sha256": "e6ce97b3b0f08778b9d94be43dba3371dd7ce86c11b6d6ec0f0516c5891c6675"
+  },
+  "rawEvidenceSha256": {
+    "p5-live.json": "7d8c77c75f3560abcc315959df73dc9de34235544174c2290f33fd478b5b20bc",
+    "p6-live/verification.json": "d79fd67f91f798a81f03165cd64d9713bb74130f5b525ef87412cdd1111e3820",
+    "p6-live/execution-log.xes": "2adacb6f6a5e608a0ea472316c966ac6df27c06997d67808483cf86ea761b41c",
+    "p6-long-incident.json": "bc64017c32f3f53e63d91524f89a56aa15ccdad588165cfe5cf77e199ca796d5",
+    "p6-long-incident.xes": "161a656aa48710ee0852b6b47e50079bbd101e1064380358bf9908852803ea50",
+    "p6-engine-ends.json": "3eb9314f5f1e226cfb317e8f331db42e2aeb3cfc83df5be871bc0fdcdf99656a"
+  },
+  "retainedRuntime": "runtime/final-readiness; stopped full-r1 stack and matched data retained. Raw provider/telemetry data stays untracked.",
+  "externalConformance": {
+    "status": "not rerun for this supplemental log",
+    "existingEvidence": "compliance/p6/processdoctor.json retains its original model/log scope; no external result is claimed for review22."
+  },
+  "remaining": [
+    "Exact merged-main smoke after the authorized P6 merge.",
+    "Automatic cooling/simulator acknowledgement/Siddhi recovery loop remains manual; no new cooling work is included.",
+    "Final demonstration, manual baseline comparison and submission artifacts require completion/review against the actual course documents."
+  ],
+  "limits": [
+    "Local DCR engine, simulated physical/supplier actions and local demo ETAs; no new TomTom or hosted DCR acceptance check.",
+    "The separate fresh-data P1/P2/P3/P4 acceptance runners were not all repeated; integrated P5 cases exercise real P1/P2/P3/P4 behavior and the saved logs were replayed."
+  ],
+  "longIncidentProbe": {
+    "execution": "Python stdin script reusing the live helper and capturing the exported engine end",
+    "helperCall": "check_p6_claims.run_claim('http://localhost:5001', 'p5live-84863cf9-3-replacement', 'SETTLED', 'long-incident-settlement')"
+  }
+}

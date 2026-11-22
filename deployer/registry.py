@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
+from claim_registry import ClaimRegistry
 from monitoring import profile, seconds
 from monitoring_registry import MonitoringRegistry
 from corrective_registry import CorrectiveRegistry
@@ -30,11 +31,12 @@ class Conflict(Exception):
     pass
 
 
-class Registry(MonitoringRegistry, CorrectiveRegistry):
+class Registry(MonitoringRegistry, CorrectiveRegistry, ClaimRegistry):
     def __init__(self, path):
         self.path = str(path)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.transaction() as db:
+            self.init_claims(db)
             if db.execute(
                 "SELECT 1 FROM sqlite_master WHERE name='inventory'"
             ).fetchone():
@@ -181,6 +183,7 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
                 "P1": record.get("processInstanceKey"),
                 "P2": record.get("p2ProcessInstanceKey"),
                 "P3": record.get("p3ProcessInstanceKey"),
+                "P6": record.get("p6ProcessInstanceKey"),
             }.get(process),
             payload={
                 **identity,
@@ -200,7 +203,7 @@ class Registry(MonitoringRegistry, CorrectiveRegistry):
                 ),
             },
         )
-        for optional in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId"):
+        for optional in ("originalShipmentId", "incidentId", "correctiveId", "replacementForCorrectiveId", "claimId"):
             if optional in record:
                 event[optional] = record[optional]
         if producer_event_id is not None:
