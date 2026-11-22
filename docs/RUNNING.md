@@ -664,6 +664,8 @@ reports retain their original scope; P5 evidence does not validate P6 or future 
 
 ## P6 supplier claims
 
+Independent verification on PR code `163bd16` passed all 140 offline tests, four P5 scenarios/five corrective completions, and five P6 claims on fresh matched `full-r1` data (project `frostflow-final-review`). P1/P2/P3/P5/P6 executed in Zeebe, container assessments in Siddhi and P4 in the local DCR engine; GPS tick was 2 seconds, ETAs were local demo estimates, and physical/supplier actions were simulated. The fifth claim used a real 116-character container incident. Exported engine ends, source/image hashes and exact stock effects are in the [supplement](../compliance/p6/review22/verification.json). Original reports and their ProcessDoctor results remain unchanged; the supplemental log has local replay only. Exact merged-main smoke remains pending until an authorized P6 merge.
+
 Rebuild communication on the matching Compose dataset so it deploys [supplier_claim.bpmn](../bpmn/supplier_claim.bpmn) with the other models. Health includes SupplierClaimResolution and retains stage 3 for existing clients. Use a shipment with a recorded qualityIncidentId, such as a quality-rejection case produced by the integrated smoke runner.
 
 1. POST to /claims with {"incidentId":"<incident>","originalShipmentId":"<shipment>","lossDescription":"One rejected crate","actor":"demo operator","evidenceRefs":["<journal event ID>"]}. Save the returned claimId. HTTP 202 means durably accepted.

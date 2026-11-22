@@ -1,5 +1,7 @@
 # Team task board
 
+**P6 integration review — 22 November 2026:** all reported PR #15 findings are fixed. Independent verification at `163bd16` passed 140 offline tests, four P5 scenarios/five corrective completions and five live P6 claims, including a 116-character incident ID. Actual Zeebe ends, real Siddhi assessments, local DCR execution and exact -25/+1 stock effects (zero P6 stock effect) are recorded in the [supplement](../compliance/p6/review22/verification.json). The next integration gate is an authorized P6 merge followed by smoke-testing its exact merged-main revision. This does not complete automatic cooling/recovery or submission work.
+
 **P5 integration — 22 November 2026:** Daniel owns P5 and merged [PR #14](https://github.com/ash-01xor/FrostFlow/pull/14) as `b3f6102`. The PDF margin and ownership corrections are included and have been rechecked. Application and BPMN source are unchanged from the reviewed code. Exact merged-main smoke remains pending; the recorded verification below retains its original revision and scope.
 
 **Recorded P5 verification — 21 November 2026:** all 136 offline tests and final-code live run `9347c2c8` passed at `d118870`: four scenarios, five P5 instances, exact -25/+1 inventory effects and real P1/P2/P3/P5 engine records. Local replay passed all five traces; ProcessDoctor reported 4/4 conforming variants with zero structural violations, and the separate synthetic dispatch-only trace violated as expected. See [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md), [verification](../compliance/p5/verification.json) and [external evidence](../compliance/p5/processdoctor.json). These review corrections change only documentation and the PDF export; the recorded runtime evidence retains its original revision.
@@ -17,8 +19,8 @@
 | P3 Receiving and admission | Arunima Garg | IMPLEMENTED; integrated with P2; four live scenarios/local DCR pass; review-18 manual external conformance passed | P2 arrival + P4 shared hold |
 | P4 Quality investigation (DCR) | Abid | IMPLEMENTED; merged in PR #12; review fixes pass offline; combined live run `ed88d16d` passed on the final code with P4 in the dcrgraphs.net repository; owner ProcessDoctor check passed for that log | [P4 guide](../docs/P4-QUALITY-INVESTIGATION.md); PR #12 merged as `70d1a1b`; merged-main smoke passed |
 | P5 Corrective fulfilment | Daniel | IMPLEMENTED; offline/live/local replay/external conformance pass | [P5 guide](../docs/P5-CORRECTIVE-FULFILMENT.md); PR #14 merged as `b3f6102`; exact merged-main smoke pending |
-| P6 Supplier claim resolution | Sai Shashank Maktala | Implemented; four recorded claims passed conformance checking | Explicit claimable loss |
-| Shared CEP, APIs, simulator, logging | Unassigned | PARTLY IMPLEMENTED | ETA/container CEP, weather and durable journals implemented; cooling/recovery, external simulator and shared logger pending |
+| P6 Supplier claim resolution | Sai Shashank Maktala | IMPLEMENTED / VERIFIED; 140-test suite and five independent live claims pass; original external conformance retains its recorded scope | [PR #15](https://github.com/ash-01xor/FrostFlow/pull/15); authorized merge and exact merged-main smoke |
+| Shared CEP, APIs, simulator, logging | Unassigned | PARTLY IMPLEMENTED | ETA/container CEP, weather, shared durable journals and JSON/XES exports implemented; cooling/recovery and external simulator integration pending |
 | Compliance and submission | All; coordinator unassigned | TODO | Models + real execution logs |
 
 ## Merged P4 checkpoint — 21 November 2026
@@ -212,7 +214,9 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Require explicit claimable loss; link original shipment and incident; deduplicate claims.
 - [x] Assemble evidence; simulate submission and settlement/rejection response.
 - [x] Prevent claim closure before final outcome.
-- [x] Coordinate shared activity logger, JSON/XES export and compliance-tool import.
+- [x] Journal P6 through shared `Registry.event`, export real JSON/XES and record scoped local/external conformance evidence.
+- [x] Recheck the review fixes: long incident IDs, complete P4 graph validation and corrected run instructions; 140 tests and five live claims pass.
+- [ ] After an authorized PR #15 merge, rebuild and smoke-test the exact merged-main revision; preserve earlier evidence.
 
 ## Shared integration and demonstration
 
@@ -221,7 +225,7 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [ ] Agree cooling/recovery settings as part of real P4 work.
 - [x] Implement P1–P3 envelope validation, transactional handoffs and event/delivery/command deduplication.
 - [x] Extend transactional contracts/retry checks to real P4 and P5.
-- [ ] Extend contracts/retry checks to P6 when implemented.
+- [x] Extend transactional start/response contracts and exact/conflicting retry checks to P6; independent live claims verify their expected outcomes.
 - [x] Implement persistent distinct-ETA delivery risk in Siddhi; isolated-rule and live P2 checks pass.
 - [x] Implement temperature excursion and weather-supported combined assessment in Siddhi with durable ordered acknowledgements.
 - [ ] Implement post-cooling-command recovery with real P4.
@@ -230,11 +234,12 @@ Owner: Abid. Replacement PR on `feat/p4-foundation-integration` (restore = rever
 - [x] Preserve source/input-mode and evidence timestamps for implemented P1–P3 paths.
 - [x] Extend provenance to container assessment and Open-Meteo current conditions.
 - [x] Extend provenance to real P4 and P5 activities, including manual collection and system handoffs.
-- [ ] Extend provenance to recovery and P6 when implemented.
+- [x] Record P6 actor, UTC occurrence/recording times, input modes and shipment/incident/claim references in the shared journal.
+- [ ] Extend provenance to automated cooling/recovery when that loop is implemented.
 - [x] Check unavailable/stale ETA observations, duplicate events/commands and independent journeys in the P1–P3 regressions/live runs.
 - [ ] Verify missing temperature/recovery data and full new-incident-after-release behavior with the real P4 investigation.
 - [x] Rehearse current P1–P3 delivery and delay paths, including admission and hold/release/rejection.
-- [ ] Rehearse the complete three-minute demonstration with implemented P4/P5 and an eligible claim after P6 exists.
+- [ ] Rehearse the complete three-minute P1–P6 demonstration, including quality investigation, corrective handling and an explicitly eligible claim. Automated regression runs do not constitute a human rehearsal.
 - [ ] Compare assumed manual baseline with improved process on the same recorded inputs.
 
 ## Every process owner's completion checklist

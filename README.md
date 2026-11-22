@@ -19,7 +19,7 @@ P1 reserves stock and dispatches shipments. P2 tracks transport and releases the
 
 Siddhi evaluates transport and container telemetry. Optional TomTom traffic ETAs and Open-Meteo current conditions provide external context. P4 uses a local DCR engine by default; dcrgraphs.net repository mode is also supported.
 
-P5 consumes applied P4 replacement/return decisions, books original-goods collection and reuses P1–P3 for linked replacements. Replacement success requires collection and stock admission of the new goods; rejection/cancellation produces a failed outcome. P6 records claimable loss and tracks supplier claims through settlement or rejection. All four recorded cases passed conformance checking. Automatic cooling/recovery integration and an external physical simulator remain future work.
+P5 consumes applied P4 replacement/return decisions, books original-goods collection and reuses P1–P3 for linked replacements. Replacement success requires collection and stock admission of the new goods; rejection/cancellation produces a failed outcome. P6 records claimable loss and tracks supplier claims through settlement or rejection. Automatic cooling/recovery integration and an external physical simulator remain future work.
 
 ## Run locally
 
@@ -60,6 +60,7 @@ The [merged-main smoke record](compliance/merged-main-verification.json) identif
 - [Integration agreement](docs/COLD-CHAIN-INTEGRATION-AGREEMENT.md) — shared contracts and safeguards.
 - [P4 guide](docs/P4-QUALITY-INVESTIGATION.md) — investigation behavior and interfaces.
 - [P5 guide](docs/P5-CORRECTIVE-FULFILMENT.md) — corrective workflow, API/menu controls and verification.
+- [P6 run guide](docs/RUNNING.md#p6-supplier-claims) — claim API, verification and evidence.
 - [Task board](project_notes/TASKS.md), [AI-use record](project_notes/AI-USAGE.md) and [agent instructions](AGENTS.md) — team workflow and project records.
 
 Changes go through feature branches and review. Credentials and generated runtime data stay untracked.
